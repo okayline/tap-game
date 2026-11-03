@@ -18,6 +18,8 @@
          background: radial-gradient(circle at 50% 0%, #2a1650 0%, var(--bg) 60%) fixed, var(--bg); }
   /* a button is shown 2x (176x62), or smaller on a narrow screen so three fit across */
   :root { --w: min(176px, calc((100vw - 92px) / 3)); }
+  /* nothing on the game screen can be selected or long-pressed into a selection, so taps and drags never highlight text */
+  #game { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
   #game { max-width: 620px; margin: 0 auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
   h1 { font-family: var(--meme); font-size: 26px; letter-spacing: .5px; text-transform: uppercase; margin: 0;
        text-shadow: 0 0 8px rgba(176,132,255,.6), 0 0 16px rgba(255,111,207,.3); }
@@ -79,7 +81,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.43" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.44" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -98,7 +100,10 @@ const $ = (id) => document.getElementById(id);
   function showLog() {
     logTimer = null;
     if (shown < g.log.length) shown++; else shown = g.log.length;
-    $("log").textContent = g.log.slice(0, shown).slice(-5).reverse().join("\n");
+    // newest on top at full strength, each older line fainter, down to 25% for the fifth
+    $("log").replaceChildren(...g.log.slice(0, shown).slice(-5).reverse().map((t, k) => {
+      const d = document.createElement("div"); d.textContent = t; d.style.opacity = 1 - k * 0.1875; return d;
+    }));
     if (shown < g.log.length) logTimer = setTimeout(showLog, LINE_MS);
   }
   let picked = new Set(), split = {}, seen = "";
@@ -138,6 +143,8 @@ const $ = (id) => document.getElementById(id);
     $("themHp").textContent = "dummy";
     // you can drag from your deck before the first attack, and on your turn to fill an out spot or make your one swap
     const fill = (g.sides[me].deck ?? []).length > 0 && mine.some((b) => b.out);
+    // on your turn with a knocked-out spot, a plain tap on a deck button brings it into the first such spot
+    tapInto = myTurn && fill ? mine.findIndex((b) => b.out) : -1;
     deckRow($("meDeck"), g.sides[me], (g.locked === false && !g.winner) || (myTurn && (fill || !g.swapped)));
     deckRow($("themDeck"), g.sides[them], false);
     // the dummy won the flip: it waits for start, so you can swap first
@@ -173,7 +180,9 @@ const $ = (id) => document.getElementById(id);
     });
   }
   // drag a deck picture (mouse or touch) and drop it on one of your field buttons to swap the two
+  let tapInto = -1;
   function drag(e, j, img) {
+    const x0 = e.clientX, y0 = e.clientY;
     e.preventDefault();
     const ghost = img.cloneNode(); ghost.className = "ghost"; document.body.append(ghost);
     const at = (ev) => { ghost.style.left = ev.clientX + "px"; ghost.style.top = ev.clientY + "px"; };
@@ -182,6 +191,7 @@ const $ = (id) => document.getElementById(id);
       removeEventListener("pointermove", at); removeEventListener("pointerup", end); removeEventListener("pointercancel", end);
       const t = ev.type === "pointerup" && document.elementFromPoint(ev.clientX, ev.clientY)?.closest("#me .btn");
       if (t) send({ do: "swap", i: Number(t.dataset.i), j });
+      else if (ev.type === "pointerup" && tapInto >= 0 && Math.hypot(ev.clientX - x0, ev.clientY - y0) < 8) send({ do: "swap", i: tapInto, j });
     };
     at(e);
     addEventListener("pointermove", at); addEventListener("pointerup", end); addEventListener("pointercancel", end);

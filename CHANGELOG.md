@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.44 "Tap In" · Tue Nov 3, 2:50 AM
+- On your turn, when one of your buttons is knocked out, tapping a deck button brings it into that spot (dragging still works). Text on the game screen can't be selected any more. The log's older lines fade out, down to 25% for the bottom one. Removed: text selection on the game screen.
+
 ## v0.43 "Turns Again" · Tue Nov 3, 2:48 AM
 - Back to turns: v0.41 as it was (decks of 9, attack and take, one swap a turn, summoning sickness). Removed: real time (tap yours then theirs, cooldowns, the grey-to-colour fade, the timed dummy). It's in git history as v0.42.
 
