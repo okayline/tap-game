@@ -4,6 +4,13 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.6 "No Mark"
+**Mon Nov 2, 2026 · 11:20 PM HST** (no migration)
+- kura: "okay off please !" (the 🄯 in the footer, as on 88x31, since many buttons remix other people's open-licensed art and this page shows no credits).
+- Changed: the footer has `data-copy="no"` and reads `~*~88x31~*~ · § ≡ v0.6`.
+- Removed: the 🄯 from the footer.
+- Not checked: the live site.
+
 ## v0.5 "Version Line"
 **Mon Nov 2, 2026 · 11:21 PM HST** (no migration)
 - kura: "could you put a version number on the game page please, and increment it every version"
