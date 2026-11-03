@@ -16,21 +16,23 @@
   html, body { margin: 0; background: var(--bg); color: var(--ink); }
   body { min-height: 100vh; font: 15px/1.35 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
          background: radial-gradient(circle at 50% 0%, #2a1650 0%, var(--bg) 60%) fixed, var(--bg); }
-  #game { max-width: 430px; margin: 0 auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  /* a button is shown 2x (176x62), or smaller on a narrow screen so three fit across */
+  :root { --w: min(176px, calc((100vw - 92px) / 3)); }
+  #game { max-width: 620px; margin: 0 auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
   h1 { font-family: var(--meme); font-size: 26px; letter-spacing: .5px; text-transform: uppercase; margin: 0;
        text-shadow: 0 0 8px rgba(176,132,255,.6), 0 0 16px rgba(255,111,207,.3); }
   .side { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 14px; }
   .side > div:first-child { font-family: var(--meme); font-size: 18px; letter-spacing: .5px; text-transform: uppercase; text-shadow: 0 0 10px rgba(176,132,255,.75); }
-  .row { display: flex; gap: 12px; justify-content: space-between; align-items: flex-start; min-height: 112px; margin-top: 8px; }
-  .btn { width: 88px; height: 88px; display: flex; align-items: center; justify-content: center; border: 0; background: none; padding: 0; border-radius: 10px; color: var(--ink); }
+  .row { display: flex; gap: 12px; justify-content: space-between; align-items: flex-start; margin-top: 8px; }
+  .btn { width: var(--w); height: var(--w); display: flex; align-items: center; justify-content: center; border: 0; background: none; padding: 0; border-radius: 10px; color: var(--ink); }
   /* untapped (ready, can block): lies flat and greyed out; tapped (attacking): stands up sideways and lights up in colour */
-  .btn img { width: 88px; height: 31px; image-rendering: pixelated; transition: transform .2s, filter .2s; filter: grayscale(1) brightness(.6); }
+  .btn img { width: var(--w); height: calc(var(--w) * 31 / 88); image-rendering: pixelated; transition: transform .2s, filter .2s; filter: grayscale(1) brightness(.6); }
   .btn.tapped img { transform: rotate(90deg); filter: drop-shadow(0 0 8px rgba(255,111,207,.8)); }
   .btn.can { cursor: pointer; outline: 2px dashed var(--S); outline-offset: 2px; }
   .btn.sel { outline: 2px solid var(--H); box-shadow: 0 0 16px rgba(255,111,207,.6); }
   .btn.att { outline: 2px solid var(--D); box-shadow: 0 0 16px rgba(90,209,255,.6); }
   .out { opacity: .25; }
-  .name { font-size: 11px; text-align: center; width: 88px; color: var(--mute); margin-top: 4px; }
+  .name { font-size: 13px; text-align: center; width: var(--w); color: var(--mute); margin-top: 4px; }
   .bar { text-align: center; }
   #status { font-weight: 700; text-shadow: 0 0 10px rgba(176,132,255,.75); }
   #timer { font-family: var(--meme); font-size: 18px; color: var(--H); text-shadow: 0 0 8px var(--H); }
@@ -54,7 +56,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.9" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.10" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -113,7 +115,7 @@ const $ = (id) => document.getElementById(id);
       const img = document.createElement("img"); img.alt = ""; img.src = b.image; btn.append(img);
       if (h.click) btn.onclick = h.click;
       const n = document.createElement("div"); n.className = "name";
-      n.textContent = `${b.name} · ${b.type} ${b.power}/${b.toughness}${b.out ? " · out" : ""}${h.note ? " · " + h.note : ""}`;
+      n.textContent = `${b.name} · ${b.power}/${b.toughness}${b.out ? " · out" : ""}${h.note ? " · " + h.note : ""}`;
       wrap.append(btn, n); el.append(wrap);
     });
   }

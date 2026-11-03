@@ -4,6 +4,13 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.10 "Big Buttons"
+**Mon Nov 2, 2026 · 11:30 PM HST** (no migration)
+- kura: "could we show the buttons a lot bigger? like 2x bigger? under the button, can we remove the type. so it just says (name) (dot) 1/2"
+- Changed: buttons show at 2x (176x62, standing up 62x176), smaller on a narrow screen so three still fit across; the page is up to 620px wide; the label under a button is "name · power/toughness" at 13px. Footer v0.10.
+- Removed: the 88x31 size, the type in the label, the 430px page width.
+- Not checked: the live site, phone widths.
+
 ## v0.9 "Hard Hat"
 **Mon Nov 2, 2026 · 11:26 PM HST** (no migration)
 - kura: "construction is 1/2 please" (a hand of two constructions and an out guestbook couldn't deal any damage).
