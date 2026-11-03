@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.71 "Slower" · Tue Nov 3, 7:12 AM
+- A fight's steps are a little slower: one second apart, and the damage numbers and shakes last longer. Removed: the quicker steps (0.7 seconds) and shorter numbers and shakes.
+
 ## v0.70 "Commons Again" · Tue Nov 3, 7:06 AM
 - Decks are dealt from 88x31's common buttons only. This fixes the page stopping after two cards in v0.69. Cards snap sideways when they tap, as before v0.69. Removed: the other rarities in decks (v0.65), and the cards turning when they tap.
 

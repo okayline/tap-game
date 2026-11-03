@@ -78,11 +78,11 @@
          background: var(--cream); border: 1.5px solid var(--pink); border-radius: 6px; padding: 2px 6px; pointer-events: none; z-index: 2; }
   /* the fight replay (v0.69): a number rising off a card (red: damage it took; blue: an attacker's power), and a shake when it's hit */
   .pop { position: absolute; left: 50%; top: calc(40 * var(--u)); font: 800 calc(18 * var(--u))/1 var(--title); color: #c2416b; pointer-events: none; z-index: 3;
-         text-shadow: 0 0 3px #fff, 0 0 6px #fff; animation: rise 1.1s ease-out forwards; }
+         text-shadow: 0 0 3px #fff, 0 0 6px #fff; animation: rise 1.6s ease-out forwards; }
   .pop.atk { color: var(--blue); }
   @keyframes rise { 0% { opacity: 0; transform: translate(-50%, 8px) scale(.7); } 15% { opacity: 1; transform: translate(-50%, 0) scale(1.15); }
                     70% { opacity: 1; transform: translate(-50%, -18px) scale(1); } 100% { opacity: 0; transform: translate(-50%, -28px) scale(1); } }
-  .btn.hit { animation: shake .4s; }
+  .btn.hit { animation: shake .6s; }
   @keyframes shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-5px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(3px); } }
   .bar { text-align: center; }
   /* your status line, at the top of your panel: this turn, then (smaller, at the right) only the end of the match, an error or a disconnect; one line, cut with … if too long */
@@ -123,7 +123,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.70" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.71" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -154,7 +154,7 @@ const $ = (id) => document.getElementById(id);
   //   2. the defenders that took damage shake and show it; any it knocks out go out
   //   3. the attackers that took hit-back damage shake and show it; any it knocks out go out
   //   then the real board: the turn passes. Damage (not life left) is compared, since Glow changes life without a hit.
-  const BEAT_MS = 700;
+  const BEAT_MS = 1000;   // kura, Nov 3: "a little slower" (was 700)
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const otherSeat = (s) => (s === "a" ? "b" : "a");
   async function replay(prev, next) {
