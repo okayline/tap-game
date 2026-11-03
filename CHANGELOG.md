@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.55 "Toughness" · Tue Nov 3, 4:20 AM
+- Your status line also shows toughness: the life left on all your buttons still in the match (field and deck), out of all your buttons' toughness. A tapped card is shrunk a little more, so it no longer sticks out of the leftmost spot. Removed: tapped cards sticking out past their panel.
+
 ## v0.54 "Midnight" · Tue Nov 3, 4:15 AM
 - The page background is midnight blue, and the footer is back to the shared footer's own light grey. Removed: the light sky-blue background, and this page's darker footer colour.
 
