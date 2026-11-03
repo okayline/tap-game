@@ -1,23 +1,37 @@
-// The dummy (seat b) in real time: REACT_MS after one of its buttons untaps, that button hits one of yours. It prefers a
-// button of yours that is tapped (so it can't hit back), and among those the one with the least life; if all of yours are
-// untapped it hits the one with the least life and takes the hit back. It brings in its next deck button as soon as one goes out.
-import { life, ready } from "./rules.js";
+// The scripted second player (seat b). Edit SCRIPT to try a situation; it loops.
+// Each line is one of the dummy's turns:
+//   attack: how many of its ready buttons it attacks with (left to right), at most the turn's limit (g.limit).
+//   take:   how it places your next attack on its buttons:
+//           "spread" = one point at a time across its buttons, untapped ones first (so they hit back),
+//           "focus"  = fills one button before the next, tapped ones first (sacrifices a button that can't hit back).
+// Before its first turn it places by the last line.
+import { life, toPlace } from "./rules.js";
 
-export const REACT_MS = 700; // so it isn't faster than a person (kura can change it)
+export const SCRIPT = [
+  { attack: 1, take: "spread" },
+  { attack: 0, take: "spread" },
+  { attack: 2, take: "focus" },
+  { attack: 2, take: "focus" },
+];
 
-// When the dummy next wants to act: the soonest moment one of its live buttons is untapped and REACT_MS has passed.
-export function dummyNext(g) {
-  const live = g.sides.b.buttons.filter((b) => !b.out);
-  if (g.started == null || g.winner || !live.length || g.sides.a.buttons.every((b) => b.out)) return null; // nothing to hit: wait for you
-  return Math.min(...live.map((b) => Math.max(b.readyAt, g.started) + REACT_MS));
-}
+const line = (n) => SCRIPT[((n % SCRIPT.length) + SCRIPT.length) % SCRIPT.length];
+const readyIdx = (side) => side.buttons.map((b, i) => (b.out || b.tapped ? -1 : i)).filter((i) => i >= 0);
 
-// The dummy's move at time now: [its button, your button], or null if nothing is due.
-export function dummyMove(g, now) {
-  const mine = g.sides.b.buttons, yours = g.sides.a.buttons;
-  const i = mine.findIndex((b) => ready(b, now) && Math.max(b.readyAt, g.started) + REACT_MS <= now);
-  const targets = yours.map((b, t) => [b, t]).filter(([b]) => !b.out);
-  if (i < 0 || !targets.length) return null;
-  targets.sort(([x], [y]) => (ready(x, now) - ready(y, now)) || (life(x) - life(y)));
-  return [i, targets[0][1]];
+// Its attackers this turn.
+export const dummyAttack = (g) => readyIdx(g.sides.b).slice(0, Math.min(line(g.dummyTurn).attack, g.limit));
+
+// How it places your attack: { buttonIndex: damage }.
+export function dummyPlace(g) {
+  const plan = line(g.dummyTurn - 1), bs = g.sides.b.buttons;
+  const alive = bs.map((b, i) => i).filter((i) => !bs[i].out);
+  const order = alive.sort((x, y) => (bs[x].tapped - bs[y].tapped) * (plan.take === "focus" ? -1 : 1));
+  const split = {};
+  let left = toPlace(g);
+  const room = (i) => life(bs[i]) - (split[i] ?? 0);
+  if (plan.take === "focus") {
+    for (const i of order) { const d = Math.min(left, room(i)); if (d) { split[i] = d; left -= d; } }
+  } else {
+    while (left > 0) for (const i of order) if (left > 0 && room(i) > 0) { split[i] = (split[i] ?? 0) + 1; left--; }
+  }
+  return split;
 }

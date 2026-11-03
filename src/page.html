@@ -25,22 +25,19 @@
   .side > div:first-child { font-family: var(--meme); font-size: 18px; letter-spacing: .5px; text-transform: uppercase; text-shadow: 0 0 10px rgba(176,132,255,.75); }
   .row { display: flex; gap: 12px; justify-content: space-between; align-items: flex-start; margin-top: 8px; }
   .btn { position: relative; width: var(--w); height: var(--w); display: flex; align-items: center; justify-content: center; border: 0; background: none; padding: 0; border-radius: 10px; color: var(--ink); }
-  /* untapped (ready, hits back): lies flat, in full colour, with a glow behind it; tapped (cooling down): stands up sideways, starts
-     grey and fills back up with colour as its cooldown runs out (the page sets its filter as it counts down) */
-  .btn img { width: var(--w); height: calc(var(--w) * 31 / 88); image-rendering: pixelated; transition: transform .2s; filter: drop-shadow(0 0 8px rgba(255,111,207,.8)); }
-  .btn.tapped img { transform: rotate(90deg); }
+  /* untapped (ready, hits back): lies flat and greyed out; tapped (attacking): stands up sideways and lights up in colour */
+  .btn img { width: var(--w); height: calc(var(--w) * 31 / 88); image-rendering: pixelated; transition: transform .2s, filter .2s; filter: grayscale(1) brightness(.6); }
+  .btn.tapped img { transform: rotate(90deg); filter: drop-shadow(0 0 8px rgba(255,111,207,.8)); }
   .btn.can { cursor: pointer; outline: 2px dashed var(--S); outline-offset: 2px; }
   .btn.sel { outline: 2px solid var(--H); box-shadow: 0 0 16px rgba(255,111,207,.6); }
   .btn.att { outline: 2px solid var(--D); box-shadow: 0 0 16px rgba(90,209,255,.6); }
   /* a knocked-out button: dimmed, crossed out, no numbers (on the field until replaced, then in the deck row) */
   .out img, .gone img { opacity: .3; }
-  .btn.out img { filter: grayscale(1); }
   .btn.out::before, .btn.out::after, .card.gone::before, .card.gone::after { content: ""; position: absolute; left: 50%; top: 50%; width: 55%; height: 8px;
                border-radius: 4px; background: var(--H); box-shadow: 0 0 6px var(--H); transform: translate(-50%, -50%) rotate(19deg); pointer-events: none; }
   .card.gone::before, .card.gone::after { height: 4px; border-radius: 2px; }
   .btn.out::after, .card.gone::after { transform: translate(-50%, -50%) rotate(-19deg); }
   /* power/life left in the button's bottom-right corner (a soft glow), and damage being placed on it in the top-right */
-  /* seconds until a tapped button untaps, in the top-right */
   .pt, .dmg { position: absolute; font-family: var(--meme); letter-spacing: .5px; line-height: 1; pointer-events: none; }
   .pt { right: 8px; bottom: 6px; font-size: calc(var(--w) * .1); color: var(--ink); text-shadow: 0 0 4px rgba(176,132,255,.45); }
   .dmg { right: 8px; top: 6px; font-size: calc(var(--w) * .14); color: var(--H); text-shadow: 0 0 8px var(--H); }
@@ -76,64 +73,87 @@
 <div id="game">
 <h1>UN/CLICK</h1>
   <div class="side"><div id="themHp"></div><div class="row" id="them"></div><div class="deck" id="themDeck"></div></div>
-  <div class="bar"><button class="act" id="start" hidden>start</button> <button class="act" id="hint" disabled hidden></button> <button class="act" id="again" hidden>new match</button></div>
+  <div class="bar"><button class="act" id="start" hidden>start</button> <button class="act" id="attack" hidden>attack</button> <button class="act" id="take" hidden>take</button> <button class="act" id="again" hidden>new match</button></div>
   <div class="side"><div class="statusline"><span id="meHp"></span><span id="status"><span id="result"></span> <span id="err" class="err"></span></span></div><div class="row" id="me"></div><div class="deck" id="meDeck"></div></div>
   <div id="log"></div>
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.42" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.43" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
-  // Real time: tap one of your untapped buttons, then one of theirs, to hit it. Times come from the server's clock (skew).
   const ws = new WebSocket(`${location.protocol === "https:" ? "wss" : "ws"}://${location.host}${location.pathname}/ws`);
-  let g = null, skew = 0, sel = null, timer = null;
-  const now = () => Date.now() + skew;
+  let g = null;
   const send = (o) => ws.send(JSON.stringify(o));
   ws.onmessage = (e) => {
     const d = JSON.parse(e.data);
     if (d.error) { $("err").textContent = d.error; return; }
-    g = d.g; skew = d.now - Date.now(); $("err").textContent = "";
-    if (sel !== null && (!g.sides.a.buttons[sel] || g.sides.a.buttons[sel].out)) sel = null;
-    draw();
-    clearInterval(timer);
-    if (g.started && !g.winner) timer = setInterval(tick, 100); // cooldowns count down between messages
+    g = d.g; $("err").textContent = ""; draw();
   };
-  ws.onclose = () => { $("err").textContent = "disconnected: reload"; clearInterval(timer); };
+  ws.onclose = () => { $("err").textContent = "disconnected: reload"; };
+  const LINE_MS = 450;
+  let shown = null, logTimer = null;
+  // shows one more log line each LINE_MS until the log is caught up, newest at the top
+  function showLog() {
+    logTimer = null;
+    if (shown < g.log.length) shown++; else shown = g.log.length;
+    $("log").textContent = g.log.slice(0, shown).slice(-5).reverse().join("\n");
+    if (shown < g.log.length) logTimer = setTimeout(showLog, LINE_MS);
+  }
+  let picked = new Set(), split = {}, seen = "";
+  $("attack").onclick = () => send({ do: "attack", idxs: [...picked] });
+  $("take").onclick = () => send({ do: "take", split });
   $("start").onclick = () => send({ do: "start" });
   $("again").onclick = () => location.assign("/"); // the main page starts a new match
 
-  // every 100ms: count the seconds down in place, and redraw only when a button untaps (redrawing every tick would eat taps)
-  let readySig = "";
-  const sig = () => [...g.sides.a.buttons, ...g.sides.b.buttons].map((b) => (!b.out && b.readyAt <= now() ? 1 : 0)).join("");
-  function tick() {
-    if (sig() !== readySig) return draw();
-    for (const d of document.querySelectorAll(".dmg[data-at]")) d.textContent = Math.max(0, (d.dataset.at - now()) / 1000).toFixed(1);
-    for (const i of document.querySelectorAll("img[data-at]")) i.style.filter = grey(i.dataset.at - now(), Number(i.dataset.cd));
-  }
   function draw() {
-    if (!g.rt) { $("err").textContent = "this match is from the turn-based version"; $("again").hidden = false; return; }
-    const t = now(), mine = g.sides.a.buttons, theirs = g.sides.b.buttons;
-    readySig = sig();
-    const ready = (b) => !b.out && b.readyAt <= t;
-    const on = g.started && !g.winner;
-    if (sel !== null && !ready(mine[sel])) sel = null;
-    // yours: tap an untapped one to pick it (tap again to drop it)
-    row($("me"), mine, (b, i) => (on && ready(b) ? { can: true, sel: sel === i, click: () => { sel = sel === i ? null : i; draw(); } } : {}), t);
-    // theirs: with one of yours picked, tap one of theirs to hit it
-    row($("them"), theirs, (b, i) => (on && sel !== null && !b.out ? { can: true, click: () => { send({ do: "hit", i: sel, t: i }); sel = null; draw(); } } : {}), t);
-    const fill = (g.sides.a.deck ?? []).length > 0 && mine.some((b) => b.out);
-    deckRow($("meDeck"), g.sides.a, !g.winner && (!g.started || fill));
-    deckRow($("themDeck"), g.sides.b, false);
-    $("meHp").textContent = "you";
+    const me = "a", them = "b", mine = g.sides[me].buttons, theirs = g.sides[them].buttons;
+    const key = `${g.turn}|${g.attack ? g.attack.by : ""}|${g.log.length}|${mine.map((b) => b.id).join()}`;
+    if (key !== seen) { seen = key; picked = new Set(); split = {}; } // a new step: clear picks
+    const taking = g.attack && g.attack.by === them && !g.winner;
+    const life = (b) => (b.out ? 0 : b.toughness - b.damage);
+    const myTurn = g.turn === me && !g.attack && !g.winner;
+    const ready = (b) => !b.out && !b.tapped;
+    // what you must place when they attack: their attack's total, or all your buttons' life left if that's less
+    const need = taking ? Math.min(g.attack.attackers.reduce((n, i) => n + theirs[i].power, 0), mine.reduce((n, b) => n + life(b), 0)) : 0;
+    const placed = Object.values(split).reduce((n, d) => n + d, 0);
+    // your row: on your turn click to pick up to g.limit attackers (1 on the match's first turn, then 2; they show tapped; no more can be picked); when they attack, each click puts 1 damage on
+    // that button (up to its life left; one more click clears it)
+    row($("me"), mine, (b, i) => {
+      if (myTurn && ready(b) && !b.sick && (picked.has(i) || picked.size < g.limit)) return { can: true, tapped: picked.has(i), click: () => { picked.has(i) ? picked.delete(i) : picked.add(i); draw(); } };
+      if (taking && !b.out) {
+        const d = split[i] ?? 0;
+        return { can: true, sel: d > 0, note: d ? `-${d}` : "",
+          click: () => { if (d < life(b) && placed < need) split[i] = d + 1; else delete split[i]; draw(); } };
+      }
+      return {};
+    });
+    row($("them"), theirs, (b, i) => (taking && g.attack.attackers.includes(i) ? { att: true } : {}));
+    // THIS TURN: attack = power of your buttons tapped or picked to attack; defense = life left on your ready buttons (the ones that hit back)
+    const up = (b, i) => !b.out && (b.tapped || picked.has(i));
+    const atk = mine.reduce((n, b, i) => n + (up(b, i) ? b.power : 0), 0);
+    const def = mine.reduce((n, b, i) => n + (!b.out && !up(b, i) ? life(b) : 0), 0);
+    $("meHp").textContent = `you · this turn: ${atk}/${def}`;
     $("themHp").textContent = "dummy";
-    $("result").textContent = g.winner ? (g.winner === "draw" ? "draw" : g.winner === "a" ? "you win" : "you lose") : "";
-    $("start").hidden = !!g.started || !!g.winner;
+    // you can drag from your deck before the first attack, and on your turn to fill an out spot or make your one swap
+    const fill = (g.sides[me].deck ?? []).length > 0 && mine.some((b) => b.out);
+    deckRow($("meDeck"), g.sides[me], (g.locked === false && !g.winner) || (myTurn && (fill || !g.swapped)));
+    deckRow($("themDeck"), g.sides[them], false);
+    // the dummy won the flip: it waits for start, so you can swap first
+    const startNow = g.locked === false && g.turn === them && !g.winner;
+    $("start").hidden = !startNow;
+    $("result").textContent = g.winner ? `${g.winner === "draw" ? "draw" : g.winner === me ? "you win" : "you lose"}` : "";
+    // the attack button is always there unless take or new match takes its place; greyed out while it isn't your move
+    $("attack").hidden = taking || !!g.winner || startNow;
+    $("attack").disabled = !myTurn || fill;
+    $("attack").textContent = myTurn && fill ? "bring in a button" : "attack";
+    $("take").hidden = !taking;
+    $("take").disabled = placed !== need;
+    $("take").textContent = placed === need ? `take ${need}` : `place ${need - placed} more`;
     $("again").hidden = !g.winner;
-    $("hint").hidden = !on;
-    $("hint").textContent = fill && mine.every((b) => b.out) ? "bring in a button" : sel === null ? "tap one of yours" : "now tap one of theirs";
-    $("log").textContent = g.log.slice(-5).reverse().join("\n");
+    if (shown === null) shown = g.log.length; // first board after loading: the whole log at once
+    if (!logTimer) showLog();
   }
   // a side's deck row: its deck (next on the left; power/life left), then its knocked-out buttons, crossed out
   function deckRow(el, side, can) {
@@ -152,7 +172,7 @@ const $ = (id) => document.getElementById(id);
       card.append(img); el.append(card);
     });
   }
-  // drag a deck picture (mouse or touch) and drop it on one of your field buttons: before the start to swap, after it onto a knocked-out one
+  // drag a deck picture (mouse or touch) and drop it on one of your field buttons to swap the two
   function drag(e, j, img) {
     e.preventDefault();
     const ghost = img.cloneNode(); ghost.className = "ghost"; document.body.append(ghost);
@@ -166,24 +186,21 @@ const $ = (id) => document.getElementById(id);
     at(e);
     addEventListener("pointermove", at); addEventListener("pointerup", end); addEventListener("pointercancel", end);
   }
-  // how grey a tapped button is: all grey when it has just tapped, back to full colour as its cooldown runs out
-  const grey = (left, cd) => { const f = Math.max(0, Math.min(1, left / cd)); return `grayscale(${f}) brightness(${1 - 0.4 * f})`; };
-  // untapped: flat, in colour, glowing; tapped: sideways, filling back up with colour, with the seconds left until it untaps
-  function row(el, buttons, how, t) {
+  function row(el, buttons, how) {
     el.innerHTML = "";
     buttons.forEach((b, i) => {
-      const h = how(b, i), left = b.out ? 0 : b.readyAt - t;
+      const h = how(b, i);
+      const wrap = document.createElement("div");
       const btn = document.createElement("button");
-      btn.className = "btn" + (b.out ? " out" : "") + (left > 0 ? " tapped" : "") + (h.can ? " can" : "") + (h.sel ? " sel" : "");
+      btn.className = "btn" + (b.out ? " out" : "") + (b.tapped || h.tapped ? " tapped" : "") + (h.can ? " can" : "") + (h.sel ? " sel" : "") + (h.att ? " att" : "");
       const img = document.createElement("img"); img.alt = ""; img.src = b.image; btn.append(img);
-      if (left > 0) { img.dataset.at = b.readyAt; img.dataset.cd = b.cooldown; img.style.filter = grey(left, b.cooldown); }
       if (h.click) btn.onclick = h.click;
       const pt = document.createElement("span"); pt.className = "pt"; pt.textContent = b.out ? "" : `${b.power}/${b.toughness - b.damage}`;
       btn.append(pt);
-      if (left > 0) { const d = document.createElement("span"); d.className = "dmg"; d.dataset.at = b.readyAt; d.textContent = (left / 1000).toFixed(1); btn.append(d); }
-      btn.title = b.name;
+      if (h.note) { const d = document.createElement("span"); d.className = "dmg"; d.textContent = h.note; btn.append(d); }
+      btn.title = b.sick ? `${b.name}: swapped in, can't attack this turn` : b.name;
       btn.dataset.i = i;
-      el.append(btn);
+      wrap.append(btn); el.append(wrap);
     });
   }
 }

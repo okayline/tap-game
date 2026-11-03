@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.43 "Turns Again" · Tue Nov 3, 2:48 AM
+- Back to turns: v0.41 as it was (decks of 9, attack and take, one swap a turn, summoning sickness). Removed: real time (tap yours then theirs, cooldowns, the grey-to-colour fade, the timed dummy). It's in git history as v0.42.
+
 ## v0.42 "Real Time" · Tue Nov 3, 2:44 AM
 - No more turns. Press start, then tap one of your untapped buttons and one of theirs to hit it. If theirs is untapped, it hits back. A button that hits stays tapped for its type's cooldown (1/2: 4.5 s, 1/3: 4 s, 2/3: 3.5 s, 3/2: 3 s, 3/3: 2.5 s), shown counting down; a tapped button starts grey and fills back up with colour as it cools down, and a ready one is in full colour with a glow. Bring in a deck button onto a knocked-out spot any time. The dummy hits 0.7 s after one of its buttons untaps. Removed: turns, the coin flip, attacking with up to 2, placing damage, the attack and take buttons, one swap a turn, summoning sickness, and the dummy's script.
 
