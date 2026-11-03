@@ -170,7 +170,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.76" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.77" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -572,7 +572,8 @@ const $ = (id) => document.getElementById(id);
     const txt = mk("div", "gc-txt"), t = TEXT[b.type], fx = mk("div", "");
     if (t) { fx.append(mk("b", "", t[0]), ` · ${t[1]}`); txt.append(fx, mk("div", "rule")); }
     const q = QUOTES[b.type];
-    if (q) txt.append(mk("div", "flav", `“${q[pickQuote(b, q.length)]}”`));
+    if (b.hidden) txt.append(mk("div", "flav", "“???”"));   // a mystery button (an 88x31 non-common, kept secret): no flavour to give away
+    else if (q) txt.append(mk("div", "flav", `“${q[pickQuote(b, q.length)]}”`));
     const type = mk("div", "gc-type");
     type.append(mk("span", "", `${b.type[0].toUpperCase()}${b.type.slice(1)}${subOf(b) ? ` — ${subOf(b)}` : ""}`));
     if (SIGN[b.series]) type.append(sign(b));

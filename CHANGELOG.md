@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.77 "Mystery Buttons" · Tue Nov 3, 8:20 AM
+- Decks are dealt from 88x31 buttons of every rarity again. Buttons above common show up as mystery buttons: a "?" picture and no name or flavour, with their type, effect and stats as normal and the set sign in their rarity's colour. Removed: commons-only decks.
+
 ## v0.76 "Stay Down" · Tue Nov 3, 8:10 AM
 - A button knocked out while tapped stays sideways until it's replaced. Removed: knocked-out buttons standing back up at the start of their side's turn.
 

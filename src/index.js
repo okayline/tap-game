@@ -23,13 +23,18 @@ export default {
   },
 };
 
-// 88x31's common buttons, from the shared item table (dungeon-items, through the ITEMS service binding). Only commons: the table
-// hides 88x31's other rarities (its "mystery buttons": no name, type or picture), so they broke the cards (kura, Nov 3: back to
-// commons). Rarity changed nothing in a match anyway: power and toughness come from the type.
+// 88x31's buttons of every rarity, from the shared item table's deal pool (dungeon-items' Registry entrypoint, through the REGISTRY
+// service binding; kura, Nov 3: "all rarities show up", as mystery cards). The table keeps 88x31's non-commons secret: they come
+// with their type, rarity and series but no name or picture, so here they get the name "a mystery button" (dungeon-items' own
+// words for them) and a "?" picture. Rarity changes nothing in a match: power and toughness come from the type.
+const MYSTERY_IMG = "data:image/svg+xml," + encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="88" height="31" viewBox="0 0 88 31"><rect width="88" height="31" fill="#2b3350"/>'
+  + '<rect x="1.5" y="1.5" width="85" height="28" fill="none" stroke="#8fb6de" stroke-dasharray="3 2"/>'
+  + '<text x="44" y="23" text-anchor="middle" font-family="monospace" font-size="20" font-weight="700" fill="#e98ab3">?</text></svg>');
 async function buttons(env) {
-  const r = await env.ITEMS.fetch("https://items/api/items?source=88x31&rarity=common");
-  const { items } = await r.json();
-  return items.map((it) => ({ id: it.id, name: it.name, type: it.type, rarity: it.rarity, series: it.extra?.series ?? null, image: it.image }));
+  return (await env.REGISTRY.dealPool("88x31")).map((it) => (it.hidden
+    ? { id: it.id, name: "a mystery button", type: it.type, rarity: it.rarity, series: it.series, image: MYSTERY_IMG, hidden: true }
+    : { id: it.id, name: it.name, type: it.type, rarity: it.rarity, series: it.series, image: it.image }));
 }
 
 export class Match extends DurableObject {

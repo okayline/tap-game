@@ -5,7 +5,7 @@
   // one Durable Object per match (SQLite-backed, which the free plan allows)
   "durable_objects": { "bindings": [{ "name": "MATCH", "class_name": "Match" }] },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Match"] }],
-  // the shared item table, for the buttons
-  "services": [{ "binding": "ITEMS", "service": "dungeon-items" }],
+  // the shared item table's deal pool, for the buttons (dungeon-items' Registry entrypoint: dealPool)
+  "services": [{ "binding": "REGISTRY", "service": "dungeon-items", "entrypoint": "Registry" }],
   "rules": [{ "type": "Text", "globs": ["**/*.html"], "fallthrough": true }]
 }
