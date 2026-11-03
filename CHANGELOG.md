@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.72 "Ping" · Tue Nov 3, 7:31 AM
+- A ping is drawn: a line runs at right angles from the pinging card to the cards it can reach, forking where it splits, and a glow runs out along it, bounces off the cards and comes back. Your ping goes to the cards it hit; the guest's ping goes to every card of yours that can take damage. Damage numbers (rising, while placing, and a hurt card's life) are one rose colour, and ping power is a matching blue. Removed: the darker red and the older blue for those numbers.
+
 ## v0.71 "Slower" · Tue Nov 3, 7:12 AM
 - A fight's steps are a little slower: one second apart, and the damage numbers and shakes last longer. Removed: the quicker steps (0.7 seconds) and shorter numbers and shakes.
 
