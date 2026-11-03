@@ -57,5 +57,6 @@ test("decks: same types on both sides; swaps until the first attack; out buttons
   g.sides.a.deck.push({ name: "x", type: "neon", power: 1, toughness: 2, damage: 0, tapped: false, out: false });
   assert.equal(swap(g, "a", 1, 0), null);
   assert.equal(swap(g, "a", 2, 0), "One swap a turn.");
+  assert.equal(attack(g, "a", [1]), "A button swapped in this turn can't attack.");
   assert.equal(swap(g, "b", 0, 0), "Only on your turn, before you attack.");
 });

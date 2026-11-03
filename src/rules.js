@@ -11,7 +11,8 @@
 // (dealDecks), so their stats match. A button that goes out stays in its spot, greyed, until its side brings in a deck button
 // on its own turn (swap onto it); then it moves to its side's `gone` list (shown crossed out). Swaps (kura, Nov 3): before the
 // first attack, as many as you like; after that, one per turn, on your turn before you attack (filling an out spot doesn't
-// count). A swapped-out button keeps its damage. You can't attack while you have an out spot and a deck to fill it from.
+// count). A swapped-out button keeps its damage. A button swapped in after the first attack can't attack that turn
+// ("summoning sickness", kura, Nov 3: swaps only), but it can still hit back. You can't attack while you have an out spot and a deck to fill it from.
 // A side loses when its field is all out and its deck is empty.
 
 // power / toughness by type: the more buttons of a type exist, the weaker it is (kura, Nov 2: counts from the live
@@ -77,7 +78,7 @@ export function swap(g, seat, i, j) {
   if (b.out) { s.gone.push(b); s.buttons[i] = n; g.log.push(`${n.name} comes in`); return null; }
   if (g.locked && g.swapped) { s.deck.splice(j, 0, n); return "One swap a turn."; }
   s.buttons[i] = n; s.deck.splice(j, 0, b);
-  if (g.locked) { g.swapped = true; g.log.push(`${seat} swaps ${b.name} for ${n.name}`); }
+  if (g.locked) { g.swapped = true; n.sick = true; g.log.push(`${seat} swaps ${b.name} for ${n.name}`); }
   return null;
 }
 
@@ -100,6 +101,7 @@ export function attack(g, seat, idxs) {
   if (!list.every((i) => ready(g.sides[seat], i))) return "Only ready buttons can attack.";
   if (list.length > g.limit) return `At most ${g.limit} can attack this turn.`;
   if (mustFill(g, seat)) return "Bring in a button first.";
+  if (list.some((i) => g.sides[seat].buttons[i].sick)) return "A button swapped in this turn can't attack.";
   g.locked = true;
   if (!list.length) { g.log.push(`${seat} doesn't attack`); passTurn(g); return null; }
   for (const i of list) g.sides[seat].buttons[i].tapped = true;
@@ -149,6 +151,7 @@ function passTurn(g) {
   const s = g.sides[g.turn];
   s.deck ??= []; // a match started before decks (v0.35 or older) has none
   g.swapped = false;
+  for (const b of s.buttons) b.sick = false;
   for (const b of g.sides[g.turn].buttons) b.tapped = false;
   g.log.push(`${g.turn}'s turn`);
 }

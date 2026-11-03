@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.41 "Summoning Sickness" · Tue Nov 3, 2:33 AM
+- A button you swap in during the match can't attack that turn (it can still hit back). Bringing one into a knocked-out spot, and swaps before the first attack, are not affected. Removed: swapping in and attacking in the same turn.
+
 ## v0.40 "X" · Tue Nov 3, 2:29 AM
 - A knocked-out button on the field gets the X too, and loses its numbers. The X is half as long and fatter, on the field and in the deck row. Deck buttons you still have are in full colour; knocked-out ones stay greyed. Removed: the long thin X, the faded-out look of the whole spot, and the greyed-out deck row.
 

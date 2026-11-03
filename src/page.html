@@ -79,7 +79,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.40" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.41" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -121,7 +121,7 @@ const $ = (id) => document.getElementById(id);
     // your row: on your turn click to pick up to g.limit attackers (1 on the match's first turn, then 2; they show tapped; no more can be picked); when they attack, each click puts 1 damage on
     // that button (up to its life left; one more click clears it)
     row($("me"), mine, (b, i) => {
-      if (myTurn && ready(b) && (picked.has(i) || picked.size < g.limit)) return { can: true, tapped: picked.has(i), click: () => { picked.has(i) ? picked.delete(i) : picked.add(i); draw(); } };
+      if (myTurn && ready(b) && !b.sick && (picked.has(i) || picked.size < g.limit)) return { can: true, tapped: picked.has(i), click: () => { picked.has(i) ? picked.delete(i) : picked.add(i); draw(); } };
       if (taking && !b.out) {
         const d = split[i] ?? 0;
         return { can: true, sel: d > 0, note: d ? `-${d}` : "",
@@ -198,7 +198,7 @@ const $ = (id) => document.getElementById(id);
       const pt = document.createElement("span"); pt.className = "pt"; pt.textContent = b.out ? "" : `${b.power}/${b.toughness - b.damage}`;
       btn.append(pt);
       if (h.note) { const d = document.createElement("span"); d.className = "dmg"; d.textContent = h.note; btn.append(d); }
-      btn.title = b.name;
+      btn.title = b.sick ? `${b.name}: swapped in, can't attack this turn` : b.name;
       btn.dataset.i = i;
       wrap.append(btn); el.append(wrap);
     });
