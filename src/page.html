@@ -11,9 +11,9 @@
   .side { background: #fff; border: 2px inset #808080; padding: 8px; margin: 8px 0; max-width: 420px; }
   .row { display: flex; gap: 12px; align-items: center; min-height: 96px; }
   .btn { width: 88px; height: 88px; display: flex; align-items: center; justify-content: center; border: 0; background: none; padding: 0; }
-  /* untapped (ready): stands vertical and greyed out; tapped (used): turns sideways into the normal, lit button */
-  .btn img { width: 88px; height: 31px; image-rendering: pixelated; transition: transform .2s, filter .2s; transform: rotate(90deg); filter: grayscale(1) brightness(.8); }
-  .btn.tapped img { transform: none; filter: none; }
+  /* untapped (ready, can block): lies flat and greyed out; tapped (attacking): stands up sideways and lights up in colour */
+  .btn img { width: 88px; height: 31px; image-rendering: pixelated; transition: transform .2s, filter .2s; filter: grayscale(1) brightness(.8); }
+  .btn.tapped img { transform: rotate(90deg); filter: none; }
   .btn.can { cursor: pointer; outline: 2px dashed #00e; }
   .btn.sel { outline: 2px solid #a00; }
   .btn.att { outline: 2px solid #e60; }
@@ -36,7 +36,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.6" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.7" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {

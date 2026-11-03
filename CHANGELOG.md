@@ -4,6 +4,13 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.7 "Stand Up"
+**Mon Nov 2, 2026 · 11:23 PM HST** (no migration)
+- kura: "to me it makes more sense for the horizontal position to be "block" and the vertical position to be "attack" ... start the buttons in the horizontal, block, greyed out, untapped position. and then click to tap/activate / colorize them even though it's sideways"
+- Changed: an untapped button lies flat (88x31) and grey; tapping it stands it up (31x88) in colour. Footer v0.7.
+- Removed: untapped buttons standing vertical, and tapped ones lying flat.
+- Not checked: the live site.
+
 ## v0.6 "No Mark"
 **Mon Nov 2, 2026 · 11:20 PM HST** (no migration)
 - kura: "okay off please !" (the 🄯 in the footer, as on 88x31, since many buttons remix other people's open-licensed art and this page shows no credits).
