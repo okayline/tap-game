@@ -38,6 +38,8 @@ export const MAX_ATTACKERS = 2; // at most this many attack in a turn, so one bu
 // A coin flip decides who goes first, and that side attacks with only 1 on the match's first turn (kura, Nov 3).
 // g.limit is how many may attack this turn.
 
+// the names the log and the page use for the seats (kura, Nov 3): seat b is the dummy
+export const NAMES = { a: "Player", b: "Guest #1337" };
 export const other = (seat) => (seat === "a" ? "b" : "a");
 export const life = (b) => (b.out ? 0 : b.toughness - b.damage);
 // how much of an attack the defender must place: all of it, or as much as its buttons can still take
@@ -69,7 +71,7 @@ const fresh = (b) => { const [power, toughness] = STATS[b.type] ?? [1, 1]; retur
 export function newGame(deckA, deckB, first = Math.random() < 0.5 ? "a" : "b") {
   const side = (list) => { const all = list.map(fresh); return { buttons: all.slice(0, 3), deck: all.slice(3) }; };
   return { turn: first, limit: 1, sides: { a: side(deckA), b: side(deckB) }, attack: null, winner: null, locked: false,
-    log: [`coin flip: ${first} goes first, with 1 attacker`, `${first}'s turn`] };
+    log: [`coin flip: ${NAMES[first]} goes first, with 1 attacker`, `${NAMES[first]}'s turn`] };
 }
 
 // Before the first attack: swap field button i with deck button j. Returns an error string or null.
@@ -84,7 +86,7 @@ export function swap(g, seat, i, j) {
   if (b.out) { s.gone.push(b); s.buttons[i] = n; if (g.locked) n.sick = true; g.log.push(`${n.name} comes in`); return null; }
   if (g.locked && g.swapped) { s.deck.splice(j, 0, n); return "One swap a turn."; }
   s.buttons[i] = n; s.deck.splice(j, 0, b);
-  if (g.locked) { g.swapped = true; n.sick = true; g.log.push(`${seat} swaps ${b.name} for ${n.name}`); }
+  if (g.locked) { g.swapped = true; n.sick = true; g.log.push(`${NAMES[seat]} swaps ${b.name} for ${n.name}`); }
   return null;
 }
 
@@ -109,11 +111,11 @@ export function attack(g, seat, idxs) {
   if (mustFill(g, seat)) return "Bring in a button first.";
   if (list.some((i) => g.sides[seat].buttons[i].sick && !BROADBAND.includes(g.sides[seat].buttons[i].type))) return "A button that came in this turn can't attack.";
   g.locked = true;
-  if (!list.length) { g.log.push(`${seat} doesn't attack`); passTurn(g); return null; }
+  if (!list.length) { g.log.push(`${NAMES[seat]} doesn't attack`); passTurn(g); return null; }
   for (const i of list) if (!ALWAYS_ONLINE.includes(g.sides[seat].buttons[i].type)) g.sides[seat].buttons[i].tapped = true;
   g.attack = { by: seat, attackers: list };
   const att = g.sides[seat].buttons;
-  g.log.push(`${seat} attacks for ${list.reduce((n, i) => n + att[i].power, 0)} with ${list.map((i) => att[i].name).join(", ")}`);
+  g.log.push(`${NAMES[seat]} attacks for ${list.reduce((n, i) => n + att[i].power, 0)} with ${list.map((i) => att[i].name).join(", ")}`);
   return null;
 }
 
@@ -145,7 +147,7 @@ export function place(g, seat, split) {
   const empty = (s) => g.sides[s].buttons.every((b) => b.out) && !(g.sides[s].deck ?? []).length;
   if (empty(seat) || empty(by)) {
     g.winner = empty(seat) && empty(by) ? "draw" : empty(seat) ? by : seat;
-    g.log.push(g.winner === "draw" ? "draw" : `${g.winner} wins`);
+    g.log.push(g.winner === "draw" ? "draw" : `${NAMES[g.winner]} wins`);
     return null;
   }
   passTurn(g);
@@ -160,5 +162,5 @@ function passTurn(g) {
   g.swapped = false;
   for (const b of s.buttons) b.sick = false;
   for (const b of g.sides[g.turn].buttons) b.tapped = false;
-  g.log.push(`${g.turn}'s turn`);
+  g.log.push(`${NAMES[g.turn]}'s turn`);
 }

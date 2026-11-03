@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.57 "Guest #1337" · Tue Nov 3, 4:30 AM
+- The dummy is called Guest #1337 and you are Player, on your panels and in the log (new matches). Removed: "dummy" and "you" on the panels, and the seat letters a and b in the log.
+
 ## v0.56 "Both Sides" · Tue Nov 3, 4:25 AM
 - Toughness sits at the right of your top line, and the dummy gets its own at the right of its top line. Removed: toughness in the middle of your status line.
 

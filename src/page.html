@@ -102,7 +102,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.56" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.57" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -163,8 +163,8 @@ const $ = (id) => document.getElementById(id);
     const up = (b, i) => !b.out && (b.tapped || picked.has(i));
     const atk = mine.reduce((n, b, i) => n + (up(b, i) ? b.power : 0), 0);
     const def = mine.reduce((n, b, i) => n + (!b.out && !b.tapped && !(picked.has(i) && !ONLINE.includes(b.type)) ? life(b) : 0), 0);   // an Always Online one picked to attack still defends
-    $("meHp").textContent = `you · this turn: ${atk}/${def}`;
-    $("themHp").textContent = "dummy";
+    $("meHp").textContent = `player · this turn: ${atk}/${def}`;
+    $("themHp").textContent = "guest #1337";   // rules.js NAMES
     // toughness, at the right of each side's top line: life left on all its buttons still in the match (field and deck), out of all its
     // buttons' toughness (kura, Nov 3: "like life")
     const tough = (s) => { const all = [...s.buttons, ...(s.deck ?? []), ...(s.gone ?? [])];
