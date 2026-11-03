@@ -4,6 +4,13 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.5 "Version Line"
+**Mon Nov 2, 2026 · 11:21 PM HST** (no migration)
+- kura: "could you put a version number on the game page please, and increment it every version"
+- Added: the shared footer every game shows (`/footer.js` from dungeon-items, drawn into `<div id="ddfoot">` under the log), with `data-version="v0.5"` in `src/page.html`; raised every version.
+- Removed: nothing.
+- Not checked: the live site.
+
 ## v0.4 "Declare Attackers"
 **Mon Nov 2, 2026 · 11:24 PM HST** (no migration)
 - kura: "the attack all at once way. the player taps or untaps the buttons then presses" ... "it should say "attack" !"; power/toughness balanced by how many of each type exist ("we have the most neon so that shouldn't be the most powerful button"); "have divider be 3/2"; a button that loses a fight "should leave the fight !"

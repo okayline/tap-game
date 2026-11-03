@@ -27,13 +27,16 @@
 </head>
 <body>
 <h1>tap</h1>
-<div id="game">
+<div id="game" style="display:flex;flex-direction:column;max-width:440px">
   <div class="side"><div id="themHp"></div><div class="row" id="them"></div></div>
   <div class="bar"><span id="status"></span> <span id="timer"></span> <span id="err" class="err"></span></div>
   <div class="bar"><button class="act" id="attack" hidden>attack</button> <button class="act" id="block" hidden>block</button></div>
   <div class="side"><div id="meHp"></div><div class="row" id="me"></div></div>
   <div id="log"></div>
+  <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version -->
+  <div id="ddfoot"></div>
 </div>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.5"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
