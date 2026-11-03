@@ -4,6 +4,13 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.28 "Smaller Stats"
+**Tue Nov 3, 2026 · 12:05 AM HST** (no migration)
+- kura: "smaller 1/0 font please . little bit smaller"
+- Changed: the corner power/toughness is a tenth of the button's width (was 12%). Footer v0.28.
+- Removed: the 12% size.
+- Not checked: the live site.
+
 ## v0.27 "Level"
 **Tue Nov 3, 2026 · 12:01 AM HST** (no migration)
 - kura: "back one step, no diagonal. just the less glow and smaller please. also no black outline"
