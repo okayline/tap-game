@@ -36,10 +36,12 @@
   .gc-name { font: 600 calc(8.5 * var(--u))/1 var(--title); color: var(--ink); background: #ffe1ee; border: 1px solid #f0b8d0; border-radius: 2px; padding: 0 calc(4 * var(--u));
              height: calc(15 * var(--u)); display: flex; align-items: center; white-space: nowrap; overflow: hidden; }
   .gc-art { height: calc(31 * var(--u)); display: flex; align-items: center; justify-content: center; }
-  .gc-art img { width: calc(88 * var(--u)); height: calc(31 * var(--u)); image-rendering: pixelated; }
+  .gc-art img, .gc-art canvas { width: calc(88 * var(--u)); height: calc(31 * var(--u)); image-rendering: pixelated; }
   .gc-type { font: 500 calc(8 * var(--u))/1 var(--body); color: var(--ink); background: #e2f0ff; border: 1px solid var(--line); border-radius: 2px; padding: 0 calc(4 * var(--u));
              height: calc(15 * var(--u)); display: flex; align-items: center; white-space: nowrap; overflow: hidden; }
-  .gc-txt { flex: 1; background: #fffdf8; border: 1px solid var(--line); border-radius: 2px; }
+  .gc-txt { flex: 1; background: #fffdf8; border: 1px solid var(--line); border-radius: 2px; padding: calc(4 * var(--u)) calc(4 * var(--u)) calc(12 * var(--u));
+          font: 500 calc(8.5 * var(--u))/1.2 var(--body); color: var(--ink); }
+  .gc-txt b { font-weight: 700; }
   /* power/life left, in a box sitting on the bottom edge of the text box (like a Magic card's) */
   .pt { position: absolute; right: calc(4 * var(--u)); bottom: 1px; font: 800 calc(9 * var(--u))/1 var(--title); color: var(--ink); background: #fff3c9; border: 1.5px solid #e2c56e;
         border-radius: calc(5 * var(--u)); padding: calc(2 * var(--u)) calc(5 * var(--u)); box-shadow: 0 0 0 1.5px var(--cream), inset 0 1px 0 #fff; pointer-events: none; }
@@ -74,9 +76,9 @@
   :root { --dw: calc((var(--w) * 3 - 16px) / 6 - 6px); }
   .deck { display: flex; gap: 8px; margin-top: 10px; padding-bottom: 8px; min-height: calc(var(--dw) * 31 / 88 + 6px); }
   .deck .card { position: relative; background: var(--frame); border-radius: 4px; padding: 3px; }
-  .deck img { display: block; width: var(--dw); height: calc(var(--dw) * 31 / 88); image-rendering: pixelated; }
+  .deck img, .deck canvas { display: block; width: var(--dw); height: calc(var(--dw) * 31 / 88); image-rendering: pixelated; }
   /* knocked-out ones stay greyed */
-  .deck .card.gone img { filter: grayscale(1) opacity(.45); }
+  .deck .card.gone canvas { filter: grayscale(1) opacity(.45); }
   .deck .card.drag { cursor: grab; outline: 1px dashed var(--pink); outline-offset: 2px; touch-action: none; }
   .deck .dpt { position: absolute; right: 2px; bottom: -9px; font: 800 8px/1 var(--title); color: var(--ink); pointer-events: none; }
   .ghost { position: fixed; transform: translate(-50%, -50%); pointer-events: none; opacity: .85; z-index: 9; width: var(--dw); image-rendering: pixelated; }
@@ -93,7 +95,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.47" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.48" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -141,7 +143,7 @@ const $ = (id) => document.getElementById(id);
     // your row: on your turn click to pick up to g.limit attackers (1 on the match's first turn, then 2; they show tapped; no more can be picked); when they attack, each click puts 1 damage on
     // that button (up to its life left; one more click clears it)
     row($("me"), mine, (b, i) => {
-      if (myTurn && ready(b) && !b.sick && (picked.has(i) || picked.size < g.limit)) return { can: true, tapped: picked.has(i), click: () => { picked.has(i) ? picked.delete(i) : picked.add(i); draw(); } };
+      if (myTurn && ready(b) && !b.sick && (picked.has(i) || picked.size < g.limit)) return { can: true, tapped: picked.has(i) && !VIGIL.includes(b.type), sel: picked.has(i) && VIGIL.includes(b.type), click: () => { picked.has(i) ? picked.delete(i) : picked.add(i); draw(); } };
       if (taking && !b.out) {
         const d = split[i] ?? 0;
         return { can: true, sel: d > 0, note: d ? `-${d}` : "",
@@ -153,7 +155,7 @@ const $ = (id) => document.getElementById(id);
     // THIS TURN: attack = power of your buttons tapped or picked to attack; defense = life left on your ready buttons (the ones that hit back)
     const up = (b, i) => !b.out && (b.tapped || picked.has(i));
     const atk = mine.reduce((n, b, i) => n + (up(b, i) ? b.power : 0), 0);
-    const def = mine.reduce((n, b, i) => n + (!b.out && !up(b, i) ? life(b) : 0), 0);
+    const def = mine.reduce((n, b, i) => n + (!b.out && !b.tapped && !(picked.has(i) && !VIGIL.includes(b.type)) ? life(b) : 0), 0);   // a Vigilant one picked to attack still defends
     $("meHp").textContent = `you · this turn: ${atk}/${def}`;
     $("themHp").textContent = "dummy";
     // you can drag from your deck before the first attack, and on your turn to fill an out spot or make your one swap
@@ -191,8 +193,7 @@ const $ = (id) => document.getElementById(id);
     });
     (side.gone ?? []).forEach((b) => {
       const card = document.createElement("div"); card.className = "card gone"; card.title = `${b.name} (out)`;
-      const img = document.createElement("img"); img.alt = ""; img.src = b.image;
-      card.append(img); el.append(card);
+      card.append(still(b, "")); el.append(card);
     });
   }
   // drag a deck picture (mouse or touch) and drop it on one of your field buttons to swap the two
@@ -214,12 +215,27 @@ const $ = (id) => document.getElementById(id);
   }
   // a button drawn as a card: name (smaller when long, so it fits on one line, as Magic does), art, type line, an empty text box,
   // and power/life left in a box on the text box's bottom edge (none once it's out)
+  // card text by type: only the effects the rules have (rules.js VIGILANT)
+  const VIGIL = ["guestbook"];
+  const TEXT = { guestbook: ["Vigilant", "attacking doesn't tap it."] };
+  // a knocked-out button's picture stops moving: drawn once onto a canvas, kept per button so it doesn't change frame on every redraw
+  const stills = new Map();
+  function still(b, cls) {
+    let c = stills.get(b.id);
+    if (!c) {
+      c = document.createElement("canvas"); c.width = 88; c.height = 31; stills.set(b.id, c);
+      const im = new Image(); im.onload = () => c.getContext("2d").drawImage(im, 0, 0, 88, 31); im.src = b.image;
+    }
+    c.className = cls; return c;
+  }
   const mk = (tag, cls, text) => { const e = document.createElement(tag); e.className = cls; if (text != null) e.textContent = text; return e; };
   function card(b) {
     const gc = mk("div", "gc"), inn = mk("div", "gc-in"), name = mk("div", "gc-name", b.name), art = mk("div", "gc-art"), img = mk("img");
     name.style.fontSize = `calc(${Math.min(8.5, 102 / b.name.length).toFixed(1)} * var(--u))`;
-    img.alt = ""; img.src = b.image; art.append(img);
-    inn.append(name, art, mk("div", "gc-type", `Button — ${b.type[0].toUpperCase()}${b.type.slice(1)}`), mk("div", "gc-txt"));
+    img.alt = ""; img.src = b.image; art.append(b.out ? still(b, "") : img);
+    const txt = mk("div", "gc-txt"), t = TEXT[b.type];
+    if (t) { const k = mk("b", "", t[0]); txt.append(k, ` — ${t[1]}`); }
+    inn.append(name, art, mk("div", "gc-type", `Button — ${b.type[0].toUpperCase()}${b.type.slice(1)}`), txt);
     if (!b.out) inn.append(mk("span", "pt", `${b.power}/${b.toughness - b.damage}`));
     gc.append(inn); return gc;
   }
