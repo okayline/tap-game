@@ -1,7 +1,6 @@
 // The Worker: the page, a new match link, and one Durable Object (Match) per match that holds the true board.
-//   GET /                 the page (lists the two ways to start)
-//   GET /new?vs=dummy     a new match against the scripted dummy (src/dummy.js); ?vs=friend leaves seat b for a second tab
-//   GET /m/<id>           the match page; GET /m/<id>/ws the match's WebSocket
+//   GET /                 a new match against the scripted dummy (src/dummy.js): redirects to it
+//   GET /m/<id>           the match page; GET /m/<id>/ws the match's WebSocket. You are seat a in every tab; the dummy is b.
 import { DurableObject } from "cloudflare:workers";
 import { newGame, hit, answer, endTurn, other, BLOCK_MS } from "./rules.js";
 import { step, dummyBlock } from "./dummy.js";
@@ -10,15 +9,14 @@ import PAGE from "./page.html";
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
-    if (url.pathname === "/new") {
+    if (url.pathname === "/") {
       const id = env.MATCH.newUniqueId();
-      const vs = url.searchParams.get("vs") === "friend" ? "friend" : "dummy";
-      await env.MATCH.get(id).setup(vs, await commons(env));
+      await env.MATCH.get(id).setup(await commons(env));
       return Response.redirect(`${url.origin}/m/${id}`, 302);
     }
     const m = url.pathname.match(/^\/m\/([0-9a-f]{64})(\/ws)?$/);
     if (m && m[2]) return env.MATCH.get(env.MATCH.idFromString(m[1])).fetch(req);
-    if (url.pathname === "/" || m) return new Response(PAGE, { headers: { "content-type": "text/html; charset=utf-8" } });
+    if (m) return new Response(PAGE, { headers: { "content-type": "text/html; charset=utf-8" } });
     return new Response("Not found", { status: 404 });
   },
 };
@@ -33,9 +31,8 @@ async function commons(env) {
 const pick = (list, n) => [...list].sort(() => Math.random() - 0.5).slice(0, n);
 
 export class Match extends DurableObject {
-  async setup(vs, pool) {
+  async setup(pool) {
     const g = newGame(pick(pool, 3), pick(pool, 3));
-    g.vs = vs;
     g.dummyTurn = 0;
     await this.ctx.storage.put("g", g);
   }
@@ -44,21 +41,17 @@ export class Match extends DurableObject {
     if (req.headers.get("Upgrade") !== "websocket") return new Response("Expected a WebSocket", { status: 426 });
     const g = await this.ctx.storage.get("g");
     if (!g) return new Response("No such match", { status: 404 });
-    const taken = this.ctx.getWebSockets().map((ws) => ws.deserializeAttachment()?.seat);
-    const seat = !taken.includes("a") ? "a" : g.vs === "friend" && !taken.includes("b") ? "b" : "watch";
     const [client, server] = Object.values(new WebSocketPair());
     this.ctx.acceptWebSocket(server);
-    server.serializeAttachment({ seat });
-    server.send(JSON.stringify({ seat, g }));
+    server.send(JSON.stringify({ g }));
     return new Response(null, { status: 101, webSocket: client });
   }
 
   async webSocketMessage(ws, msg) {
-    const { seat } = ws.deserializeAttachment();
+    const seat = "a";
     const g = await this.ctx.storage.get("g");
     let a;
     try { a = JSON.parse(msg); } catch { return; }
-    if (seat === "watch") return;
     const err =
       a.do === "hit" ? hit(g, seat, a.i) :
       a.do === "block" ? answer(g, seat, a.i) :
@@ -70,11 +63,11 @@ export class Match extends DurableObject {
 
   // Save, run the dummy if it's its move, set the block timer, and send the board to everyone.
   async save(g) {
-    if (g.vs === "dummy") this.dummy(g);
+    this.dummy(g);
     if (g.pending && !g.pending.until) g.pending.until = Date.now() + BLOCK_MS;
     await this.ctx.storage.put("g", g);
     if (g.pending) await this.ctx.storage.setAlarm(g.pending.until);
-    for (const ws of this.ctx.getWebSockets()) ws.send(JSON.stringify({ seat: ws.deserializeAttachment().seat, g }));
+    for (const ws of this.ctx.getWebSockets()) ws.send(JSON.stringify({ g }));
   }
 
   // The dummy is seat b. It answers your hits at once, and plays its turn by SCRIPT one hit at a time

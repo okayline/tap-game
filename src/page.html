@@ -23,8 +23,7 @@
 </head>
 <body>
 <h1>tap</h1>
-<div id="start" hidden><a href="/new?vs=dummy">play the dummy</a> · <a href="/new?vs=friend">friend link (open it in a second tab)</a></div>
-<div id="game" hidden>
+<div id="game">
   <div class="side"><div id="themHp"></div><div class="row" id="them"></div></div>
   <div class="bar"><span id="status"></span> <span id="timer"></span> <span id="err" class="err"></span></div>
   <div class="bar"><button class="act" id="take" hidden>take the hit</button> <button class="act" id="end" hidden>end turn</button></div>
@@ -33,30 +32,27 @@
 </div>
 <script>
 const $ = (id) => document.getElementById(id);
-const m = location.pathname.match(/^\/m\/([0-9a-f]{64})$/);
-if (!m) $("start").hidden = false;
-else {
-  $("game").hidden = false;
+{
   const ws = new WebSocket(`${location.protocol === "https:" ? "wss" : "ws"}://${location.host}${location.pathname}/ws`);
-  let seat = "watch", g = null;
+  let g = null;
   const send = (o) => ws.send(JSON.stringify(o));
   ws.onmessage = (e) => {
     const d = JSON.parse(e.data);
     if (d.error) { $("err").textContent = d.error; return; }
-    seat = d.seat; g = d.g; $("err").textContent = ""; draw();
+    g = d.g; $("err").textContent = ""; draw();
   };
   ws.onclose = () => { $("status").textContent = "disconnected: reload"; };
   $("take").onclick = () => send({ do: "take" });
   $("end").onclick = () => send({ do: "end" });
 
   function draw() {
-    const me = seat === "b" ? "b" : "a", them = me === "a" ? "b" : "a";
-    const blocking = g.pending && g.pending.by === them && seat === me;
-    const myTurn = g.turn === me && seat === me && !g.pending && !g.winner;
+    const me = "a", them = "b";
+    const blocking = g.pending && g.pending.by === them;
+    const myTurn = g.turn === me && !g.pending && !g.winner;
     row($("me"), g.sides[me].buttons, (b) => !b.tapped && (myTurn || blocking), (i) => send({ do: blocking ? "block" : "hit", i }));
     row($("them"), g.sides[them].buttons, () => false);
-    $("meHp").textContent = `you (${me}) · hp ${g.sides[me].hp}${seat === "watch" ? " · watching" : ""}`;
-    $("themHp").textContent = `${g.vs === "dummy" ? "dummy" : "them"} (${them}) · hp ${g.sides[them].hp}`;
+    $("meHp").textContent = `you · hp ${g.sides[me].hp}`;
+    $("themHp").textContent = `dummy · hp ${g.sides[them].hp}`;
     $("status").textContent = g.winner ? (g.winner === me ? "you win" : "you lose")
       : blocking ? "they hit: click a ready button to block" : g.pending ? "waiting for their block" : g.turn === me ? "your turn: click a ready button to hit" : "their turn";
     $("take").hidden = !blocking;
