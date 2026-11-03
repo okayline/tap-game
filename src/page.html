@@ -72,7 +72,7 @@
          border-radius: 6px; padding: 10px 14px; color: var(--ink); }
   .err { color: #b3305f; }
   /* the deck: the buttons still to come in, small, next one on the left; drag one of yours onto a field button to swap them */
-  /* 6 across, as wide as the field row (3 cards and 2 gaps of 12px) with 5 gaps of 8px; each in a little blue frame, power/toughness under its corner */
+  /* 6 across, as wide as the field row (3 cards and 2 gaps of 12px) with 5 gaps of 8px; each in a little blue frame */
   :root { --dw: calc((var(--w) * 3 - 16px) / 6 - 6px); }
   .deck { display: flex; gap: 8px; margin-top: 10px; padding-bottom: 8px; min-height: calc(var(--dw) * 31 / 88 + 6px); }
   .deck .card { position: relative; background: var(--frame); border-radius: 4px; padding: 3px; }
@@ -80,7 +80,9 @@
   /* knocked-out ones stay greyed */
   .deck .card.gone canvas { filter: grayscale(1) opacity(.45); }
   .deck .card.drag { cursor: grab; outline: 1px dashed var(--pink); outline-offset: 2px; touch-action: none; }
-  .deck .dpt { position: absolute; right: 2px; bottom: -9px; font: 800 8px/1 var(--title); color: var(--ink); pointer-events: none; }
+  /* power/life left in a small box over the bottom-right corner of the deck button's picture, like the field cards' */
+  .deck .dpt { position: absolute; right: 4px; bottom: 4px; font: 800 10px/1 var(--title); color: var(--ink); background: #fff3c9; border: 1px solid #e2c56e;
+               border-radius: 4px; padding: 2px 4px; box-shadow: 0 0 0 1px var(--cream); pointer-events: none; }
   .ghost { position: fixed; transform: translate(-50%, -50%); pointer-events: none; opacity: .85; z-index: 9; width: var(--dw); image-rendering: pixelated; }
   .ddfoot { margin: 1px 0 0 !important; padding: 0 12px !important; color: var(--mute) !important; }   /* the footer's own light grey can't be seen on the blue */
 </style>
@@ -95,7 +97,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.48" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.49" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {

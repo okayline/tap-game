@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.49 "Deck Boxes" · Tue Nov 3, 3:45 AM
+- Deck row buttons show their power/toughness in a small box over the bottom-right corner of their picture, like the field cards. Removed: the numbers written under them.
+
 ## v0.48 "Vigilant" · Tue Nov 3, 3:40 AM
 - Guestbook buttons are Vigilant: attacking doesn't tap them, so they can still hit back on the other side's turn. Their card text says so (the only card text so far). A picked Vigilant attacker is outlined instead of turned sideways. A knocked-out button's picture stops moving, on the field and in the deck row. Removed: Guestbook buttons tapping when they attack, and moving pictures on knocked-out buttons.
 
