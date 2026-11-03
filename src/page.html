@@ -62,7 +62,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.28" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.29" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -101,10 +101,10 @@ const $ = (id) => document.getElementById(id);
     // what you must place when they attack: their attack's total, or all your buttons' life left if that's less
     const need = taking ? Math.min(g.attack.attackers.reduce((n, i) => n + theirs[i].power, 0), mine.reduce((n, b) => n + life(b), 0)) : 0;
     const placed = Object.values(split).reduce((n, d) => n + d, 0);
-    // your row: on your turn click to pick attackers (they show tapped); when they attack, each click puts 1 damage on
+    // your row: on your turn click to pick up to 2 attackers (they show tapped; a third can't be picked); when they attack, each click puts 1 damage on
     // that button (up to its life left; one more click clears it)
     row($("me"), mine, (b, i) => {
-      if (myTurn && ready(b)) return { can: true, tapped: picked.has(i), click: () => { picked.has(i) ? picked.delete(i) : picked.add(i); draw(); } };
+      if (myTurn && ready(b) && (picked.has(i) || picked.size < 2)) return { can: true, tapped: picked.has(i), click: () => { picked.has(i) ? picked.delete(i) : picked.add(i); draw(); } };
       if (taking && !b.out) {
         const d = split[i] ?? 0;
         return { can: true, sel: d > 0, note: d ? `-${d}` : "",

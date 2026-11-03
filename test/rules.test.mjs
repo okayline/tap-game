@@ -8,6 +8,7 @@ const B = [{ name: "k", type: "construction" }, { name: "d", type: "divider" }, 
 
 test("an attack is placed on the defender's buttons; untapped ones that take damage hit back; damage stays", () => {
   const g = newGame(A, B);
+  assert.equal(attack(g, "a", [0, 1, 2]), "At most 2 can attack.");
   assert.equal(attack(g, "a", [0, 2]), null);      // webring 3 + counter 2 = 5
   assert.equal(place(g, "b", { 0: 2, 1: 2 }), "Place exactly 5.");
   // b puts 2 on construction, 2 on divider, 1 on neon: all three are out

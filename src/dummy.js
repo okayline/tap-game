@@ -1,6 +1,6 @@
 // The scripted second player (seat b). Edit SCRIPT to try a situation; it loops.
 // Each line is one of the dummy's turns:
-//   attack: how many of its ready buttons it attacks with (left to right).
+//   attack: how many of its ready buttons it attacks with (left to right), at most MAX_ATTACKERS.
 //   take:   how it places your next attack on its buttons:
 //           "spread" = one point at a time across its buttons, untapped ones first (so they hit back),
 //           "focus"  = fills one button before the next, tapped ones first (sacrifices a button that can't hit back).
@@ -10,7 +10,7 @@ import { life, toPlace } from "./rules.js";
 export const SCRIPT = [
   { attack: 1, take: "spread" },
   { attack: 0, take: "spread" },
-  { attack: 3, take: "focus" },
+  { attack: 2, take: "focus" },
   { attack: 2, take: "focus" },
 ];
 

@@ -2,7 +2,7 @@
 // Seats are "a" and "b". A side is 3 buttons, and the buttons are its health: a side with no buttons left loses.
 // A button has power and toughness, takes damage that stays for the whole match, and goes out when its damage
 // reaches its toughness. It is untapped (ready) or tapped.
-// Your turn: your buttons untap; you pick any number of ready buttons to attack and press attack (they tap).
+// Your turn: your buttons untap; you pick up to MAX_ATTACKERS ready buttons to attack and press attack (they tap).
 // The other side then splits the attack's total power over its own buttons, any way it likes (no time limit).
 // Each of its untapped buttons that takes damage hits back with its power, spread over the attackers in order.
 // A button only untaps at the start of its own side's turn, so attacking with it means it can't hit back next turn.
@@ -18,6 +18,8 @@ export const STATS = {
   webring: [3, 1],
   divider: [3, 2],
 };
+
+export const MAX_ATTACKERS = 2; // at most this many attack in a turn, so one button always stays home (kura, Nov 3)
 
 export const other = (seat) => (seat === "a" ? "b" : "a");
 export const life = (b) => (b.out ? 0 : b.toughness - b.damage);
@@ -45,6 +47,7 @@ export function attack(g, seat, idxs) {
   if (g.turn !== seat || g.attack) return "Not your turn.";
   const list = [...new Set(idxs)];
   if (!list.every((i) => ready(g.sides[seat], i))) return "Only ready buttons can attack.";
+  if (list.length > MAX_ATTACKERS) return `At most ${MAX_ATTACKERS} can attack.`;
   if (!list.length) { g.log.push(`${seat} doesn't attack`); passTurn(g); return null; }
   for (const i of list) g.sides[seat].buttons[i].tapped = true;
   g.attack = { by: seat, attackers: list };

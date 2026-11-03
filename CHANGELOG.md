@@ -4,6 +4,13 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.29 "Two Out"
+**Tue Nov 3, 2026 · 12:07 AM HST** (no migration)
+- kura: "i think per turn maybe only two buttons can attack? if i can do 3 it's OP everytime" ... "yes please! only 2 can attack"
+- Changed: at most 2 buttons attack in a turn (`MAX_ATTACKERS` in `src/rules.js`), so one always stays home. On the page, once 2 are picked the third can't be clicked. The dummy's all-out line attacks with 2. The test checks that 3 is refused. Footer v0.29.
+- Removed: attacking with all 3; the dummy's `attack: 3` line.
+- Not checked: the live site.
+
 ## v0.28 "Smaller Stats"
 **Tue Nov 3, 2026 · 12:05 AM HST** (no migration)
 - kura: "smaller 1/0 font please . little bit smaller"
