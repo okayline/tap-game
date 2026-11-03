@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.66 "Type Line" · Tue Nov 3, 4:55 AM
+- The type line reads like Magic's: the type and a made-up subtype (Neon — Sign, Guestbook — Entry, Construction — Site, Counter — Hits, Webring — Link, Divider — HR), and at the right a set and rarity symbol: a tiny button in 88x31's rarity colours (common ink, uncommon cyan, rare yellow, ultra magenta, prototype silver). Removed: "Button —" on every card.
+
 ## v0.65 "Every Rarity" · Tue Nov 3, 4:50 AM
 - Decks are dealt from 88x31 buttons of every rarity (common, uncommon, rare, ultra, prototype), not only commons. Rarity changes nothing: power and toughness still come from the type. Removed: commons-only decks.
 
