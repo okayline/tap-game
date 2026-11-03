@@ -8,9 +8,9 @@ const B = [{ name: "k", type: "construction" }, { name: "d", type: "divider" }, 
 
 test("an attack is placed on the defender's buttons; untapped ones that take damage hit back; damage stays", () => {
   const g = newGame(A, B, "a");
-  assert.equal(attack(g, "a", [0, 2]), "At most 1 can attack this turn."); // a won the flip: 1 on the first turn
+  assert.equal(attack(g, "a", [0, 2]), "At most 1 can ping this turn."); // a won the flip: 1 on the first turn
   g.limit = 2; // as from the second turn on
-  assert.equal(attack(g, "a", [0, 1, 2]), "At most 2 can attack this turn.");
+  assert.equal(attack(g, "a", [0, 1, 2]), "At most 2 can ping this turn.");
   assert.equal(attack(g, "a", [0, 2]), null);      // webring 3 + counter 2 = 5
   assert.equal(place(g, "b", { 0: 2, 1: 2 }), "Place exactly 5.");
   // b puts 3 on construction (out) and 2 on divider (1 left); neon takes nothing
@@ -42,7 +42,7 @@ test("decks: same types on both sides; swaps until the first attack; out buttons
   assert.equal(g.sides.a.deck[0].name, "n0");
   swap(g, "a", 0, 0); // back
   assert.equal(attack(g, "a", [0]), null);
-  assert.equal(swap(g, "a", 0, 0), "Only on your turn, before you attack."); // a is mid-attack
+  assert.equal(swap(g, "a", 0, 0), "Only on your turn, before you ping."); // a is mid-attack
   // b puts the guestbook's 1 power on webring 0 (2 toughness, survives); hit back 3 takes guestbook 0 out
   assert.equal(place(g, "b", { 0: 1 }), null);
   assert.equal(g.sides.a.buttons[0].out, true);
@@ -57,6 +57,6 @@ test("decks: same types on both sides; swaps until the first attack; out buttons
   g.sides.a.deck.push({ name: "x", type: "neon", power: 1, toughness: 2, damage: 0, tapped: false, out: false });
   assert.equal(swap(g, "a", 1, 0), null);
   assert.equal(swap(g, "a", 2, 0), "One swap a turn.");
-  assert.equal(attack(g, "a", [1]), "A button that came in this turn can't attack.");
-  assert.equal(swap(g, "b", 0, 0), "Only on your turn, before you attack.");
+  assert.equal(attack(g, "a", [1]), "A button that came in this turn can't ping.");
+  assert.equal(swap(g, "b", 0, 0), "Only on your turn, before you ping.");
 });

@@ -36,8 +36,9 @@ export const BROADBAND = ["webring"];
 export const WEBCOUNTER = ["counter"];
 // Glow (kura, Nov 3): a button of these types gets +0/+1 for each other one of them on its side's field (b.bonus, kept by settle()).
 export const GLOW = ["neon"];
-// Ping (kura, Nov 3; Magic's "first strike"): when an attack has one of these, a button the attack knocks out doesn't hit back.
-export const PING = ["divider"];
+// Lag Spike (kura, Nov 3; Magic's "first strike"): when an attack has one of these, a button the attack knocks out doesn't hit back.
+// (kura, Nov 3: attacking is called "ping" on screen; the code still says attack.)
+export const LAG_SPIKE = ["divider"];
 // Firewall (kura, Nov 3): a button of these types hits back for 1 even while tapped (an untapped one hits back with its power, like any).
 export const FIREWALL = ["construction"];
 export const MAX_ATTACKERS = 2; // at most this many attack in a turn, so one button always stays home (kura, Nov 3)
@@ -77,7 +78,7 @@ const fresh = (b) => { const [power, toughness] = STATS[b.type] ?? [1, 1]; retur
 export function newGame(deckA, deckB, first = Math.random() < 0.5 ? "a" : "b") {
   const side = (list) => { const all = list.map(fresh); return { buttons: all.slice(0, 3), deck: all.slice(3) }; };
   const g = { turn: first, limit: 1, sides: { a: side(deckA), b: side(deckB) }, attack: null, winner: null, locked: false,
-    log: [`coin flip: ${NAMES[first]} goes first, with 1 attacker`, `${NAMES[first]}'s turn`] };
+    log: [`coin flip: ${NAMES[first]} goes first, with 1 ping`, `${NAMES[first]}'s turn`] };
   settle(g);
   return g;
 }
@@ -103,7 +104,7 @@ export function swap(g, seat, i, j) {
   const s = g.sides[seat];
   s.deck ??= []; s.gone ??= [];
   if (!Number.isInteger(i) || !Number.isInteger(j) || !s.buttons[i] || !s.deck[j]) return "No such button.";
-  if (g.locked && (g.winner || g.turn !== seat || g.attack)) return "Only on your turn, before you attack.";
+  if (g.locked && (g.winner || g.turn !== seat || g.attack)) return "Only on your turn, before you ping.";
   const [n] = s.deck.splice(j, 1), b = s.buttons[i];
   if (b.out) { s.gone.push(b); s.buttons[i] = n; if (g.locked) n.sick = true; g.log.push(`${n.name} comes in`); settle(g); return null; }
   if (g.locked && g.swapped) { s.deck.splice(j, 0, n); return "One swap a turn."; }
@@ -129,16 +130,16 @@ export function attack(g, seat, idxs) {
   if (g.winner) return "The game is over.";
   if (g.turn !== seat || g.attack) return "Not your turn.";
   const list = [...new Set(idxs)];
-  if (!list.every((i) => ready(g.sides[seat], i))) return "Only ready buttons can attack.";
-  if (list.length > g.limit) return `At most ${g.limit} can attack this turn.`;
+  if (!list.every((i) => ready(g.sides[seat], i))) return "Only ready buttons can ping.";
+  if (list.length > g.limit) return `At most ${g.limit} can ping this turn.`;
   if (mustFill(g, seat)) return "Bring in a button first.";
-  if (list.some((i) => g.sides[seat].buttons[i].sick && !BROADBAND.includes(g.sides[seat].buttons[i].type))) return "A button that came in this turn can't attack.";
+  if (list.some((i) => g.sides[seat].buttons[i].sick && !BROADBAND.includes(g.sides[seat].buttons[i].type))) return "A button that came in this turn can't ping.";
   g.locked = true;
-  if (!list.length) { g.log.push(`${NAMES[seat]} doesn't attack`); passTurn(g); return null; }
+  if (!list.length) { g.log.push(`${NAMES[seat]} doesn't ping`); passTurn(g); return null; }
   for (const i of list) if (!ALWAYS_ONLINE.includes(g.sides[seat].buttons[i].type)) g.sides[seat].buttons[i].tapped = true;
   g.attack = { by: seat, attackers: list };
   const att = g.sides[seat].buttons;
-  g.log.push(`${NAMES[seat]} attacks for ${list.reduce((n, i) => n + att[i].power, 0)} with ${list.map((i) => att[i].name).join(", ")}`);
+  g.log.push(`${NAMES[seat]} pings for ${list.reduce((n, i) => n + att[i].power, 0)} with ${list.map((i) => att[i].name).join(", ")}`);
   return null;
 }
 
@@ -150,8 +151,8 @@ export function place(g, seat, split) {
   if (!parts.every(([i, d]) => Number.isInteger(d) && def.buttons[i] && d <= life(def.buttons[i]))) return "A button can't take that much.";
   if (parts.reduce((n, [, d]) => n + d, 0) !== toPlace(g)) return `Place exactly ${toPlace(g)}.`;
   // hitting back: untapped buttons that take damage (and tapped Firewalls, for 1), counted before anything goes out (it all happens at
-  // once), except with Ping in the attack, where a button this attack knocks out doesn't hit back
-  const ping = g.attack.attackers.some((i) => PING.includes(att.buttons[i].type));
+  // once), except with Lag Spike in the attack, where a button this attack knocks out doesn't hit back
+  const ping = g.attack.attackers.some((i) => LAG_SPIKE.includes(att.buttons[i].type));
   const backBy = (b) => (!b.tapped ? b.power : FIREWALL.includes(b.type) ? 1 : 0);
   const hits = ([i, d]) => backBy(def.buttons[i]) > 0 && !(ping && d >= life(def.buttons[i]));
   let back = parts.filter(hits).reduce((n, [i]) => n + backBy(def.buttons[i]), 0);

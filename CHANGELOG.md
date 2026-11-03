@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.64 "PING" · Tue Nov 3, 4:45 AM
+- Attacking is called pinging: the PING button, "Player pings for 3 with…" in the log, and the messages and card text. Divider's effect is renamed Lag Spike. Removed: the word "attack" on screen, and the name Ping for Divider's effect.
+
 ## v0.63 "Firewall Up" · Tue Nov 3, 4:40 AM
 - Firewall changed: Construction can attack, tap and untap like any button again, and even tapped it hits back for 1 (Construction is 1/3 again). Removed: Construction not being able to attack, and its power of 2.
 
