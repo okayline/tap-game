@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.54 "Midnight" · Tue Nov 3, 4:15 AM
+- The page background is midnight blue, and the footer is back to the shared footer's own light grey. Removed: the light sky-blue background, and this page's darker footer colour.
+
 ## v0.53 "Spotlight" · Tue Nov 3, 4:10 AM
 - The panel of the side whose move it is stays lit and the other one dims: the side whose turn it is, or the defender while it places an attack. Neither is dimmed when the match is over. Removed: both panels always lit.
 

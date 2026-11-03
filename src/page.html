@@ -10,7 +10,7 @@
   /* themed "Grimoire Pastel" (kura, Nov 3): each button is a card like a Magic card (name bar, art, type line, text box,
      power/toughness box), in light pastel blues, pinks and cream, with Cinzel and EB Garamond */
   :root {
-    --bg: #b3cfec; --panel: #f7fbff; --line: #b9d0ea; --frame: #8fb6de; --cream: #fffaf2;
+    --bg: #1d2742;   /* midnight blue (kura, Nov 3: the pastel sky was too bright) */ --panel: #f7fbff; --line: #b9d0ea; --frame: #8fb6de; --cream: #fffaf2;
     --ink: #3a4a6b; --mute: #5a6a8a; --pink: #e98ab3; --blue: #6d8fd0;
     --title: Cinzel, Georgia, serif; --body: "EB Garamond", Georgia, serif;
   }
@@ -88,7 +88,7 @@
   .deck .dpt { position: absolute; right: 4px; bottom: 4px; font: 800 10px/1 var(--title); color: var(--ink); background: #fff3c9; border: 1px solid #e2c56e;
                border-radius: 4px; padding: 2px 4px; box-shadow: 0 0 0 1px var(--cream); pointer-events: none; }
   .ghost { position: fixed; transform: translate(-50%, -50%); pointer-events: none; opacity: .85; z-index: 9; width: var(--dw); image-rendering: pixelated; }
-  .ddfoot { margin: 1px 0 0 !important; padding: 0 12px !important; color: var(--mute) !important; }   /* the footer's own light grey can't be seen on the blue */
+  .ddfoot { margin: 1px 0 0 !important; padding: 0 12px !important; }
 </style>
 </head>
 <body>
@@ -101,7 +101,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.53" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.54" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
