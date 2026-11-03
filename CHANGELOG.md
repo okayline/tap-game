@@ -4,6 +4,13 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.17 "Right Side"
+**Mon Nov 2, 2026 · 11:46 PM HST** (no migration)
+- kura: "could you take out "health" , and could we right justify from "dummy" ?"
+- Changed: the result reads "dummy -4" / "you -4", and sits at the right end of the status line. Footer v0.17.
+- Removed: the word "health" from results; the result starting right after "this turn".
+- Not checked: the live site.
+
 ## v0.16 "One Line"
 **Mon Nov 2, 2026 · 11:45 PM HST** (no migration)
 - kura: "can we fit it all on one line?"
