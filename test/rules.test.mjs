@@ -21,5 +21,5 @@ test("an attack is placed on the defender's buttons; untapped ones that take dam
   assert.equal(g.sides.a.buttons[2].damage, 2);
   assert.equal(g.winner, null);
   assert.equal(g.turn, "b");
-  assert.equal(g.sides.b.buttons[1].damage, 1);      // b's turn began: its divider untapped and healed 1 (2 -> 1)
+  assert.equal(g.sides.b.buttons[1].damage, 2);      // damage stays
 });

@@ -4,6 +4,13 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.34 "No Rest"
+**Tue Nov 3, 2026 · 12:22 AM HST** (no migration)
+- kura: "can we go back one step please"
+- Changed: back to v0.32's rules: damage on a button stays for the whole match. The test checks that again. Footer v0.34.
+- Removed: untapping healing 1 damage (v0.33).
+- Not checked: the live site.
+
 ## v0.33 "Rest"
 **Tue Nov 3, 2026 · 12:21 AM HST** (no migration)
 - kura: "lets try untapping heals one?"
