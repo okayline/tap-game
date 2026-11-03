@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.40 "X" · Tue Nov 3, 2:29 AM
+- A knocked-out button on the field gets the X too, and loses its numbers. The X is half as long and fatter, on the field and in the deck row. Deck buttons you still have are in full colour; knocked-out ones stay greyed. Removed: the long thin X, the faded-out look of the whole spot, and the greyed-out deck row.
+
 ## v0.39 "Your Pick" · Tue Nov 3, 2:24 AM
 - A knocked-out button stays greyed in its spot until you drag a deck button onto it on your turn ("bring in a button"); then it moves to the deck row, crossed out with no numbers. While attack is lit you can also make one swap a turn; a swapped-out button keeps its damage. The dummy still brings its next one in by itself. Removed: automatic refilling for you.
 

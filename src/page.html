@@ -31,7 +31,12 @@
   .btn.can { cursor: pointer; outline: 2px dashed var(--S); outline-offset: 2px; }
   .btn.sel { outline: 2px solid var(--H); box-shadow: 0 0 16px rgba(255,111,207,.6); }
   .btn.att { outline: 2px solid var(--D); box-shadow: 0 0 16px rgba(90,209,255,.6); }
-  .out { opacity: .25; }
+  /* a knocked-out button: dimmed, crossed out, no numbers (on the field until replaced, then in the deck row) */
+  .out img, .gone img { opacity: .3; }
+  .btn.out::before, .btn.out::after, .card.gone::before, .card.gone::after { content: ""; position: absolute; left: 50%; top: 50%; width: 55%; height: 8px;
+               border-radius: 4px; background: var(--H); box-shadow: 0 0 6px var(--H); transform: translate(-50%, -50%) rotate(19deg); pointer-events: none; }
+  .card.gone::before, .card.gone::after { height: 4px; border-radius: 2px; }
+  .btn.out::after, .card.gone::after { transform: translate(-50%, -50%) rotate(-19deg); }
   /* power/life left in the button's bottom-right corner (a soft glow), and damage being placed on it in the top-right */
   .pt, .dmg { position: absolute; font-family: var(--meme); letter-spacing: .5px; line-height: 1; pointer-events: none; }
   .pt { right: 8px; bottom: 6px; font-size: calc(var(--w) * .1); color: var(--ink); text-shadow: 0 0 4px rgba(176,132,255,.45); }
@@ -50,19 +55,16 @@
          border-radius: 14px; padding: 10px 12px; color: var(--dim); font-family: ui-monospace, Menlo, Consolas, monospace; }
   .err { color: #ffb3b3; }
   /* the deck: the buttons still to come in, half size, next one on the left; before the first attack, drag one of yours onto a field button to swap them */
-  /* 6 across, as wide as the field row (3 buttons and 2 gaps of 12px) with 5 gaps of 8px; greyed out like a ready button, power/toughness in the corner */
+  /* 6 across, as wide as the field row (3 buttons and 2 gaps of 12px) with 5 gaps of 8px; power/toughness in the corner */
   :root { --dw: calc((var(--w) * 3 - 16px) / 6); }
   .deck { display: flex; gap: 8px; margin-top: 10px; min-height: calc(var(--dw) * 31 / 88); }
   .deck .card { position: relative; }
+  /* the ones still in the deck are lit up (full colour); knocked-out ones stay greyed */
+  .deck .card:not(.gone) img { filter: none; }
   .deck img { display: block; width: var(--dw); height: calc(var(--dw) * 31 / 88); image-rendering: pixelated; filter: grayscale(1) brightness(.6); }
   .deck .card.drag { cursor: grab; outline: 1px dashed var(--S); outline-offset: 2px; touch-action: none; }
   .deck .dpt { position: absolute; right: 2px; bottom: 1px; font-family: var(--meme); font-size: 11px; line-height: 1; color: var(--ink);
                text-shadow: 0 0 3px #000, 0 0 4px rgba(176,132,255,.6); pointer-events: none; }
-  /* a knocked-out button in the deck row: crossed out, no numbers */
-  .deck .card.gone img { opacity: .35; }
-  .deck .card.gone::before, .deck .card.gone::after { content: ""; position: absolute; left: 50%; top: 50%; width: 110%; height: 2px;
-               background: var(--H); box-shadow: 0 0 4px var(--H); transform: translate(-50%, -50%) rotate(19deg); }
-  .deck .card.gone::after { transform: translate(-50%, -50%) rotate(-19deg); }
   .ghost { position: fixed; transform: translate(-50%, -50%); pointer-events: none; opacity: .85; z-index: 9; width: var(--dw); image-rendering: pixelated; filter: grayscale(1) brightness(.6); }
   .ddfoot { margin: 1px 0 0 !important; padding: 0 12px !important; }
 </style>
@@ -77,7 +79,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.39" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.40" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -189,12 +191,11 @@ const $ = (id) => document.getElementById(id);
     buttons.forEach((b, i) => {
       const h = how(b, i);
       const wrap = document.createElement("div");
-      if (b.out) wrap.className = "out";
       const btn = document.createElement("button");
-      btn.className = "btn" + (b.tapped || h.tapped ? " tapped" : "") + (h.can ? " can" : "") + (h.sel ? " sel" : "") + (h.att ? " att" : "");
+      btn.className = "btn" + (b.out ? " out" : "") + (b.tapped || h.tapped ? " tapped" : "") + (h.can ? " can" : "") + (h.sel ? " sel" : "") + (h.att ? " att" : "");
       const img = document.createElement("img"); img.alt = ""; img.src = b.image; btn.append(img);
       if (h.click) btn.onclick = h.click;
-      const pt = document.createElement("span"); pt.className = "pt"; pt.textContent = `${b.power}/${b.toughness - b.damage}`;
+      const pt = document.createElement("span"); pt.className = "pt"; pt.textContent = b.out ? "" : `${b.power}/${b.toughness - b.damage}`;
       btn.append(pt);
       if (h.note) { const d = document.createElement("span"); d.className = "dmg"; d.textContent = h.note; btn.append(d); }
       btn.title = b.name;
