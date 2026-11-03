@@ -4,6 +4,13 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.12 "Beat"
+**Mon Nov 2, 2026 · 11:37 PM HST** (no migration)
+- kura: "yeah can we have it pause for 1 second please" (before the dummy attacks, so the result of your attack can be read).
+- Changed: after your attack resolves, the dummy waits 1 second (`PAUSE_MS` in `src/index.js`, run by the Durable Object's alarm) before it attacks. Footer v0.12.
+- Removed: the dummy attacking in the same moment your attack resolved.
+- Not checked: the live site; alarms timing on Cloudflare.
+
 ## v0.11 "Result Line"
 **Mon Nov 2, 2026 · 11:35 PM HST** (no migration)
 - kura: "after i do my turn, all the next events happen at once and it's hard to tell what happened ... could we put a "-4 health" result somewhere on the game screen ... remove the explainer text over the attack button ... put a status line there that shows "-4 health" or the result of the round?"

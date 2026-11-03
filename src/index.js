@@ -3,6 +3,8 @@
 //   GET /m/<id>           the match page; GET /m/<id>/ws the match's WebSocket. You are seat a in every tab; the dummy is b.
 import { DurableObject } from "cloudflare:workers";
 import { newGame, attack, block, other, BLOCK_MS } from "./rules.js";
+
+const PAUSE_MS = 1000; // the dummy waits this long before it attacks
 import { dummyAttack, dummyBlocks } from "./dummy.js";
 import PAGE from "./page.html";
 
@@ -64,24 +66,30 @@ export class Match extends DurableObject {
     this.dummy(g);
     if (g.attack && !g.attack.until) g.attack.until = Date.now() + BLOCK_MS;
     await this.ctx.storage.put("g", g);
-    if (g.attack) await this.ctx.storage.setAlarm(g.attack.until);
+    const next = g.attack ? g.attack.until : g.dummyAt;
+    if (next) await this.ctx.storage.setAlarm(next);
     for (const ws of this.ctx.getWebSockets()) ws.send(JSON.stringify({ g }));
   }
 
-  // The dummy is seat b: it blocks your attack at once, then (its turn) attacks by SCRIPT and waits for your blocks.
+  // The dummy is seat b: it blocks your attack at once; on its turn it waits PAUSE_MS (so you can read the result of
+  // your attack), then attacks by SCRIPT and waits for your blocks.
   dummy(g) {
-    for (let guard = 0; guard < 4 && !g.winner; guard++) {
-      if (g.attack && g.attack.by === "a") { block(g, "b", dummyBlocks(g)); continue; }
-      if (g.turn === "b" && !g.attack) { attack(g, "b", dummyAttack(g)); g.dummyTurn++; continue; }
-      return;
-    }
+    if (g.winner) return;
+    if (g.attack && g.attack.by === "a") block(g, "b", dummyBlocks(g));
+    if (g.winner || g.turn !== "b" || g.attack) return;
+    if (!g.dummyAt) { g.dummyAt = Date.now() + PAUSE_MS; return; }
+    if (Date.now() < g.dummyAt) return;
+    g.dummyAt = null;
+    attack(g, "b", dummyAttack(g));
+    g.dummyTurn++;
   }
 
-  // The block moment ran out: whatever wasn't blocked lands.
+  // An alarm: the block moment ran out (whatever wasn't blocked lands), or the dummy's pause is over.
   async alarm() {
     const g = await this.ctx.storage.get("g");
-    if (!g?.attack || Date.now() < g.attack.until) return;
-    block(g, other(g.attack.by), {});
+    if (!g) return;
+    if (g.attack && Date.now() >= g.attack.until) block(g, other(g.attack.by), {});
+    else if (!(g.dummyAt && Date.now() >= g.dummyAt)) return;
     await this.save(g);
   }
 }
