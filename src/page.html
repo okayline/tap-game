@@ -50,10 +50,15 @@
          border-radius: 14px; padding: 10px 12px; color: var(--dim); font-family: ui-monospace, Menlo, Consolas, monospace; }
   .err { color: #ffb3b3; }
   /* the deck: the buttons still to come in, half size, next one on the left; before the first attack, drag one of yours onto a field button to swap them */
-  .deck { display: flex; gap: 8px; margin-top: 10px; min-height: calc(var(--w) / 2 * 31 / 88); }
-  .deck img { width: calc(var(--w) / 2); height: calc(var(--w) / 2 * 31 / 88); image-rendering: pixelated; filter: grayscale(1) brightness(.6); }
-  .deck img.drag { cursor: grab; outline: 1px dashed var(--S); outline-offset: 2px; touch-action: none; filter: none; }
-  .ghost { position: fixed; transform: translate(-50%, -50%); pointer-events: none; opacity: .85; z-index: 9; width: calc(var(--w) / 2); image-rendering: pixelated; }
+  /* 6 across, as wide as the field row (3 buttons and 2 gaps of 12px) with 5 gaps of 8px; greyed out like a ready button, power/toughness in the corner */
+  :root { --dw: calc((var(--w) * 3 - 16px) / 6); }
+  .deck { display: flex; gap: 8px; margin-top: 10px; min-height: calc(var(--dw) * 31 / 88); }
+  .deck .card { position: relative; }
+  .deck img { display: block; width: var(--dw); height: calc(var(--dw) * 31 / 88); image-rendering: pixelated; filter: grayscale(1) brightness(.6); }
+  .deck .card.drag { cursor: grab; outline: 1px dashed var(--S); outline-offset: 2px; touch-action: none; }
+  .deck .dpt { position: absolute; right: 2px; bottom: 1px; font-family: var(--meme); font-size: 11px; line-height: 1; color: var(--ink);
+               text-shadow: 0 0 3px #000, 0 0 4px rgba(176,132,255,.6); pointer-events: none; }
+  .ghost { position: fixed; transform: translate(-50%, -50%); pointer-events: none; opacity: .85; z-index: 9; width: var(--dw); image-rendering: pixelated; filter: grayscale(1) brightness(.6); }
   .ddfoot { margin: 1px 0 0 !important; padding: 0 12px !important; }
 </style>
 </head>
@@ -67,7 +72,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.37" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.38" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -143,9 +148,12 @@ const $ = (id) => document.getElementById(id);
   function deckRow(el, list, can) {
     el.innerHTML = "";
     list.forEach((b, j) => {
-      const img = document.createElement("img"); img.alt = ""; img.src = b.image; img.title = `${b.name} ${b.power}/${b.toughness}`;
-      if (can) { img.className = "drag"; img.onpointerdown = (e) => drag(e, j, img); }
-      el.append(img);
+      const card = document.createElement("div"); card.className = "card"; card.title = `${b.name} ${b.power}/${b.toughness}`;
+      const img = document.createElement("img"); img.alt = ""; img.src = b.image;
+      const pt = document.createElement("span"); pt.className = "dpt"; pt.textContent = `${b.power}/${b.toughness}`;
+      card.append(img, pt);
+      if (can) { card.classList.add("drag"); card.onpointerdown = (e) => drag(e, j, img); }
+      el.append(card);
     });
   }
   // drag a deck picture (mouse or touch) and drop it on one of your field buttons to swap the two

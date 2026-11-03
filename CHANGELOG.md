@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.38 "Nine" · Tue Nov 3, 2:18 AM
+- Decks are 9: 3 on the field, 6 in the deck row, which is now as wide as the field. Deck buttons are greyed out like ready buttons and show their power/toughness. Removed: decks of 6, and the coloured deck pictures.
+
 ## v0.37 "Old Matches" · Tue Nov 3, 2:15 AM
 - A match started before v0.36 works again: its page drew nothing below the field (no take or attack button, no log) and its dummy would have stopped. Removed: nothing.
 

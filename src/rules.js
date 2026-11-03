@@ -24,7 +24,7 @@ export const STATS = {
   divider: [3, 3],
 };
 
-export const DECK = 6;
+export const DECK = 9; // 3 on the field, 6 in the deck row (kura, Nov 3)
 export const MAX_ATTACKERS = 2; // at most this many attack in a turn, so one button always stays home (kura, Nov 3)
 // A coin flip decides who goes first, and that side attacks with only 1 on the match's first turn (kura, Nov 3).
 // g.limit is how many may attack this turn.
