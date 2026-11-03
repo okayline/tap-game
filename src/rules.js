@@ -21,7 +21,7 @@
 export const STATS = {
   neon: [1, 2],
   guestbook: [1, 3],
-  construction: [2, 3],   // Firewall (kura, Nov 3): it can't attack, so its power is only what it hits back with: 2
+  construction: [1, 3],
   counter: [2, 3],
   webring: [3, 2],
   divider: [3, 3],
@@ -38,7 +38,7 @@ export const WEBCOUNTER = ["counter"];
 export const GLOW = ["neon"];
 // Ping (kura, Nov 3; Magic's "first strike"): when an attack has one of these, a button the attack knocks out doesn't hit back.
 export const PING = ["divider"];
-// Firewall (kura, Nov 3; Magic's "defender"): a button of these types can't attack.
+// Firewall (kura, Nov 3): a button of these types hits back for 1 even while tapped (an untapped one hits back with its power, like any).
 export const FIREWALL = ["construction"];
 export const MAX_ATTACKERS = 2; // at most this many attack in a turn, so one button always stays home (kura, Nov 3)
 // A coin flip decides who goes first, and that side attacks with only 1 on the match's first turn (kura, Nov 3).
@@ -132,7 +132,6 @@ export function attack(g, seat, idxs) {
   if (!list.every((i) => ready(g.sides[seat], i))) return "Only ready buttons can attack.";
   if (list.length > g.limit) return `At most ${g.limit} can attack this turn.`;
   if (mustFill(g, seat)) return "Bring in a button first.";
-  if (list.some((i) => FIREWALL.includes(g.sides[seat].buttons[i].type))) return "A Firewall can't attack.";
   if (list.some((i) => g.sides[seat].buttons[i].sick && !BROADBAND.includes(g.sides[seat].buttons[i].type))) return "A button that came in this turn can't attack.";
   g.locked = true;
   if (!list.length) { g.log.push(`${NAMES[seat]} doesn't attack`); passTurn(g); return null; }
@@ -150,17 +149,18 @@ export function place(g, seat, split) {
   const parts = Object.entries(split).map(([k, v]) => [Number(k), Number(v)]).filter(([, d]) => d > 0);
   if (!parts.every(([i, d]) => Number.isInteger(d) && def.buttons[i] && d <= life(def.buttons[i]))) return "A button can't take that much.";
   if (parts.reduce((n, [, d]) => n + d, 0) !== toPlace(g)) return `Place exactly ${toPlace(g)}.`;
-  // hitting back: untapped buttons that take damage, counted before anything goes out (it all happens at once), except with Ping in
-  // the attack, where a button this attack knocks out doesn't hit back
+  // hitting back: untapped buttons that take damage (and tapped Firewalls, for 1), counted before anything goes out (it all happens at
+  // once), except with Ping in the attack, where a button this attack knocks out doesn't hit back
   const ping = g.attack.attackers.some((i) => PING.includes(att.buttons[i].type));
-  const hits = ([i, d]) => !def.buttons[i].tapped && !(ping && d >= life(def.buttons[i]));
-  let back = parts.filter(hits).reduce((n, [i]) => n + def.buttons[i].power, 0);
+  const backBy = (b) => (!b.tapped ? b.power : FIREWALL.includes(b.type) ? 1 : 0);
+  const hits = ([i, d]) => backBy(def.buttons[i]) > 0 && !(ping && d >= life(def.buttons[i]));
+  let back = parts.filter(hits).reduce((n, [i]) => n + backBy(def.buttons[i]), 0);
   for (const [i, d] of parts) {
     const b = def.buttons[i], hit = hits([i, d]);
     b.damage += d;
-    g.log.push(`${b.name} takes ${d}${hit ? `, hits back for ${b.power}` : ""}`);
+    g.log.push(`${b.name} takes ${d}${hit ? `, hits back for ${backBy(b)}` : ""}`);
     if (life(b) <= 0) { b.out = true; g.log.push(`${b.name} is out`); }
-    else if (hit && WEBCOUNTER.includes(b.type)) { b.power++; b.boost = (b.boost ?? 0) + 1; g.log.push(`${b.name} gets +1/+0`); }   // after its hit back (counted above)
+    else if (hit && !b.tapped && WEBCOUNTER.includes(b.type)) { b.power++; b.boost = (b.boost ?? 0) + 1; g.log.push(`${b.name} gets +1/+0`); }   // after its hit back (counted above)
   }
   for (const i of g.attack.attackers) {
     const a = att.buttons[i], d = Math.min(back, life(a));

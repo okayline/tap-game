@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.63 "Firewall Up" · Tue Nov 3, 4:40 AM
+- Firewall changed: Construction can attack, tap and untap like any button again, and even tapped it hits back for 1 (Construction is 1/3 again). Removed: Construction not being able to attack, and its power of 2.
+
 ## v0.62 "UN/TAP" · Tue Nov 3, 4:35 AM
 - The game is called UN/TAP. Removed: the name UN/CLICK (older entries below keep it).
 
