@@ -42,6 +42,7 @@
                background: linear-gradient(135deg, #b084ff, #ff6fcf); font-family: var(--meme); font-size: 19px; letter-spacing: .5px;
                text-transform: uppercase; text-shadow: 0 0 6px rgba(255,255,255,.35); box-shadow: 0 0 22px rgba(255,111,207,.45); }
   /* the log: newest line at the top; new lines appear one at a time (LINE_MS apart) */
+  button.act:disabled { cursor: default; filter: grayscale(1); opacity: .4; box-shadow: none; }
   #log { white-space: pre-wrap; font-size: 15px; line-height: 1.5; max-height: 195px; overflow: auto; background: var(--panel); border: 1px solid var(--line);
          border-radius: 14px; padding: 10px 12px; color: var(--dim); font-family: ui-monospace, Menlo, Consolas, monospace; }
   .err { color: #ffb3b3; }
@@ -58,7 +59,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.22" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.23" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -114,7 +115,9 @@ const $ = (id) => document.getElementById(id);
     $("meHp").textContent = `you · hp ${g.sides[me].hp} · this turn: ${atk}/${def}`;
     $("themHp").textContent = `dummy · hp ${g.sides[them].hp}`;
     $("result").textContent = g.winner ? `${g.winner === me ? "you win" : "you lose"}` : "";
-    $("attack").hidden = !myTurn;
+    // the attack button is always there unless block or new match takes its place; greyed out while it isn't your move
+    $("attack").hidden = blocking || !!g.winner;
+    $("attack").disabled = !myTurn;
     $("block").hidden = !blocking;
     $("again").hidden = !g.winner;
     if (shown === null) shown = g.log.length; // first board after loading: the whole log at once

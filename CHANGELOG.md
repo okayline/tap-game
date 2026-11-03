@@ -4,6 +4,13 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.23 "Always There"
+**Mon Nov 2, 2026 · 11:53 PM HST** (no migration)
+- kura: "right after i press Attack, the whole button disappears . and then reappears" ... "keep the button there the whole time ! grey it out when its not active yeah !"
+- Changed: the attack button stays on screen while the dummy acts, greyed out and unclickable; block and new match still take its place when they apply. Footer v0.23.
+- Removed: hiding the attack button whenever it wasn't your turn.
+- Not checked: the live site.
+
 ## v0.22 "UN/CLICK"
 **Mon Nov 2, 2026 · 11:51 PM HST** (no migration)
 - kura: "UN/CLICK" ... "sure let's do that ! change the title please and push !"
