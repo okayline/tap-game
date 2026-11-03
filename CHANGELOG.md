@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.84 "Big Text" · Tue Nov 3, 9:40 AM
+- On a phone the card text is 30% bigger (name, effect, flavour and the P/T box; the type line keeps its size so the set sign fits), and every card is the same taller height, set so the longest effect and flavour fit: 184 units instead of 150 (about 208px tall on a 390px-wide phone). A long name still shrinks to fit. The log shows 3 lines on a phone instead of 5. Removed: the 150-unit card height and the 5-line log on phones.
+
 ## v0.83 "Edge to Edge" · Tue Nov 3, 9:25 AM
 - On a phone the two panels run to the screen's edges (square corners, no side borders, 4px inside), so the cards are as wide as three across allows: about 122px on a 390px-wide phone. The deck row sits 4px further in, so its dashed outlines stay off the edges. The title, the button and the log keep a 6px margin. Removed: v0.82's 6px screen edges, 6px panel sides, panel side borders and rounded panel corners on phones.
 
