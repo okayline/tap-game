@@ -4,6 +4,13 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.18 "Quiet"
+**Mon Nov 2, 2026 · 11:48 PM HST** (no migration)
+- kura: "okay can we take the status line out please haha"
+- Changed: your panel's top line is "YOU · HP · THIS TURN" again; its right end only shows "you win / you lose" at the end of a match, an error, or "disconnected". Footer v0.18.
+- Removed: the attack result ("dummy -4", "you didn't attack", "no damage", who went out) and the game's record of it (`g.last` in `src/rules.js`, and its check in the test).
+- Not checked: the live site.
+
 ## v0.17 "Right Side"
 **Mon Nov 2, 2026 · 11:46 PM HST** (no migration)
 - kura: "could you take out "health" , and could we right justify from "dummy" ?"

@@ -34,7 +34,7 @@
   .out { opacity: .25; }
   .name { font-size: 13px; text-align: center; width: var(--w); color: var(--mute); margin-top: 4px; }
   .bar { text-align: center; }
-  /* your status line, at the top of your panel: hp and this turn, then (smaller, at the right) the last result and any error or disconnect; one line, cut with … if too long */
+  /* your status line, at the top of your panel: hp and this turn, then (smaller, at the right) only the end of the match, an error or a disconnect; one line, cut with … if too long */
   .statusline { display: flex; align-items: baseline; gap: 10px; white-space: nowrap; min-width: 0; }
   #status { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; font: 700 13px/1.2 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
             text-transform: none; letter-spacing: 0; text-align: right; color: var(--mute); text-shadow: 0 0 10px rgba(176,132,255,.75); }
@@ -57,7 +57,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.17" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.18" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -101,12 +101,7 @@ const $ = (id) => document.getElementById(id);
     const def = mine.reduce((n, b, i) => n + (!b.out && !up(b, i) ? b.toughness : 0), 0);
     $("meHp").textContent = `you · hp ${g.sides[me].hp} · this turn: ${atk}/${def}`;
     $("themHp").textContent = `dummy · hp ${g.sides[them].hp}`;
-    // the status line: the last attack's result ("dummy -4 health", who went out), or the end of the match
-    const L = g.last, who = (seat) => (seat === me ? "you" : "dummy");
-    const result = !L ? "" : L.pass ? `${who(L.by)} didn't attack`
-      : [L.hp ? `${who(them === L.by ? me : them)} -${L.hp}` : `${who(L.by)} attacked: no damage`,
-         ...L.out.map((o) => `${o.seat === me ? "your" : "dummy's"} ${o.name} is out`)].join(" · ");
-    $("result").textContent = g.winner ? `${result}${result ? " · " : ""}${g.winner === me ? "you win" : "you lose"} (reload the main page for a new match)` : result;
+    $("result").textContent = g.winner ? `${g.winner === me ? "you win" : "you lose"} (reload the main page for a new match)` : "";
     $("attack").hidden = !myTurn;
     $("block").hidden = !blocking;
     $("log").textContent = g.log.slice(-30).join("\n");
