@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.37 "Old Matches" · Tue Nov 3, 2:15 AM
+- A match started before v0.36 works again: its page drew nothing below the field (no take or attack button, no log) and its dummy would have stopped. Removed: nothing.
+
 ## v0.36 "Decks"
 **Tue Nov 3, 2026 · 2:10 AM HST**
 - Each side has a deck of 6: 3 on the field, the rest shown small below. Both decks have the same types. A button that's out is replaced from the deck at the start of your turn; you lose when field and deck are empty. Before the first attack, drag a deck button onto a field button to swap them. When the dummy goes first, press start. Removed: 3-button sides dealt at random.

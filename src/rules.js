@@ -114,7 +114,7 @@ export function place(g, seat, split) {
     if (life(a) <= 0) { a.out = true; g.log.push(`${a.name} is out`); }
   }
   g.attack = null;
-  const empty = (s) => g.sides[s].buttons.every((b) => b.out) && !g.sides[s].deck.length;
+  const empty = (s) => g.sides[s].buttons.every((b) => b.out) && !(g.sides[s].deck ?? []).length;
   if (empty(seat) || empty(by)) {
     g.winner = empty(seat) && empty(by) ? "draw" : empty(seat) ? by : seat;
     g.log.push(g.winner === "draw" ? "draw" : `${g.winner} wins`);
@@ -128,6 +128,7 @@ function passTurn(g) {
   g.turn = other(g.turn);
   g.limit = MAX_ATTACKERS;
   const s = g.sides[g.turn];
+  s.deck ??= []; // a match started before decks (v0.35 or older) has none
   s.buttons = s.buttons.map((b) => {
     if (!b.out || !s.deck.length) return b;
     const n = s.deck.shift();

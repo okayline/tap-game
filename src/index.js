@@ -74,7 +74,7 @@ export class Match extends DurableObject {
   dummy(g) {
     if (g.winner) return;
     if (g.attack && g.attack.by === "a") place(g, "b", dummyPlace(g));
-    if (g.winner || g.turn !== "b" || g.attack || !g.locked) return;
+    if (g.winner || g.turn !== "b" || g.attack || g.locked === false) return; // false: waiting for start (older matches have no lock)
     if (!g.dummyAt) { g.dummyAt = Date.now() + PAUSE_MS; return; }
     if (Date.now() < g.dummyAt) return;
     g.dummyAt = null;
