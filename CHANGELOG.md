@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.70 "Commons Again" · Tue Nov 3, 7:06 AM
+- Decks are dealt from 88x31's common buttons only. This fixes the page stopping after two cards in v0.69. Removed: the other rarities in decks (v0.65).
+
 ## v0.69 "Replay" · Tue Nov 3, 6:20 AM
 - A fight plays out in steps instead of all at once: the attackers tap and light up, then the buttons that took damage shake and show how much, then the attackers that were hit back do the same, then the turn passes. The log keeps pace with each step. Cards turn when they tap and untap instead of jumping. Removed: the whole fight landing at once, and cards being redrawn from scratch on every change.
 

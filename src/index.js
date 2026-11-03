@@ -23,10 +23,11 @@ export default {
   },
 };
 
-// 88x31's buttons of every rarity, from the shared item table (dungeon-items, through the ITEMS service binding). Rarity changes
-// nothing in a match: power and toughness come from the type (kura, Nov 3: rares "just show up").
+// 88x31's common buttons, from the shared item table (dungeon-items, through the ITEMS service binding). Only commons: the table
+// hides 88x31's other rarities (its "mystery buttons": no name, type or picture), so they broke the cards (kura, Nov 3: back to
+// commons). Rarity changed nothing in a match anyway: power and toughness come from the type.
 async function buttons(env) {
-  const r = await env.ITEMS.fetch("https://items/api/items?source=88x31");
+  const r = await env.ITEMS.fetch("https://items/api/items?source=88x31&rarity=common");
   const { items } = await r.json();
   return items.map((it) => ({ id: it.id, name: it.name, type: it.type, rarity: it.rarity, series: it.extra?.series ?? null, image: it.image }));
 }
