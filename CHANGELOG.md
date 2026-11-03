@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.85 "A Little Shorter" · Tue Nov 3, 9:30 AM
+- On a phone the cards are shorter: 168 units tall instead of 184 (about 190px on a 390px-wide phone, was 208), with the card text 20% bigger than the desktop size instead of 30%, so the longest effect and flavour still fit. Removed: v0.84's 184-unit height and 30% bigger text.
+
 ## v0.84 "Big Text" · Tue Nov 3, 9:40 AM
 - On a phone the card text is 30% bigger (name, effect, flavour and the P/T box; the type line keeps its size so the set sign fits), and every card is the same taller height, set so the longest effect and flavour fit: 184 units instead of 150 (about 208px tall on a 390px-wide phone). A long name still shrinks to fit. The log shows 3 lines on a phone instead of 5. Removed: the 150-unit card height and the 5-line log on phones.
 
