@@ -4,6 +4,13 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.31 "Five Lines"
+**Tue Nov 3, 2026 · 12:12 AM HST** (no migration)
+- kura: "for the log panel, can we only show at most 5 lines , and can they only appear one line at a time please"
+- Changed: the log shows only the 5 newest lines (newest at the top), in a box sized for 5 that doesn't scroll. New lines still appear one at a time, 0.45 seconds apart (unchanged since v0.19). Footer v0.31.
+- Removed: the last 30 lines and the log's scrolling.
+- Not checked: the live site; long lines that wrap take two rows, so the box can grow past 5 rows.
+
 ## v0.30 "Coin Flip"
 **Tue Nov 3, 2026 · 12:11 AM HST** (no migration)
 - kura: "first round, can only attack with one. then from the second turn you can attack with two" ... "can we do a coin flip on who goes first?" ... "both !"

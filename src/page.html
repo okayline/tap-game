@@ -44,9 +44,9 @@
   button.act { width: 100%; height: 54px; border-radius: 14px; border: 0; cursor: pointer; color: var(--ink);
                background: linear-gradient(135deg, #b084ff, #ff6fcf); font-family: var(--meme); font-size: 19px; letter-spacing: .5px;
                text-transform: uppercase; text-shadow: 0 0 6px rgba(255,255,255,.35); box-shadow: 0 0 22px rgba(255,111,207,.45); }
-  /* the log: newest line at the top; new lines appear one at a time (LINE_MS apart) */
+  /* the log: the 5 newest lines, newest at the top; new lines appear one at a time (LINE_MS apart) */
   button.act:disabled { cursor: default; filter: grayscale(1); opacity: .4; box-shadow: none; }
-  #log { white-space: pre-wrap; font-size: 15px; line-height: 1.5; max-height: 195px; overflow: auto; background: var(--panel); border: 1px solid var(--line);
+  #log { white-space: pre-wrap; font-size: 15px; line-height: 1.5; min-height: calc(5 * 1.5em + 20px); overflow: hidden; background: var(--panel); border: 1px solid var(--line);
          border-radius: 14px; padding: 10px 12px; color: var(--dim); font-family: ui-monospace, Menlo, Consolas, monospace; }
   .err { color: #ffb3b3; }
   .ddfoot { margin: 1px 0 0 !important; padding: 0 12px !important; }
@@ -62,7 +62,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.30" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.31" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -81,8 +81,7 @@ const $ = (id) => document.getElementById(id);
   function showLog() {
     logTimer = null;
     if (shown < g.log.length) shown++; else shown = g.log.length;
-    $("log").textContent = g.log.slice(0, shown).slice(-30).reverse().join("\n");
-    $("log").scrollTop = 0;
+    $("log").textContent = g.log.slice(0, shown).slice(-5).reverse().join("\n");
     if (shown < g.log.length) logTimer = setTimeout(showLog, LINE_MS);
   }
   let picked = new Set(), split = {}, seen = "";
