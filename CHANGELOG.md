@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.67 "Set Signs" · Tue Nov 3, 5:00 AM
+- The sign at the right of the type line is the button's set: a globe for Series Alpha, a floppy disk for Series Beta, none for a button outside a series. It's coloured by rarity in pastel (common slate, uncommon aqua, rare butter, ultra pink, prototype silver). Removed: the same small button shape on every card, and its bright 88x31 colours.
+
 ## v0.66 "Type Line" · Tue Nov 3, 4:55 AM
 - The type line reads like Magic's: the type and a made-up subtype (Neon — Sign, Guestbook — Entry, Construction — Site, Counter — Hits, Webring — Link, Divider — HR), and at the right a set and rarity symbol: a tiny button in 88x31's rarity colours (common ink, uncommon cyan, rare yellow, ultra magenta, prototype silver). Removed: "Button —" on every card.
 

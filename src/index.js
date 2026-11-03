@@ -28,7 +28,7 @@ export default {
 async function buttons(env) {
   const r = await env.ITEMS.fetch("https://items/api/items?source=88x31");
   const { items } = await r.json();
-  return items.map((it) => ({ id: it.id, name: it.name, type: it.type, rarity: it.rarity, image: it.image }));
+  return items.map((it) => ({ id: it.id, name: it.name, type: it.type, rarity: it.rarity, series: it.extra?.series ?? null, image: it.image }));
 }
 
 export class Match extends DurableObject {
