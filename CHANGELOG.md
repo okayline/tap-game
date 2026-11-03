@@ -4,6 +4,13 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.9 "Hard Hat"
+**Mon Nov 2, 2026 · 11:26 PM HST** (no migration)
+- kura: "construction is 1/2 please" (a hand of two constructions and an out guestbook couldn't deal any damage).
+- Changed: construction is 1/2 in `STATS`; the test's construction-blocks-counter fight now puts the construction out. Footer v0.9.
+- Removed: construction 0/3.
+- Not checked: the live site.
+
 ## v0.8 "Aura Glow"
 **Mon Nov 2, 2026 · 11:27 PM HST** (no migration)
 - kura: "could you theme the page like aura-farm please"

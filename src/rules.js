@@ -13,7 +13,7 @@ export const BLOCK_MS = 6000;
 export const STATS = {
   neon: [1, 1],
   guestbook: [1, 2],
-  construction: [0, 3],
+  construction: [1, 2],
   counter: [2, 2],
   webring: [3, 1],
   divider: [3, 2],
