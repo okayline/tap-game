@@ -4,6 +4,13 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.21 "Fixed Frame"
+**Mon Nov 2, 2026 · 11:49 PM HST** (no migration)
+- kura: "could we show 2 less text lines in the log, and have the whole page not be scrollable please"
+- Changed: the log box is 195px tall (two 15px lines fewer); the page never scrolls (`overflow: hidden` on html and body). Footer v0.21.
+- Removed: the 240px log height and page scrolling.
+- Not checked: the live site; whether anything is cut off on a short screen (a phone), which can no longer scroll to it.
+
 ## v0.20 "Again"
 **Mon Nov 2, 2026 · 11:47 PM HST** (no migration)
 - kura: "after the game ends, can we get a button (the attack button?) to reload the game please" (reloading a match link stays on the same match).
