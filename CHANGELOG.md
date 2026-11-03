@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.61 "Hits Back for 2" · Tue Nov 3, 4:30 AM
+- Firewall's card text says it hits back for 2. Removed: the shorter text "can't attack." alone.
+
 ## v0.60 "Glow, Ping, Firewall" · Tue Nov 3, 4:20 AM
 - Neon has Glow: +0/+1 for each other Neon on your field (its life shows green when raised). Divider has Ping: when an attack has a Divider, a button the attack knocks out doesn't hit back. Construction has Firewall: it can't attack, and it hits back for 2 (Construction is now 2/3). All six types now have card text. Removed: Construction attacking, Construction's power of 1, and knocked-out buttons hitting back against a Divider's attack.
 

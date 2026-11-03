@@ -102,7 +102,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.60" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.61" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -234,7 +234,7 @@ const $ = (id) => document.getElementById(id);
   const ONLINE = ["guestbook"], BROAD = ["webring"], FIRE = ["construction"];   // rules.js ALWAYS_ONLINE, BROADBAND and FIREWALL
   const TEXT = { guestbook: ["Always Online", "attacking doesn't tap it."], webring: ["Broadband", "can attack the turn it comes in."],
     counter: ["Webcounter", "+1/+0 each time it hits back."], neon: ["Glow", "+0/+1 for each other Neon on your field."],
-    divider: ["Ping", "a button its attack knocks out doesn't hit back."], construction: ["Firewall", "can't attack."] };
+    divider: ["Ping", "a button its attack knocks out doesn't hit back."], construction: ["Firewall", "can't attack. Hits back for 2."] };
   // a button's picture only moves while it's tapped (kura, Nov 3): ready or knocked out, it's drawn once onto a canvas, kept per button so
   // it doesn't change frame on every redraw
   const stills = new Map();
