@@ -132,7 +132,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.73" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.74" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -370,21 +370,28 @@ const $ = (id) => document.getElementById(id);
     }
     return { run, fade };
   }
-  // a side's deck row: its deck (next on the left; power/life left), then its knocked-out buttons, crossed out
+  // a side's deck row: its deck (next on the left; power/life left), with its knocked-out buttons crossed out in the spots they took
+  // rules.js deckRow: the deck in order, with each knocked-out button in the spot of the deck button that replaced it (b.at)
+  function rowOf(s) {
+    const deck = s.deck ?? [], gone = s.gone ?? [], at = new Map(gone.filter((b) => b.at >= 0).map((b) => [b.at, b])), row = [];
+    for (let k = 0, j = 0; j < deck.length || at.has(k); k++) row.push(at.has(k) ? { b: at.get(k), gone: true } : { b: deck[j], j: j++ });
+    const shown = new Set(row.map((x) => x.b));
+    return [...row, ...gone.filter((b) => !shown.has(b)).map((b) => ({ b, gone: true }))];
+  }
   function deckRow(el, side, can) {
     el.innerHTML = "";
-    (side.deck ?? []).forEach((b, j) => {
+    for (const { b, j, gone } of rowOf(side)) {
+      if (gone) {
+        const card = document.createElement("div"); card.className = "card gone"; card.title = `${b.name} (out)`;
+        card.append(still(b, "")); el.append(card); continue;
+      }
       const card = document.createElement("div"); card.className = "card"; card.title = `${b.name} ${b.power}/${b.toughness - b.damage}`;
       const img = document.createElement("img"); img.alt = ""; img.src = b.image;
       const pt = document.createElement("span"); pt.className = "dpt"; pt.append(...ptText(b));
       card.append(img, pt);
       if (can) { card.classList.add("drag"); card.onpointerdown = (e) => drag(e, j, img); }
       el.append(card);
-    });
-    (side.gone ?? []).forEach((b) => {
-      const card = document.createElement("div"); card.className = "card gone"; card.title = `${b.name} (out)`;
-      card.append(still(b, "")); el.append(card);
-    });
+    }
   }
   // drag a deck picture (mouse or touch) and drop it on one of your field buttons to swap the two
   let tapInto = -1;

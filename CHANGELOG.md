@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.74 "In Its Place" · Tue Nov 3, 7:41 AM
+- When you bring a deck button in for a knocked-out one, the knocked-out one sits in the deck row where the new one was, instead of moving to the end. Removed: knocked-out buttons collecting at the right end of the deck row (older matches still show them there).
+
 ## v0.73 "Incoming" · Tue Nov 3, 7:38 AM
 - When the guest pings you, its line forks into your cards and waits there while you choose; the glow only runs out, to the cards you picked, when you take. Removed: the glow running to all your cards as soon as the guest pinged.
 

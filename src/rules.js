@@ -9,7 +9,8 @@
 // (kura, Nov 2: "the buttons are the HP !!!")
 // Decks (kura, Nov 3): each side has DECK buttons, 3 on the field and the rest in its deck. Both decks hold the same types
 // (dealDecks), so their stats match. A button that goes out stays in its spot, greyed, until its side brings in a deck button
-// on its own turn (swap onto it); then it moves to its side's `gone` list (shown crossed out). Swaps (kura, Nov 3): before the
+// on its own turn (swap onto it); then it moves to its side's `gone` list (shown crossed out, in the deck row spot of the button that
+// replaced it: `at`, see deckRow). Swaps (kura, Nov 3): before the
 // first attack, as many as you like; after that, one per turn, on your turn before you attack (filling an out spot doesn't
 // count). A swapped-out button keeps its damage. A button that comes in after the first attack (a swap, or onto an out spot)
 // can't attack that turn ("summoning sickness", kura, Nov 3), but it can still hit back. You can't attack while you have an out spot and a deck to fill it from.
@@ -106,12 +107,23 @@ export function swap(g, seat, i, j) {
   if (!Number.isInteger(i) || !Number.isInteger(j) || !s.buttons[i] || !s.deck[j]) return "No such button.";
   if (g.locked && (g.winner || g.turn !== seat || g.attack)) return "Only on your turn, before you ping.";
   const [n] = s.deck.splice(j, 1), b = s.buttons[i];
-  if (b.out) { s.gone.push(b); s.buttons[i] = n; if (g.locked) n.sick = true; g.log.push(`${n.name} comes in`); settle(g); return null; }
+  if (b.out) { b.at = deckRow(s).findIndex((x) => x.j === j); s.gone.push(b); s.buttons[i] = n; if (g.locked) n.sick = true; g.log.push(`${n.name} comes in`); settle(g); return null; }
   if (g.locked && g.swapped) { s.deck.splice(j, 0, n); return "One swap a turn."; }
   s.buttons[i] = n; s.deck.splice(j, 0, b);
   if (g.locked) { g.swapped = true; n.sick = true; g.log.push(`${NAMES[seat]} swaps ${b.name} for ${n.name}`); }
   settle(g);
   return null;
+}
+
+// A side's deck row as shown: its deck buttons in order ({ b, j }: deck index j) and its gone buttons ({ b, gone: true }) each in the
+// spot of the deck button that replaced it (b.at, the row index then; kura, Nov 3: "could the knocked out card replace the card
+// that the player clicks on"). The row keeps its length when a deck button comes in, since a gone one takes its spot. A gone
+// button with no spot (an older match) goes at the end. The page has the same function.
+export function deckRow(s) {
+  const deck = s.deck ?? [], gone = s.gone ?? [], at = new Map(gone.filter((b) => b.at >= 0).map((b) => [b.at, b])), row = [];
+  for (let k = 0, j = 0; j < deck.length || at.has(k); k++) row.push(at.has(k) ? { b: at.get(k), gone: true } : { b: deck[j], j: j++ });
+  const shown = new Set(row.map((x) => x.b));
+  return [...row, ...gone.filter((b) => !shown.has(b)).map((b) => ({ b, gone: true }))];
 }
 
 // A side with an out button and a deck left must bring one in before attacking.
