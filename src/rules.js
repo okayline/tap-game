@@ -28,8 +28,8 @@ export const STATS = {
 };
 
 export const DECK = 9; // 3 on the field, 6 in the deck row (kura, Nov 3)
-// Vigilant (kura, Nov 3): attacking doesn't tap a button of these types, so it can still hit back on the other side's turn.
-export const VIGILANT = ["guestbook"];
+// Always Online (kura, Nov 3; Magic's "vigilance"): attacking doesn't tap a button of these types, so it can still hit back on the other side's turn.
+export const ALWAYS_ONLINE = ["guestbook"];
 export const MAX_ATTACKERS = 2; // at most this many attack in a turn, so one button always stays home (kura, Nov 3)
 // A coin flip decides who goes first, and that side attacks with only 1 on the match's first turn (kura, Nov 3).
 // g.limit is how many may attack this turn.
@@ -106,7 +106,7 @@ export function attack(g, seat, idxs) {
   if (list.some((i) => g.sides[seat].buttons[i].sick)) return "A button that came in this turn can't attack.";
   g.locked = true;
   if (!list.length) { g.log.push(`${seat} doesn't attack`); passTurn(g); return null; }
-  for (const i of list) if (!VIGILANT.includes(g.sides[seat].buttons[i].type)) g.sides[seat].buttons[i].tapped = true;
+  for (const i of list) if (!ALWAYS_ONLINE.includes(g.sides[seat].buttons[i].type)) g.sides[seat].buttons[i].tapped = true;
   g.attack = { by: seat, attackers: list };
   const att = g.sides[seat].buttons;
   g.log.push(`${seat} attacks for ${list.reduce((n, i) => n + att[i].power, 0)} with ${list.map((i) => att[i].name).join(", ")}`);

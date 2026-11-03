@@ -97,7 +97,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.49" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.50" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -145,7 +145,7 @@ const $ = (id) => document.getElementById(id);
     // your row: on your turn click to pick up to g.limit attackers (1 on the match's first turn, then 2; they show tapped; no more can be picked); when they attack, each click puts 1 damage on
     // that button (up to its life left; one more click clears it)
     row($("me"), mine, (b, i) => {
-      if (myTurn && ready(b) && !b.sick && (picked.has(i) || picked.size < g.limit)) return { can: true, tapped: picked.has(i) && !VIGIL.includes(b.type), sel: picked.has(i) && VIGIL.includes(b.type), click: () => { picked.has(i) ? picked.delete(i) : picked.add(i); draw(); } };
+      if (myTurn && ready(b) && !b.sick && (picked.has(i) || picked.size < g.limit)) return { can: true, tapped: picked.has(i) && !ONLINE.includes(b.type), sel: picked.has(i) && ONLINE.includes(b.type), click: () => { picked.has(i) ? picked.delete(i) : picked.add(i); draw(); } };
       if (taking && !b.out) {
         const d = split[i] ?? 0;
         return { can: true, sel: d > 0, note: d ? `-${d}` : "",
@@ -157,7 +157,7 @@ const $ = (id) => document.getElementById(id);
     // THIS TURN: attack = power of your buttons tapped or picked to attack; defense = life left on your ready buttons (the ones that hit back)
     const up = (b, i) => !b.out && (b.tapped || picked.has(i));
     const atk = mine.reduce((n, b, i) => n + (up(b, i) ? b.power : 0), 0);
-    const def = mine.reduce((n, b, i) => n + (!b.out && !b.tapped && !(picked.has(i) && !VIGIL.includes(b.type)) ? life(b) : 0), 0);   // a Vigilant one picked to attack still defends
+    const def = mine.reduce((n, b, i) => n + (!b.out && !b.tapped && !(picked.has(i) && !ONLINE.includes(b.type)) ? life(b) : 0), 0);   // an Always Online one picked to attack still defends
     $("meHp").textContent = `you · this turn: ${atk}/${def}`;
     $("themHp").textContent = "dummy";
     // you can drag from your deck before the first attack, and on your turn to fill an out spot or make your one swap
@@ -217,10 +217,11 @@ const $ = (id) => document.getElementById(id);
   }
   // a button drawn as a card: name (smaller when long, so it fits on one line, as Magic does), art, type line, an empty text box,
   // and power/life left in a box on the text box's bottom edge (none once it's out)
-  // card text by type: only the effects the rules have (rules.js VIGILANT)
-  const VIGIL = ["guestbook"];
-  const TEXT = { guestbook: ["Vigilant", "attacking doesn't tap it."] };
-  // a knocked-out button's picture stops moving: drawn once onto a canvas, kept per button so it doesn't change frame on every redraw
+  // card text by type: only the effects the rules have (rules.js ALWAYS_ONLINE)
+  const ONLINE = ["guestbook"];
+  const TEXT = { guestbook: ["Always Online", "attacking doesn't tap it."] };
+  // a button's picture only moves while it's tapped (kura, Nov 3): ready or knocked out, it's drawn once onto a canvas, kept per button so
+  // it doesn't change frame on every redraw
   const stills = new Map();
   function still(b, cls) {
     let c = stills.get(b.id);
@@ -231,10 +232,10 @@ const $ = (id) => document.getElementById(id);
     c.className = cls; return c;
   }
   const mk = (tag, cls, text) => { const e = document.createElement(tag); e.className = cls; if (text != null) e.textContent = text; return e; };
-  function card(b) {
+  function card(b, moving) {
     const gc = mk("div", "gc"), inn = mk("div", "gc-in"), name = mk("div", "gc-name", b.name), art = mk("div", "gc-art"), img = mk("img");
     name.style.fontSize = `calc(${Math.min(8.5, 102 / b.name.length).toFixed(1)} * var(--u))`;
-    img.alt = ""; img.src = b.image; art.append(b.out ? still(b, "") : img);
+    img.alt = ""; img.src = b.image; art.append(moving ? img : still(b, ""));
     const txt = mk("div", "gc-txt"), t = TEXT[b.type];
     if (t) { const k = mk("b", "", t[0]); txt.append(k, ` — ${t[1]}`); }
     inn.append(name, art, mk("div", "gc-type", `Button — ${b.type[0].toUpperCase()}${b.type.slice(1)}`), txt);
@@ -248,7 +249,7 @@ const $ = (id) => document.getElementById(id);
       const wrap = document.createElement("div");
       const btn = document.createElement("button");
       btn.className = "btn" + (b.out ? " out" : "") + (b.tapped || h.tapped ? " tapped" : "") + (h.can ? " can" : "") + (h.sel ? " sel" : "") + (h.att ? " att" : "");
-      btn.append(card(b));
+      btn.append(card(b, !b.out && (b.tapped || h.tapped)));
       if (h.click) btn.onclick = h.click;
       if (h.note) { const d = document.createElement("span"); d.className = "dmg"; d.textContent = h.note; btn.append(d); }
       btn.title = b.sick ? `${b.name}: came in this turn, can't attack` : b.name;

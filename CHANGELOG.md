@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.50 "Always Online" · Tue Nov 3, 3:55 AM
+- A card's picture only moves while the card is tapped (or picked to attack); a ready card shows a still picture in colour. Vigilant is renamed Always Online. Removed: moving pictures on ready cards, and the name Vigilant.
+
 ## v0.49 "Deck Boxes" · Tue Nov 3, 3:45 AM
 - Deck row buttons show their power/toughness in a small box over the bottom-right corner of their picture, like the field cards. Removed: the numbers written under them.
 
