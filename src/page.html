@@ -4,70 +4,80 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>UN/CLICK</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=EB+Garamond:ital,wght@0,500;0,700;1,500&display=swap" rel="stylesheet">
 <style>
-  /* themed like aura-farm ("Aura glow"): near-black with purple light, Impact headings, glowing text, gradient buttons */
+  /* themed "Grimoire Pastel" (kura, Nov 3): each button is a card like a Magic card (name bar, art, type line, text box,
+     power/toughness box), in light pastel blues, pinks and cream, with Cinzel and EB Garamond */
   :root {
-    --bg: #0b0a12; --panel: #171226; --panel2: #1b1530; --line: #3a2f5c;
-    --ink: #f4f1ff; --mute: #c9b8ff; --dim: #a99ccf;
-    --D: #5ad1ff; --H: #ff6fcf; --S: #b084ff;
-    --meme: Impact, "Arial Black", "Helvetica Neue", sans-serif;
+    --bg: #b3cfec; --panel: #f7fbff; --line: #b9d0ea; --frame: #8fb6de; --cream: #fffaf2;
+    --ink: #3a4a6b; --mute: #5a6a8a; --pink: #e98ab3; --blue: #6d8fd0;
+    --title: Cinzel, Georgia, serif; --body: "EB Garamond", Georgia, serif;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; background: var(--bg); color: var(--ink); height: 100%; overflow: hidden; }   /* the page itself never scrolls */
-  body { min-height: 100vh; font: 15px/1.35 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-         background: radial-gradient(circle at 50% 0%, #2a1650 0%, var(--bg) 60%) fixed, var(--bg); }
-  /* a button is shown 2x (176x62), or smaller on a narrow screen so three fit across */
-  :root { --w: min(176px, calc((100vw - 92px) / 3)); }
+  body { min-height: 100vh; font: 15px/1.35 var(--body); }
+  /* a card is --w wide (108px at the mockup's size, up to 176px, smaller on a narrow or short screen so three fit across and the
+     whole page fits the window) and 150/108 as tall; --u is the mockup's 1px at that width, so every size in a card scales with it */
+  :root { --w: min(176px, calc((100vw - 92px) / 3), calc((100vh - 470px) * 108 / 300)); --u: calc(var(--w) / 108); }
   /* nothing on the game screen can be selected or long-pressed into a selection, so taps and drags never highlight text */
   #game { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
   #game { max-width: 620px; margin: 0 auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
-  h1 { font-family: var(--meme); font-size: 26px; letter-spacing: .5px; text-transform: uppercase; margin: 0;
-       text-shadow: 0 0 8px rgba(176,132,255,.6), 0 0 16px rgba(255,111,207,.3); }
-  .side { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 14px; }
-  .side > div:first-child { font-family: var(--meme); font-size: 18px; letter-spacing: .5px; text-transform: uppercase; text-shadow: 0 0 10px rgba(176,132,255,.75); }
-  .row { display: flex; gap: 12px; justify-content: space-between; align-items: flex-start; margin-top: 8px; }
-  .btn { position: relative; width: var(--w); height: var(--w); display: flex; align-items: center; justify-content: center; border: 0; background: none; padding: 0; border-radius: 10px; color: var(--ink); }
-  /* untapped (ready, hits back): lies flat and greyed out; tapped (attacking): stands up sideways and lights up in colour */
-  .btn img { width: var(--w); height: calc(var(--w) * 31 / 88); image-rendering: pixelated; transition: transform .2s, filter .2s; filter: grayscale(1) brightness(.6); }
-  .btn.tapped img { transform: rotate(90deg); filter: drop-shadow(0 0 8px rgba(255,111,207,.8)); }
-  .btn.can { cursor: pointer; outline: 2px dashed var(--S); outline-offset: 2px; }
-  .btn.sel { outline: 2px solid var(--H); box-shadow: 0 0 16px rgba(255,111,207,.6); }
-  .btn.att { outline: 2px solid var(--D); box-shadow: 0 0 16px rgba(90,209,255,.6); }
-  /* a knocked-out button: dimmed, crossed out, no numbers (on the field until replaced, then in the deck row) */
-  .out img, .gone img { opacity: .3; }
-  .btn.out::before, .btn.out::after, .card.gone::before, .card.gone::after { content: ""; position: absolute; left: 50%; top: 50%; width: 55%; height: 8px;
-               border-radius: 4px; background: var(--H); box-shadow: 0 0 6px var(--H); transform: translate(-50%, -50%) rotate(19deg); pointer-events: none; }
-  .card.gone::before, .card.gone::after { height: 4px; border-radius: 2px; }
-  .btn.out::after, .card.gone::after { transform: translate(-50%, -50%) rotate(-19deg); }
-  /* power/life left in the button's bottom-right corner (a soft glow), and damage being placed on it in the top-right */
-  .pt, .dmg { position: absolute; font-family: var(--meme); letter-spacing: .5px; line-height: 1; pointer-events: none; }
-  .pt { right: 8px; bottom: 6px; font-size: calc(var(--w) * .1); color: var(--ink); text-shadow: 0 0 4px rgba(176,132,255,.45); }
-  .dmg { right: 8px; top: 6px; font-size: calc(var(--w) * .14); color: var(--H); text-shadow: 0 0 8px var(--H); }
+  h1 { font: 800 24px/1 var(--title); letter-spacing: 2px; color: #d97aa6; margin: 0; }
+  .side { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 10px 18px; }
+  .side > div:first-child { font: 600 12px/1 var(--title); letter-spacing: 1.5px; text-transform: uppercase; color: var(--blue); }
+  .row { display: flex; gap: 12px; justify-content: space-between; align-items: center; margin-top: 8px; height: calc(150 * var(--u)); }
+  .btn { position: relative; width: var(--w); height: calc(150 * var(--u)); display: flex; align-items: center; justify-content: center; border: 0; background: none; padding: 0; border-radius: calc(7 * var(--u)); color: var(--ink); }
+  /* the card: blue frame, cream inside */
+  .gc { width: 100%; height: 100%; background: var(--frame); border-radius: calc(7 * var(--u)); padding: calc(5 * var(--u)); display: flex; flex-direction: column; transition: transform .2s, filter .2s; }
+  .gc-in { flex: 1; position: relative; background: var(--cream); border-radius: calc(3 * var(--u)); padding: calc(4 * var(--u)); display: flex; flex-direction: column; gap: calc(4 * var(--u)); border: 1px solid var(--line); text-align: left; }
+  .gc-name { font: 600 calc(8.5 * var(--u))/1 var(--title); color: var(--ink); background: #ffe1ee; border: 1px solid #f0b8d0; border-radius: 2px; padding: 0 calc(4 * var(--u));
+             height: calc(15 * var(--u)); display: flex; align-items: center; white-space: nowrap; overflow: hidden; }
+  .gc-art { height: calc(31 * var(--u)); display: flex; align-items: center; justify-content: center; }
+  .gc-art img { width: calc(88 * var(--u)); height: calc(31 * var(--u)); image-rendering: pixelated; }
+  .gc-type { font: 500 calc(8 * var(--u))/1 var(--body); color: var(--ink); background: #e2f0ff; border: 1px solid var(--line); border-radius: 2px; padding: 0 calc(4 * var(--u));
+             height: calc(15 * var(--u)); display: flex; align-items: center; white-space: nowrap; overflow: hidden; }
+  .gc-txt { flex: 1; background: #fffdf8; border: 1px solid var(--line); border-radius: 2px; }
+  /* power/life left, in a box sitting on the bottom edge of the text box (like a Magic card's) */
+  .pt { position: absolute; right: calc(4 * var(--u)); bottom: 1px; font: 800 calc(9 * var(--u))/1 var(--title); color: var(--ink); background: #fff3c9; border: 1.5px solid #e2c56e;
+        border-radius: calc(5 * var(--u)); padding: calc(2 * var(--u)) calc(5 * var(--u)); box-shadow: 0 0 0 1.5px var(--cream), inset 0 1px 0 #fff; pointer-events: none; }
+  /* tapped (attacking): the card turns sideways to the right, a little smaller so it fits */
+  .btn.tapped .gc { transform: rotate(90deg) scale(.82); }
+  .btn.can { cursor: pointer; outline: 2px dashed var(--pink); outline-offset: 2px; }
+  .btn.sel { outline: 2px solid var(--pink); box-shadow: 0 0 12px rgba(233,138,179,.7); }
+  .btn.att { outline: 2px solid var(--blue); box-shadow: 0 0 12px rgba(109,143,208,.7); }
+  /* a knocked-out button: faded grey, crossed out in pink, no numbers (on the field until replaced, then in the deck row) */
+  .btn.out .gc { filter: grayscale(1) opacity(.5); }
+  .btn.out::before, .btn.out::after, .card.gone::before, .card.gone::after { content: ""; position: absolute; left: 50%; top: 50%; width: 45%; height: calc(7 * var(--u));
+               border-radius: 4px; background: #e57fa6; transform: translate(-50%, -50%) rotate(45deg); pointer-events: none; z-index: 1; }
+  .card.gone::before, .card.gone::after { width: 50%; height: 3px; border-radius: 2px; }
+  .btn.out::after, .card.gone::after { transform: translate(-50%, -50%) rotate(-45deg); }
+  /* damage being placed on a button, over its art */
+  .dmg { position: absolute; left: 50%; top: calc(42 * var(--u)); transform: translateX(-50%); font: 800 calc(14 * var(--u))/1 var(--title); color: #c2416b;
+         background: var(--cream); border: 1.5px solid var(--pink); border-radius: 6px; padding: 2px 6px; pointer-events: none; z-index: 2; }
   .bar { text-align: center; }
   /* your status line, at the top of your panel: this turn, then (smaller, at the right) only the end of the match, an error or a disconnect; one line, cut with … if too long */
   .statusline { display: flex; align-items: baseline; gap: 10px; white-space: nowrap; min-width: 0; }
-  #status { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; font: 700 13px/1.2 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-            text-transform: none; letter-spacing: 0; text-align: right; color: var(--mute); text-shadow: 0 0 10px rgba(176,132,255,.75); }
-  button.act { width: 100%; height: 54px; border-radius: 14px; border: 0; cursor: pointer; color: var(--ink);
-               background: linear-gradient(135deg, #b084ff, #ff6fcf); font-family: var(--meme); font-size: 19px; letter-spacing: .5px;
-               text-transform: uppercase; text-shadow: 0 0 6px rgba(255,255,255,.35); box-shadow: 0 0 22px rgba(255,111,207,.45); }
+  #status { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; font: italic 500 14px/1.2 var(--body);
+            text-transform: none; letter-spacing: 0; text-align: right; color: var(--mute); }
+  button.act { width: 100%; height: 50px; border-radius: 6px; border: 2px solid #fff; cursor: pointer; color: #3a2a4a; background: #f7b3cf;
+               font: 800 17px/1 var(--title); letter-spacing: 3px; text-transform: uppercase; }
+  button.act:disabled { cursor: default; filter: grayscale(1); opacity: .4; }
   /* the log: the 5 newest lines, newest at the top; new lines appear one at a time (LINE_MS apart) */
-  button.act:disabled { cursor: default; filter: grayscale(1); opacity: .4; box-shadow: none; }
-  #log { white-space: pre-wrap; font-size: 15px; line-height: 1.5; min-height: calc(5 * 1.5em + 20px); overflow: hidden; background: var(--panel); border: 1px solid var(--line);
-         border-radius: 14px; padding: 10px 12px; color: var(--dim); font-family: ui-monospace, Menlo, Consolas, monospace; }
-  .err { color: #ffb3b3; }
-  /* the deck: the buttons still to come in, half size, next one on the left; before the first attack, drag one of yours onto a field button to swap them */
-  /* 6 across, as wide as the field row (3 buttons and 2 gaps of 12px) with 5 gaps of 8px; power/toughness in the corner */
-  :root { --dw: calc((var(--w) * 3 - 16px) / 6); }
-  .deck { display: flex; gap: 8px; margin-top: 10px; min-height: calc(var(--dw) * 31 / 88); }
-  .deck .card { position: relative; }
-  /* the ones still in the deck are lit up (full colour); knocked-out ones stay greyed */
-  .deck .card:not(.gone) img { filter: none; }
-  .deck img { display: block; width: var(--dw); height: calc(var(--dw) * 31 / 88); image-rendering: pixelated; filter: grayscale(1) brightness(.6); }
-  .deck .card.drag { cursor: grab; outline: 1px dashed var(--S); outline-offset: 2px; touch-action: none; }
-  .deck .dpt { position: absolute; right: 2px; bottom: 1px; font-family: var(--meme); font-size: 11px; line-height: 1; color: var(--ink);
-               text-shadow: 0 0 3px #000, 0 0 4px rgba(176,132,255,.6); pointer-events: none; }
-  .ghost { position: fixed; transform: translate(-50%, -50%); pointer-events: none; opacity: .85; z-index: 9; width: var(--dw); image-rendering: pixelated; filter: grayscale(1) brightness(.6); }
+  #log { white-space: pre-wrap; font: italic 500 15px/1.5 var(--body); min-height: calc(5 * 1.5em + 20px); overflow: hidden; background: var(--cream); border: 1px solid var(--line);
+         border-radius: 6px; padding: 10px 14px; color: var(--ink); }
+  .err { color: #b3305f; }
+  /* the deck: the buttons still to come in, small, next one on the left; drag one of yours onto a field button to swap them */
+  /* 6 across, as wide as the field row (3 cards and 2 gaps of 12px) with 5 gaps of 8px; each in a little blue frame, power/toughness under its corner */
+  :root { --dw: calc((var(--w) * 3 - 16px) / 6 - 6px); }
+  .deck { display: flex; gap: 8px; margin-top: 10px; padding-bottom: 8px; min-height: calc(var(--dw) * 31 / 88 + 6px); }
+  .deck .card { position: relative; background: var(--frame); border-radius: 4px; padding: 3px; }
+  .deck img { display: block; width: var(--dw); height: calc(var(--dw) * 31 / 88); image-rendering: pixelated; }
+  /* knocked-out ones stay greyed */
+  .deck .card.gone img { filter: grayscale(1) opacity(.45); }
+  .deck .card.drag { cursor: grab; outline: 1px dashed var(--pink); outline-offset: 2px; touch-action: none; }
+  .deck .dpt { position: absolute; right: 2px; bottom: -9px; font: 800 8px/1 var(--title); color: var(--ink); pointer-events: none; }
+  .ghost { position: fixed; transform: translate(-50%, -50%); pointer-events: none; opacity: .85; z-index: 9; width: var(--dw); image-rendering: pixelated; }
   .ddfoot { margin: 1px 0 0 !important; padding: 0 12px !important; }
 </style>
 </head>
@@ -81,7 +91,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.45" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.46" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -196,6 +206,17 @@ const $ = (id) => document.getElementById(id);
     at(e);
     addEventListener("pointermove", at); addEventListener("pointerup", end); addEventListener("pointercancel", end);
   }
+  // a button drawn as a card: name (smaller when long, so it fits on one line, as Magic does), art, type line, an empty text box,
+  // and power/life left in a box on the text box's bottom edge (none once it's out)
+  const mk = (tag, cls, text) => { const e = document.createElement(tag); e.className = cls; if (text != null) e.textContent = text; return e; };
+  function card(b) {
+    const gc = mk("div", "gc"), inn = mk("div", "gc-in"), name = mk("div", "gc-name", b.name), art = mk("div", "gc-art"), img = mk("img");
+    name.style.fontSize = `calc(${Math.min(8.5, 102 / b.name.length).toFixed(1)} * var(--u))`;
+    img.alt = ""; img.src = b.image; art.append(img);
+    inn.append(name, art, mk("div", "gc-type", `Button — ${b.type[0].toUpperCase()}${b.type.slice(1)}`), mk("div", "gc-txt"));
+    if (!b.out) inn.append(mk("span", "pt", `${b.power}/${b.toughness - b.damage}`));
+    gc.append(inn); return gc;
+  }
   function row(el, buttons, how) {
     el.innerHTML = "";
     buttons.forEach((b, i) => {
@@ -203,10 +224,8 @@ const $ = (id) => document.getElementById(id);
       const wrap = document.createElement("div");
       const btn = document.createElement("button");
       btn.className = "btn" + (b.out ? " out" : "") + (b.tapped || h.tapped ? " tapped" : "") + (h.can ? " can" : "") + (h.sel ? " sel" : "") + (h.att ? " att" : "");
-      const img = document.createElement("img"); img.alt = ""; img.src = b.image; btn.append(img);
+      btn.append(card(b));
       if (h.click) btn.onclick = h.click;
-      const pt = document.createElement("span"); pt.className = "pt"; pt.textContent = b.out ? "" : `${b.power}/${b.toughness - b.damage}`;
-      btn.append(pt);
       if (h.note) { const d = document.createElement("span"); d.className = "dmg"; d.textContent = h.note; btn.append(d); }
       btn.title = b.sick ? `${b.name}: came in this turn, can't attack` : b.name;
       btn.dataset.i = i;

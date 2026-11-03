@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.46 "Grimoire Pastel" · Tue Nov 3, 3:35 AM
+- New look: every button is a card like a Magic card (name bar, art, type line, an empty text box, power/toughness in a box on the text box's edge) in light pastel blue, pink and cream, with Cinzel and EB Garamond. Long names get a smaller font so they fit on one line. Cards shrink on a short window so the page still fits. Removed: the aura-farm look (purple glow, Impact, gradient buttons), and greyed-out ready buttons (all cards are in colour; tapped ones turn sideways).
+
 ## v0.45 "Summoning Sickness Too" · Tue Nov 3, 3:12 AM
 - A button brought into a knocked-out spot after the first attack can't attack that turn either (it can still hit back), for you and the dummy. Removed: attacking with a button the same turn it came into a knocked-out spot.
 
