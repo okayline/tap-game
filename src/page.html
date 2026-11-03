@@ -102,7 +102,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.57" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.58" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -124,9 +124,9 @@ const $ = (id) => document.getElementById(id);
   function showLog() {
     logTimer = null;
     if (shown < g.log.length) shown++; else shown = g.log.length;
-    // newest on top at full strength, each older line fainter, down to 25% for the fifth
+    // newest on top at full strength, each older line fainter, down to 50% for the fifth
     $("log").replaceChildren(...g.log.slice(0, shown).slice(-5).reverse().map((t, k) => {
-      const d = document.createElement("div"); d.textContent = t; d.style.opacity = 1 - k * 0.1875; return d;
+      const d = document.createElement("div"); d.textContent = `C:\\> ${t}`; d.style.opacity = 1 - k * 0.125; return d;   // a DOS prompt before each line (kura, Nov 3)
     }));
     if (shown < g.log.length) logTimer = setTimeout(showLog, LINE_MS);
   }

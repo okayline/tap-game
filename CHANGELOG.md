@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.58 "C:\\>" · Tue Nov 3, 4:35 AM
+- Each log line starts with a DOS prompt, C:\\>. Older log lines fade less: down to 50% for the bottom one. Removed: log lines with nothing before them, and the fade down to 25%.
+
 ## v0.57 "Guest #1337" · Tue Nov 3, 4:30 AM
 - The dummy is called Guest #1337 and you are Player, on your panels and in the log (new matches). Removed: "dummy" and "you" on the panels, and the seat letters a and b in the log.
 
