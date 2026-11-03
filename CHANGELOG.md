@@ -4,8 +4,11 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
-## v0.35 "Short Notes"
-**Tue Nov 3, 2026 · 12:28 AM HST**
+## v0.36 "Decks"
+**Tue Nov 3, 2026 · 2:10 AM HST**
+- Each side has a deck of 6: 3 on the field, the rest shown small below. Both decks have the same types. A button that's out is replaced from the deck at the start of your turn; you lose when field and deck are empty. Before the first attack, drag a deck button onto a field button to swap them. When the dummy goes first, press start. Removed: 3-button sides dealt at random.
+
+## v0.35 "Short Notes" · Tue Nov 3, 12:28 AM
 - Behind the scenes only: this changelog is now short. Removed: the long entries.
 
 ## v0.34 "No Rest" · Tue Nov 3, 12:22 AM

@@ -49,20 +49,25 @@
   #log { white-space: pre-wrap; font-size: 15px; line-height: 1.5; min-height: calc(5 * 1.5em + 20px); overflow: hidden; background: var(--panel); border: 1px solid var(--line);
          border-radius: 14px; padding: 10px 12px; color: var(--dim); font-family: ui-monospace, Menlo, Consolas, monospace; }
   .err { color: #ffb3b3; }
+  /* the deck: the buttons still to come in, half size, next one on the left; before the first attack, drag one of yours onto a field button to swap them */
+  .deck { display: flex; gap: 8px; margin-top: 10px; min-height: calc(var(--w) / 2 * 31 / 88); }
+  .deck img { width: calc(var(--w) / 2); height: calc(var(--w) / 2 * 31 / 88); image-rendering: pixelated; filter: grayscale(1) brightness(.6); }
+  .deck img.drag { cursor: grab; outline: 1px dashed var(--S); outline-offset: 2px; touch-action: none; filter: none; }
+  .ghost { position: fixed; transform: translate(-50%, -50%); pointer-events: none; opacity: .85; z-index: 9; width: calc(var(--w) / 2); image-rendering: pixelated; }
   .ddfoot { margin: 1px 0 0 !important; padding: 0 12px !important; }
 </style>
 </head>
 <body>
 <div id="game">
 <h1>UN/CLICK</h1>
-  <div class="side"><div id="themHp"></div><div class="row" id="them"></div></div>
-  <div class="bar"><button class="act" id="attack" hidden>attack</button> <button class="act" id="take" hidden>take</button> <button class="act" id="again" hidden>new match</button></div>
-  <div class="side"><div class="statusline"><span id="meHp"></span><span id="status"><span id="result"></span> <span id="err" class="err"></span></span></div><div class="row" id="me"></div></div>
+  <div class="side"><div id="themHp"></div><div class="row" id="them"></div><div class="deck" id="themDeck"></div></div>
+  <div class="bar"><button class="act" id="start" hidden>start</button> <button class="act" id="attack" hidden>attack</button> <button class="act" id="take" hidden>take</button> <button class="act" id="again" hidden>new match</button></div>
+  <div class="side"><div class="statusline"><span id="meHp"></span><span id="status"><span id="result"></span> <span id="err" class="err"></span></span></div><div class="row" id="me"></div><div class="deck" id="meDeck"></div></div>
   <div id="log"></div>
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.35" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.36" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -87,11 +92,12 @@ const $ = (id) => document.getElementById(id);
   let picked = new Set(), split = {}, seen = "";
   $("attack").onclick = () => send({ do: "attack", idxs: [...picked] });
   $("take").onclick = () => send({ do: "take", split });
+  $("start").onclick = () => send({ do: "start" });
   $("again").onclick = () => location.assign("/"); // the main page starts a new match
 
   function draw() {
     const me = "a", them = "b", mine = g.sides[me].buttons, theirs = g.sides[them].buttons;
-    const key = `${g.turn}|${g.attack ? g.attack.by : ""}|${g.log.length}`;
+    const key = `${g.turn}|${g.attack ? g.attack.by : ""}|${g.log.length}|${mine.map((b) => b.id).join()}`;
     if (key !== seen) { seen = key; picked = new Set(); split = {}; } // a new step: clear picks
     const taking = g.attack && g.attack.by === them && !g.winner;
     const life = (b) => (b.out ? 0 : b.toughness - b.damage);
@@ -118,9 +124,14 @@ const $ = (id) => document.getElementById(id);
     const def = mine.reduce((n, b, i) => n + (!b.out && !up(b, i) ? life(b) : 0), 0);
     $("meHp").textContent = `you · this turn: ${atk}/${def}`;
     $("themHp").textContent = "dummy";
+    deckRow($("meDeck"), g.sides[me].deck, !g.locked && !g.winner);
+    deckRow($("themDeck"), g.sides[them].deck, false);
+    // the dummy won the flip: it waits for start, so you can swap first
+    const startNow = !g.locked && g.turn === them && !g.winner;
+    $("start").hidden = !startNow;
     $("result").textContent = g.winner ? `${g.winner === "draw" ? "draw" : g.winner === me ? "you win" : "you lose"}` : "";
     // the attack button is always there unless take or new match takes its place; greyed out while it isn't your move
-    $("attack").hidden = taking || !!g.winner;
+    $("attack").hidden = taking || !!g.winner || startNow;
     $("attack").disabled = !myTurn;
     $("take").hidden = !taking;
     $("take").disabled = placed !== need;
@@ -128,6 +139,28 @@ const $ = (id) => document.getElementById(id);
     $("again").hidden = !g.winner;
     if (shown === null) shown = g.log.length; // first board after loading: the whole log at once
     if (!logTimer) showLog();
+  }
+  function deckRow(el, list, can) {
+    el.innerHTML = "";
+    list.forEach((b, j) => {
+      const img = document.createElement("img"); img.alt = ""; img.src = b.image; img.title = `${b.name} ${b.power}/${b.toughness}`;
+      if (can) { img.className = "drag"; img.onpointerdown = (e) => drag(e, j, img); }
+      el.append(img);
+    });
+  }
+  // drag a deck picture (mouse or touch) and drop it on one of your field buttons to swap the two
+  function drag(e, j, img) {
+    e.preventDefault();
+    const ghost = img.cloneNode(); ghost.className = "ghost"; document.body.append(ghost);
+    const at = (ev) => { ghost.style.left = ev.clientX + "px"; ghost.style.top = ev.clientY + "px"; };
+    const end = (ev) => {
+      ghost.remove();
+      removeEventListener("pointermove", at); removeEventListener("pointerup", end); removeEventListener("pointercancel", end);
+      const t = ev.type === "pointerup" && document.elementFromPoint(ev.clientX, ev.clientY)?.closest("#me .btn");
+      if (t) send({ do: "swap", i: Number(t.dataset.i), j });
+    };
+    at(e);
+    addEventListener("pointermove", at); addEventListener("pointerup", end); addEventListener("pointercancel", end);
   }
   function row(el, buttons, how) {
     el.innerHTML = "";
@@ -143,6 +176,7 @@ const $ = (id) => document.getElementById(id);
       btn.append(pt);
       if (h.note) { const d = document.createElement("span"); d.className = "dmg"; d.textContent = h.note; btn.append(d); }
       btn.title = b.name;
+      btn.dataset.i = i;
       wrap.append(btn); el.append(wrap);
     });
   }

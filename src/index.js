@@ -2,7 +2,7 @@
 //   GET /                 a new match against the scripted dummy (src/dummy.js): redirects to it
 //   GET /m/<id>           the match page; GET /m/<id>/ws the match's WebSocket. You are seat a in every tab; the dummy is b.
 import { DurableObject } from "cloudflare:workers";
-import { newGame, attack, place } from "./rules.js";
+import { newGame, attack, place, swap, dealDecks } from "./rules.js";
 
 const PAUSE_MS = 1000; // the dummy waits this long before it attacks
 import { dummyAttack, dummyPlace } from "./dummy.js";
@@ -30,15 +30,11 @@ async function commons(env) {
   return items.map((it) => ({ id: it.id, name: it.name, type: it.type, image: it.image }));
 }
 
-const pick = (list, n) => [...list].sort(() => Math.random() - 0.5).slice(0, n);
-
 export class Match extends DurableObject {
   async setup(pool) {
-    const g = newGame(pick(pool, 3), pick(pool, 3));
-    g.dummyTurn = 0;
-    if (g.turn === "b") g.dummyAt = Date.now() + PAUSE_MS; // the dummy won the flip: it opens after its pause
+    const g = newGame(...dealDecks(pool));
+    g.dummyTurn = 0; // if the dummy won the flip, it waits for you to press start (so you can swap first)
     await this.ctx.storage.put("g", g);
-    if (g.dummyAt) await this.ctx.storage.setAlarm(g.dummyAt);
   }
 
   async fetch(req) {
@@ -58,7 +54,9 @@ export class Match extends DurableObject {
     try { a = JSON.parse(msg); } catch { return; }
     const err =
       a.do === "attack" && Array.isArray(a.idxs) ? attack(g, seat, a.idxs) :
-      a.do === "take" && a.split && typeof a.split === "object" ? place(g, seat, a.split) : "Unknown action.";
+      a.do === "take" && a.split && typeof a.split === "object" ? place(g, seat, a.split) :
+      a.do === "swap" ? swap(g, seat, a.i, a.j) :
+      a.do === "start" ? (g.locked || g.turn !== "b" ? "Nothing to start." : ((g.locked = true), null)) : "Unknown action.";
     if (err) return ws.send(JSON.stringify({ error: err }));
     await this.save(g);
   }
@@ -76,7 +74,7 @@ export class Match extends DurableObject {
   dummy(g) {
     if (g.winner) return;
     if (g.attack && g.attack.by === "a") place(g, "b", dummyPlace(g));
-    if (g.winner || g.turn !== "b" || g.attack) return;
+    if (g.winner || g.turn !== "b" || g.attack || !g.locked) return;
     if (!g.dummyAt) { g.dummyAt = Date.now() + PAUSE_MS; return; }
     if (Date.now() < g.dummyAt) return;
     g.dummyAt = null;

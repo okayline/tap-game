@@ -7,6 +7,10 @@
 // Each of its untapped buttons that takes damage hits back with its power, spread over the attackers in order.
 // A button only untaps at the start of its own side's turn, so attacking with it means it can't hit back next turn.
 // (kura, Nov 2: "the buttons are the HP !!!")
+// Decks (kura, Nov 3): each side has DECK buttons, 3 on the field and the rest in its deck. Both decks hold the same types
+// (dealDecks), so their stats match. Before the first attack you may swap a field button with a deck button. A button that
+// goes out is gone; at the start of a side's turn its empty spots fill from the top of its deck. A side loses when its field
+// and deck are both empty.
 
 // power / toughness by type: the more buttons of a type exist, the weaker it is (kura, Nov 2: counts from the live
 // item table, all active 88x31 buttons: neon 32, guestbook 21, construction 19, counter 17, webring 13, divider 5).
@@ -20,6 +24,7 @@ export const STATS = {
   divider: [3, 3],
 };
 
+export const DECK = 6;
 export const MAX_ATTACKERS = 2; // at most this many attack in a turn, so one button always stays home (kura, Nov 3)
 // A coin flip decides who goes first, and that side attacks with only 1 on the match's first turn (kura, Nov 3).
 // g.limit is how many may attack this turn.
@@ -32,15 +37,39 @@ export const toPlace = (g) => Math.min(
   g.sides[other(g.attack.by)].buttons.reduce((n, b) => n + life(b), 0),
 );
 
-export function newGame(buttonsA, buttonsB, first = Math.random() < 0.5 ? "a" : "b") {
-  const side = (list) => ({
-    buttons: list.map((b) => {
-      const [power, toughness] = STATS[b.type] ?? [1, 1];
-      return { ...b, power, toughness, damage: 0, tapped: false, out: false };
-    }),
-  });
-  return { turn: first, limit: 1, sides: { a: side(buttonsA), b: side(buttonsB) }, attack: null, winner: null,
+// Deal both decks from the pool: n times, pick a type (weighted by how many of its buttons are left) and give each side a
+// different button of it. A type needs 2 buttons left to be picked, so a type with 2 in the pool comes up at most once.
+export function dealDecks(pool, n = DECK, rand = Math.random) {
+  const left = {};
+  for (const b of pool) (left[b.type] ??= []).push(b);
+  const take = (list) => list.splice(Math.floor(rand() * list.length), 1)[0];
+  const a = [], b = [];
+  for (let k = 0; k < n; k++) {
+    const types = Object.keys(left).filter((t) => left[t].length >= 2);
+    if (!types.length) break;
+    let r = rand() * types.reduce((m, t) => m + left[t].length, 0), t = types[0];
+    for (const x of types) { if (r < left[x].length) { t = x; break; } r -= left[x].length; }
+    a.push(take(left[t])); b.push(take(left[t]));
+  }
+  return [a, b];
+}
+
+const fresh = (b) => { const [power, toughness] = STATS[b.type] ?? [1, 1]; return { ...b, power, toughness, damage: 0, tapped: false, out: false }; };
+
+// deckA / deckB: a side's whole deck; the first 3 go on the field.
+export function newGame(deckA, deckB, first = Math.random() < 0.5 ? "a" : "b") {
+  const side = (list) => { const all = list.map(fresh); return { buttons: all.slice(0, 3), deck: all.slice(3) }; };
+  return { turn: first, limit: 1, sides: { a: side(deckA), b: side(deckB) }, attack: null, winner: null, locked: false,
     log: [`coin flip: ${first} goes first, with 1 attacker`, `${first}'s turn`] };
+}
+
+// Before the first attack: swap field button i with deck button j. Returns an error string or null.
+export function swap(g, seat, i, j) {
+  if (g.locked) return "Swaps are over once the first attack starts.";
+  const s = g.sides[seat];
+  if (!Number.isInteger(i) || !Number.isInteger(j) || !s.buttons[i] || !s.deck[j]) return "No such button.";
+  [s.buttons[i], s.deck[j]] = [s.deck[j], s.buttons[i]];
+  return null;
 }
 
 const ready = (side, i) => side.buttons[i] && !side.buttons[i].out && !side.buttons[i].tapped;
@@ -52,6 +81,7 @@ export function attack(g, seat, idxs) {
   const list = [...new Set(idxs)];
   if (!list.every((i) => ready(g.sides[seat], i))) return "Only ready buttons can attack.";
   if (list.length > g.limit) return `At most ${g.limit} can attack this turn.`;
+  g.locked = true;
   if (!list.length) { g.log.push(`${seat} doesn't attack`); passTurn(g); return null; }
   for (const i of list) g.sides[seat].buttons[i].tapped = true;
   g.attack = { by: seat, attackers: list };
@@ -84,7 +114,7 @@ export function place(g, seat, split) {
     if (life(a) <= 0) { a.out = true; g.log.push(`${a.name} is out`); }
   }
   g.attack = null;
-  const empty = (s) => g.sides[s].buttons.every((b) => b.out);
+  const empty = (s) => g.sides[s].buttons.every((b) => b.out) && !g.sides[s].deck.length;
   if (empty(seat) || empty(by)) {
     g.winner = empty(seat) && empty(by) ? "draw" : empty(seat) ? by : seat;
     g.log.push(g.winner === "draw" ? "draw" : `${g.winner} wins`);
@@ -97,6 +127,13 @@ export function place(g, seat, split) {
 function passTurn(g) {
   g.turn = other(g.turn);
   g.limit = MAX_ATTACKERS;
+  const s = g.sides[g.turn];
+  s.buttons = s.buttons.map((b) => {
+    if (!b.out || !s.deck.length) return b;
+    const n = s.deck.shift();
+    g.log.push(`${n.name} comes in`);
+    return n;
+  });
   for (const b of g.sides[g.turn].buttons) b.tapped = false;
   g.log.push(`${g.turn}'s turn`);
 }

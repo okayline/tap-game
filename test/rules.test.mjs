@@ -23,3 +23,31 @@ test("an attack is placed on the defender's buttons; untapped ones that take dam
   assert.equal(g.turn, "b");
   assert.equal(g.sides.b.buttons[1].damage, 2);      // damage stays
 });
+
+test("decks: same types on both sides; swaps until the first attack; out buttons are replaced from the deck", async () => {
+  const { dealDecks, swap } = await import("../src/rules.js");
+  const pool = [..."aaaa"].map((_, i) => ({ name: "n" + i, type: "neon" }))
+    .concat([{ name: "d0", type: "divider" }, { name: "d1", type: "divider" }], [..."wwww"].map((_, i) => ({ name: "w" + i, type: "webring" })));
+  for (let k = 0; k < 20; k++) {
+    const [a, b] = dealDecks(pool, 5);
+    assert.deepEqual(a.map((x) => x.type), b.map((x) => x.type));
+    assert.ok(a.filter((x) => x.type === "divider").length <= 1);
+    assert.equal(new Set([...a, ...b]).size, a.length + b.length); // no button dealt twice
+  }
+  // a: 3 neons on the field, a divider in the deck; b: 3 webrings and one in the deck
+  const g = newGame([0, 1, 2].map((i) => ({ name: "n" + i, type: "neon" })).concat({ name: "d", type: "divider" }),
+    [0, 1, 2, 3].map((i) => ({ name: "w" + i, type: "webring" })), "a");
+  assert.equal(swap(g, "a", 0, 0), null);
+  assert.equal(g.sides.a.buttons[0].name, "d");
+  assert.equal(g.sides.a.deck[0].name, "n0");
+  swap(g, "a", 0, 0); // back
+  assert.equal(attack(g, "a", [0]), null);
+  assert.equal(swap(g, "a", 0, 0), "Swaps are over once the first attack starts.");
+  // b puts the neon's 1 power on webring 0 (2 toughness, survives); hit back 3 takes neon 0 out
+  assert.equal(place(g, "b", { 0: 1 }), null);
+  assert.equal(g.sides.a.buttons[0].out, true);
+  g.limit = 2; attack(g, "b", []); // b passes; a's turn: the empty spot fills from a's deck
+  assert.equal(g.sides.a.buttons[0].name, "d");
+  assert.equal(g.sides.a.deck.length, 0);
+  assert.equal(g.winner, null);
+});
