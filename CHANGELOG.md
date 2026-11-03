@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.42 "Real Time" · Tue Nov 3, 2:44 AM
+- No more turns. Press start, then tap one of your untapped buttons and one of theirs to hit it. If theirs is untapped, it hits back. A button that hits stays tapped for its type's cooldown (1/2: 4.5 s, 1/3: 4 s, 2/3: 3.5 s, 3/2: 3 s, 3/3: 2.5 s), shown counting down; a tapped button starts grey and fills back up with colour as it cools down, and a ready one is in full colour with a glow. Bring in a deck button onto a knocked-out spot any time. The dummy hits 0.7 s after one of its buttons untaps. Removed: turns, the coin flip, attacking with up to 2, placing damage, the attack and take buttons, one swap a turn, summoning sickness, and the dummy's script.
+
 ## v0.41 "Summoning Sickness" · Tue Nov 3, 2:33 AM
 - A button you swap in during the match can't attack that turn (it can still hit back). Bringing one into a knocked-out spot, and swaps before the first attack, are not affected. Removed: swapping in and attacking in the same turn.
 
