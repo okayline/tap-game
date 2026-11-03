@@ -15,7 +15,7 @@ export const SCRIPT = [
 ];
 
 const line = (n) => SCRIPT[((n % SCRIPT.length) + SCRIPT.length) % SCRIPT.length];
-const readyIdx = (side) => side.buttons.map((b, i) => (b.out || b.tapped ? -1 : i)).filter((i) => i >= 0);
+const readyIdx = (side) => side.buttons.map((b, i) => (b.out || b.tapped || b.sick ? -1 : i)).filter((i) => i >= 0);
 
 // Its attackers this turn.
 export const dummyAttack = (g) => readyIdx(g.sides.b).slice(0, Math.min(line(g.dummyTurn).attack, g.limit));

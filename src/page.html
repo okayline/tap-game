@@ -81,7 +81,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.44" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.45" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -208,7 +208,7 @@ const $ = (id) => document.getElementById(id);
       const pt = document.createElement("span"); pt.className = "pt"; pt.textContent = b.out ? "" : `${b.power}/${b.toughness - b.damage}`;
       btn.append(pt);
       if (h.note) { const d = document.createElement("span"); d.className = "dmg"; d.textContent = h.note; btn.append(d); }
-      btn.title = b.sick ? `${b.name}: swapped in, can't attack this turn` : b.name;
+      btn.title = b.sick ? `${b.name}: came in this turn, can't attack` : b.name;
       btn.dataset.i = i;
       wrap.append(btn); el.append(wrap);
     });

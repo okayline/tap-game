@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.45 "Summoning Sickness Too" · Tue Nov 3, 3:12 AM
+- A button brought into a knocked-out spot after the first attack can't attack that turn either (it can still hit back), for you and the dummy. Removed: attacking with a button the same turn it came into a knocked-out spot.
+
 ## v0.44 "Tap In" · Tue Nov 3, 2:50 AM
 - On your turn, when one of your buttons is knocked out, tapping a deck button brings it into that spot (dragging still works). Text on the game screen can't be selected any more. The log's older lines fade out, down to 25% for the bottom one. Removed: text selection on the game screen.
 
