@@ -4,6 +4,13 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.24 "Buttons Are HP"
+**Mon Nov 2, 2026 · 11:59 PM HST** (no migration)
+- kura: "could we distribute that damage somehow. so when the enemy attacks for 3 lets say, cyber cafe could take -2 and hex takes -1?" ... "yeah the buttons are the HP !!!"
+- Changed: a side's buttons are its health; a side with no buttons left loses (both at once is a draw). An attack has a total power; the defender places it on its own buttons, any split, each button up to its life left (all of it, or as much as its buttons can still take). Untapped buttons that take damage hit back with their power, spread over the attackers in order. Damage stays all match, so a button's label shows power/life left. On your page: when the dummy attacks, each click on one of your buttons puts 1 damage there (one more click past its life clears it); the button reads "place n more" until it's all placed, then "take n". "This turn" defense is now the life left on your ready buttons. The dummy's script lines say how it places your attacks: "spread" (one point at a time, untapped first) or "focus" (fills one button, tapped first). Footer v0.24.
+- Removed: hp (5 per side), blocking (assigning a blocker to an attacker, blockers fighting attackers), the block button, "dummy · hp", and the dummy's block settings (always, never, at most n).
+- Not checked: the live site.
+
 ## v0.23 "Always There"
 **Mon Nov 2, 2026 · 11:53 PM HST** (no migration)
 - kura: "right after i press Attack, the whole button disappears . and then reappears" ... "keep the button there the whole time ! grey it out when its not active yeah !"

@@ -2,10 +2,10 @@
 //   GET /                 a new match against the scripted dummy (src/dummy.js): redirects to it
 //   GET /m/<id>           the match page; GET /m/<id>/ws the match's WebSocket. You are seat a in every tab; the dummy is b.
 import { DurableObject } from "cloudflare:workers";
-import { newGame, attack, block } from "./rules.js";
+import { newGame, attack, place } from "./rules.js";
 
 const PAUSE_MS = 1000; // the dummy waits this long before it attacks
-import { dummyAttack, dummyBlocks } from "./dummy.js";
+import { dummyAttack, dummyPlace } from "./dummy.js";
 import PAGE from "./page.html";
 
 export default {
@@ -56,7 +56,7 @@ export class Match extends DurableObject {
     try { a = JSON.parse(msg); } catch { return; }
     const err =
       a.do === "attack" && Array.isArray(a.idxs) ? attack(g, seat, a.idxs) :
-      a.do === "block" && a.blocks && typeof a.blocks === "object" ? block(g, seat, a.blocks) : "Unknown action.";
+      a.do === "take" && a.split && typeof a.split === "object" ? place(g, seat, a.split) : "Unknown action.";
     if (err) return ws.send(JSON.stringify({ error: err }));
     await this.save(g);
   }
@@ -69,11 +69,11 @@ export class Match extends DurableObject {
     for (const ws of this.ctx.getWebSockets()) ws.send(JSON.stringify({ g }));
   }
 
-  // The dummy is seat b: it blocks your attack at once; on its turn it waits PAUSE_MS (so you can read the result of
-  // your attack), then attacks by SCRIPT and waits for your blocks.
+  // The dummy is seat b: it places your attack on its buttons at once; on its turn it waits PAUSE_MS (so you can read the result of
+  // your attack), then attacks by SCRIPT and waits for you to place it.
   dummy(g) {
     if (g.winner) return;
-    if (g.attack && g.attack.by === "a") block(g, "b", dummyBlocks(g));
+    if (g.attack && g.attack.by === "a") place(g, "b", dummyPlace(g));
     if (g.winner || g.turn !== "b" || g.attack) return;
     if (!g.dummyAt) { g.dummyAt = Date.now() + PAUSE_MS; return; }
     if (Date.now() < g.dummyAt) return;

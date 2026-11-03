@@ -1,14 +1,17 @@
 // The scripted second player (seat b). Edit SCRIPT to try a situation; it loops.
 // Each line is one of the dummy's turns:
 //   attack: how many of its ready buttons it attacks with (left to right).
-//   block:  how it blocks your next attack: "always" = one ready button on each attacker while it has any,
-//           "never" = takes everything, a number n = blocks at most n of your attackers.
-// Before its first turn it blocks by the last line.
+//   take:   how it places your next attack on its buttons:
+//           "spread" = one point at a time across its buttons, untapped ones first (so they hit back),
+//           "focus"  = fills one button before the next, tapped ones first (sacrifices a button that can't hit back).
+// Before its first turn it places by the last line.
+import { life, toPlace } from "./rules.js";
+
 export const SCRIPT = [
-  { attack: 1, block: "always" },
-  { attack: 0, block: "always" },
-  { attack: 3, block: "never" },
-  { attack: 2, block: 1 },
+  { attack: 1, take: "spread" },
+  { attack: 0, take: "spread" },
+  { attack: 3, take: "focus" },
+  { attack: 2, take: "focus" },
 ];
 
 const line = (n) => SCRIPT[((n % SCRIPT.length) + SCRIPT.length) % SCRIPT.length];
@@ -17,14 +20,18 @@ const readyIdx = (side) => side.buttons.map((b, i) => (b.out || b.tapped ? -1 : 
 // Its attackers this turn.
 export const dummyAttack = (g) => readyIdx(g.sides.b).slice(0, line(g.dummyTurn).attack);
 
-// Its blocks against your attack: { blockerIndex: attackerIndex }.
-export function dummyBlocks(g) {
-  const plan = line(g.dummyTurn - 1);
-  const max = plan.block === "never" ? 0 : plan.block === "always" ? Infinity : plan.block;
-  const free = readyIdx(g.sides.b), blocks = {};
-  for (const ai of g.attack.attackers) {
-    if (!free.length || Object.keys(blocks).length >= max) break;
-    blocks[free.shift()] = ai;
+// How it places your attack: { buttonIndex: damage }.
+export function dummyPlace(g) {
+  const plan = line(g.dummyTurn - 1), bs = g.sides.b.buttons;
+  const alive = bs.map((b, i) => i).filter((i) => !bs[i].out);
+  const order = alive.sort((x, y) => (bs[x].tapped - bs[y].tapped) * (plan.take === "focus" ? -1 : 1));
+  const split = {};
+  let left = toPlace(g);
+  const room = (i) => life(bs[i]) - (split[i] ?? 0);
+  if (plan.take === "focus") {
+    for (const i of order) { const d = Math.min(left, room(i)); if (d) { split[i] = d; left -= d; } }
+  } else {
+    while (left > 0) for (const i of order) if (left > 0 && room(i) > 0) { split[i] = (split[i] ?? 0) + 1; left--; }
   }
-  return blocks;
+  return split;
 }

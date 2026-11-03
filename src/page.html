@@ -25,7 +25,7 @@
   .side > div:first-child { font-family: var(--meme); font-size: 18px; letter-spacing: .5px; text-transform: uppercase; text-shadow: 0 0 10px rgba(176,132,255,.75); }
   .row { display: flex; gap: 12px; justify-content: space-between; align-items: flex-start; margin-top: 8px; }
   .btn { width: var(--w); height: var(--w); display: flex; align-items: center; justify-content: center; border: 0; background: none; padding: 0; border-radius: 10px; color: var(--ink); }
-  /* untapped (ready, can block): lies flat and greyed out; tapped (attacking): stands up sideways and lights up in colour */
+  /* untapped (ready, hits back): lies flat and greyed out; tapped (attacking): stands up sideways and lights up in colour */
   .btn img { width: var(--w); height: calc(var(--w) * 31 / 88); image-rendering: pixelated; transition: transform .2s, filter .2s; filter: grayscale(1) brightness(.6); }
   .btn.tapped img { transform: rotate(90deg); filter: drop-shadow(0 0 8px rgba(255,111,207,.8)); }
   .btn.can { cursor: pointer; outline: 2px dashed var(--S); outline-offset: 2px; }
@@ -34,7 +34,7 @@
   .out { opacity: .25; }
   .name { font-size: 13px; text-align: center; width: var(--w); color: var(--mute); margin-top: 4px; }
   .bar { text-align: center; }
-  /* your status line, at the top of your panel: hp and this turn, then (smaller, at the right) only the end of the match, an error or a disconnect; one line, cut with … if too long */
+  /* your status line, at the top of your panel: this turn, then (smaller, at the right) only the end of the match, an error or a disconnect; one line, cut with … if too long */
   .statusline { display: flex; align-items: baseline; gap: 10px; white-space: nowrap; min-width: 0; }
   #status { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; font: 700 13px/1.2 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
             text-transform: none; letter-spacing: 0; text-align: right; color: var(--mute); text-shadow: 0 0 10px rgba(176,132,255,.75); }
@@ -53,13 +53,13 @@
 <div id="game">
 <h1>UN/CLICK</h1>
   <div class="side"><div id="themHp"></div><div class="row" id="them"></div></div>
-  <div class="bar"><button class="act" id="attack" hidden>attack</button> <button class="act" id="block" hidden>block</button> <button class="act" id="again" hidden>new match</button></div>
+  <div class="bar"><button class="act" id="attack" hidden>attack</button> <button class="act" id="take" hidden>take</button> <button class="act" id="again" hidden>new match</button></div>
   <div class="side"><div class="statusline"><span id="meHp"></span><span id="status"><span id="result"></span> <span id="err" class="err"></span></span></div><div class="row" id="me"></div></div>
   <div id="log"></div>
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.23" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.24" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -82,43 +82,47 @@ const $ = (id) => document.getElementById(id);
     $("log").scrollTop = 0;
     if (shown < g.log.length) logTimer = setTimeout(showLog, LINE_MS);
   }
-  let picked = new Set(), blocks = {}, chosen = null, seen = "";
+  let picked = new Set(), split = {}, seen = "";
   $("attack").onclick = () => send({ do: "attack", idxs: [...picked] });
-  $("block").onclick = () => send({ do: "block", blocks });
+  $("take").onclick = () => send({ do: "take", split });
   $("again").onclick = () => location.assign("/"); // the main page starts a new match
 
   function draw() {
     const me = "a", them = "b", mine = g.sides[me].buttons, theirs = g.sides[them].buttons;
     const key = `${g.turn}|${g.attack ? g.attack.by : ""}|${g.log.length}`;
-    if (key !== seen) { seen = key; picked = new Set(); blocks = {}; chosen = null; } // a new step: clear picks
-    const blocking = g.attack && g.attack.by === them && !g.winner;
+    if (key !== seen) { seen = key; picked = new Set(); split = {}; } // a new step: clear picks
+    const taking = g.attack && g.attack.by === them && !g.winner;
+    const life = (b) => (b.out ? 0 : b.toughness - b.damage);
     const myTurn = g.turn === me && !g.attack && !g.winner;
     const ready = (b) => !b.out && !b.tapped;
-    // your row: on your turn click to pick attackers (they show tapped); when blocking click a button, then an attacker
+    // what you must place when they attack: their attack's total, or all your buttons' life left if that's less
+    const need = taking ? Math.min(g.attack.attackers.reduce((n, i) => n + theirs[i].power, 0), mine.reduce((n, b) => n + life(b), 0)) : 0;
+    const placed = Object.values(split).reduce((n, d) => n + d, 0);
+    // your row: on your turn click to pick attackers (they show tapped); when they attack, each click puts 1 damage on
+    // that button (up to its life left; one more click clears it)
     row($("me"), mine, (b, i) => {
       if (myTurn && ready(b)) return { can: true, tapped: picked.has(i), click: () => { picked.has(i) ? picked.delete(i) : picked.add(i); draw(); } };
-      if (blocking && ready(b)) {
-        const on = blocks[i];
-        return { can: true, sel: chosen === i, note: on !== undefined ? `blocks ${theirs[on].name}` : "",
-          click: () => { if (on !== undefined) delete blocks[i]; else chosen = chosen === i ? null : i; draw(); } };
+      if (taking && !b.out) {
+        const d = split[i] ?? 0;
+        return { can: true, sel: d > 0, note: d ? `-${d}` : "",
+          click: () => { if (d < life(b) && placed < need) split[i] = d + 1; else delete split[i]; draw(); } };
       }
       return {};
     });
-    row($("them"), theirs, (b, i) => {
-      const att = blocking && g.attack.attackers.includes(i);
-      return att ? { att: true, can: chosen !== null, click: () => { if (chosen !== null) { blocks[chosen] = i; chosen = null; draw(); } } } : {};
-    });
-    // THIS TURN: attack = power of your buttons tapped or picked to attack; defense = toughness of your ready buttons left to block
+    row($("them"), theirs, (b, i) => (taking && g.attack.attackers.includes(i) ? { att: true } : {}));
+    // THIS TURN: attack = power of your buttons tapped or picked to attack; defense = life left on your ready buttons (the ones that hit back)
     const up = (b, i) => !b.out && (b.tapped || picked.has(i));
     const atk = mine.reduce((n, b, i) => n + (up(b, i) ? b.power : 0), 0);
-    const def = mine.reduce((n, b, i) => n + (!b.out && !up(b, i) ? b.toughness : 0), 0);
-    $("meHp").textContent = `you · hp ${g.sides[me].hp} · this turn: ${atk}/${def}`;
-    $("themHp").textContent = `dummy · hp ${g.sides[them].hp}`;
-    $("result").textContent = g.winner ? `${g.winner === me ? "you win" : "you lose"}` : "";
-    // the attack button is always there unless block or new match takes its place; greyed out while it isn't your move
-    $("attack").hidden = blocking || !!g.winner;
+    const def = mine.reduce((n, b, i) => n + (!b.out && !up(b, i) ? life(b) : 0), 0);
+    $("meHp").textContent = `you · this turn: ${atk}/${def}`;
+    $("themHp").textContent = "dummy";
+    $("result").textContent = g.winner ? `${g.winner === "draw" ? "draw" : g.winner === me ? "you win" : "you lose"}` : "";
+    // the attack button is always there unless take or new match takes its place; greyed out while it isn't your move
+    $("attack").hidden = taking || !!g.winner;
     $("attack").disabled = !myTurn;
-    $("block").hidden = !blocking;
+    $("take").hidden = !taking;
+    $("take").disabled = placed !== need;
+    $("take").textContent = placed === need ? `take ${need}` : `place ${need - placed} more`;
     $("again").hidden = !g.winner;
     if (shown === null) shown = g.log.length; // first board after loading: the whole log at once
     if (!logTimer) showLog();
@@ -134,7 +138,7 @@ const $ = (id) => document.getElementById(id);
       const img = document.createElement("img"); img.alt = ""; img.src = b.image; btn.append(img);
       if (h.click) btn.onclick = h.click;
       const n = document.createElement("div"); n.className = "name";
-      n.textContent = `${b.name} · ${b.power}/${b.toughness}${b.out ? " · out" : ""}${h.note ? " · " + h.note : ""}`;
+      n.textContent = `${b.name} · ${b.power}/${b.toughness - b.damage}${b.out ? " · out" : ""}${h.note ? " · " + h.note : ""}`;
       wrap.append(btn, n); el.append(wrap);
     });
   }
