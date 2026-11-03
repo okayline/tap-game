@@ -4,6 +4,13 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.27 "Level"
+**Tue Nov 3, 2026 · 12:01 AM HST** (no migration)
+- kura: "back one step, no diagonal. just the less glow and smaller please. also no black outline"
+- Changed: the corner power/toughness sits level again, stays at the smaller size, with a soft light glow (4px at 45%, was 8px and 16px at full strength in v0.25). Footer v0.27.
+- Removed: the 30-degree tilt (and the dark edge it gave the letters).
+- Not checked: the live site; whether the dark edge kura saw is gone.
+
 ## v0.26 "Tilt"
 **Mon Nov 2, 2026 · 11:59 PM HST** (no migration)
 - kura: "could we have no glow, and a little smaller, and could it be at more of a diagonal ?"
