@@ -40,8 +40,9 @@ export const GLOW = ["neon"];
 // Lag Spike (kura, Nov 3; Magic's "first strike"): when an attack has one of these, a button the attack knocks out doesn't hit back.
 // (kura, Nov 3: attacking is called "ping" on screen; the code still says attack.)
 export const LAG_SPIKE = ["divider"];
-// Firewall (kura, Nov 3): a button of these types hits back for 1 even while tapped (an untapped one hits back with its power, like any).
-export const FIREWALL = ["construction"];
+// Daemon (kura, Nov 3; was Firewall, a name now taken by the side's total): a button of these types hits back for 1 even while
+// tapped (an untapped one hits back with its power, like any).
+export const DAEMON = ["construction"];
 export const MAX_ATTACKERS = 2; // at most this many attack in a turn, so one button always stays home (kura, Nov 3)
 // A coin flip decides who goes first, and that side attacks with only 1 on the match's first turn (kura, Nov 3).
 // g.limit is how many may attack this turn.
@@ -162,10 +163,10 @@ export function place(g, seat, split) {
   const parts = Object.entries(split).map(([k, v]) => [Number(k), Number(v)]).filter(([, d]) => d > 0);
   if (!parts.every(([i, d]) => Number.isInteger(d) && def.buttons[i] && d <= life(def.buttons[i]))) return "A button can't take that much.";
   if (parts.reduce((n, [, d]) => n + d, 0) !== toPlace(g)) return `Place exactly ${toPlace(g)}.`;
-  // hitting back: untapped buttons that take damage (and tapped Firewalls, for 1), counted before anything goes out (it all happens at
+  // hitting back: untapped buttons that take damage (and tapped Daemons, for 1), counted before anything goes out (it all happens at
   // once), except with Lag Spike in the attack, where a button this attack knocks out doesn't hit back
   const ping = g.attack.attackers.some((i) => LAG_SPIKE.includes(att.buttons[i].type));
-  const backBy = (b) => (!b.tapped ? b.power : FIREWALL.includes(b.type) ? 1 : 0);
+  const backBy = (b) => (!b.tapped ? b.power : DAEMON.includes(b.type) ? 1 : 0);
   const hits = ([i, d]) => backBy(def.buttons[i]) > 0 && !(ping && d >= life(def.buttons[i]));
   let back = parts.filter(hits).reduce((n, [i]) => n + backBy(def.buttons[i]), 0);
   for (const [i, d] of parts) {

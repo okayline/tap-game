@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.78 "Daemon" · Tue Nov 3, 8:34 AM
+- The guest's ping lines are blue (yours stay pink). The guest's deck row sits above its cards. Each side's total is called Firewall, with bigger, bold numbers. Construction's effect is renamed Daemon. Removed: the guest's pink ping lines, its deck row below its cards, the name Toughness, and Firewall as Construction's effect.
+
 ## v0.77 "Mystery Buttons" · Tue Nov 3, 8:20 AM
 - Decks are dealt from 88x31 buttons of every rarity again. Buttons above common show up as mystery buttons: a "?" picture and no name or flavour, with their type, effect and stats as normal and the set sign in their rarity's colour. Removed: commons-only decks.
 

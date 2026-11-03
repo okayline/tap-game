@@ -126,6 +126,9 @@
      from the pinging card around the button to the cards it reaches, at right angles only ("not at diagonals"), and a glow that runs along each
      branch and back, slowly (makePing(), below) */
   .pingfx { position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 8; overflow: visible; }
+  /* the guest's pings are blue, yours pink (kura, Nov 3: "can the enemy ping lines be blue ?"); the glow's halo matches its line */
+  .pingfx.theirs polyline { stroke: var(--blue); filter: drop-shadow(0 0 3px rgba(109,143,208,.9)); }
+  .spark.theirs { box-shadow: 0 0 8px 4px #fff, 0 0 18px 8px rgba(109,143,208,.8); }
   /* a branch to a card you didn't pick turns grey when the glow runs (kura, Nov 3) */
   .pingfx polyline.unused { stroke: #9aa3b8; filter: none; opacity: .7; transition: stroke .3s, opacity .3s; }
   .pingfx polyline { fill: none; stroke-linejoin: round; stroke: var(--pink); stroke-width: 3; stroke-linecap: round; filter: drop-shadow(0 0 3px rgba(233,138,179,.9)); }
@@ -135,6 +138,8 @@
   /* your status line, at the top of your panel: this turn, then (smaller, at the right) only the end of the match, an error or a disconnect; one line, cut with … if too long */
   .statusline { display: flex; align-items: baseline; gap: 10px; white-space: nowrap; min-width: 0; }
   .tough { margin-left: auto; }
+  /* the total's numbers, bigger and bold (kura, Nov 3) */
+  .tough b { font: 800 18px/1 var(--title); letter-spacing: 1px; margin-left: 4px; }
   #status { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; font: italic 500 14px/1.2 var(--body);
             text-transform: none; letter-spacing: 0; text-align: right; color: var(--mute); }
   button.act { width: 100%; height: 50px; border-radius: 6px; border: 2px solid #fff; cursor: pointer; color: #3a2a4a; background: #f7b3cf;
@@ -163,14 +168,14 @@
 <body>
 <div id="game">
 <h1>UN/TAP</h1>
-  <div class="side" id="themSide"><div class="statusline"><span id="themHp"></span><span class="tough" id="themTough"></span></div><div class="row" id="them"></div><div class="deck" id="themDeck"></div></div>
+  <div class="side" id="themSide"><div class="statusline"><span id="themHp"></span><span class="tough" id="themTough"></span></div><div class="deck" id="themDeck"></div><div class="row" id="them"></div></div>
   <div class="bar"><button class="act" id="start" hidden>start</button> <button class="act" id="attack" hidden>ping</button> <button class="act" id="take" hidden>take</button> <button class="act" id="again" hidden>new match</button></div>
   <div class="side" id="meSide"><div class="statusline"><span id="meHp"></span><span id="status"><span id="result"></span> <span id="err" class="err"></span></span><span class="tough" id="meTough"></span></div><div class="row" id="me"></div><div class="deck" id="meDeck"></div></div>
   <div id="log"></div>
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.77" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.78" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -329,11 +334,11 @@ const $ = (id) => document.getElementById(id);
     const def = mine.reduce((n, b, i) => n + (!b.out && !b.tapped && !(picked.has(i) && !ONLINE.includes(b.type)) ? life(b) : 0), 0);   // an Always Online one picked to attack still defends
     $("meHp").textContent = `player · this turn: ${atk}/${def}`;
     $("themHp").textContent = "guest #1337";   // rules.js NAMES
-    // toughness, at the right of each side's top line: life left on all its buttons still in the match (field and deck), out of all its
-    // buttons' toughness (kura, Nov 3: "like life")
-    const tough = (s) => { const all = [...s.buttons, ...(s.deck ?? []), ...(s.gone ?? [])];
-      return `toughness ${all.reduce((n, b) => n + life(b), 0)}/${all.reduce((n, b) => n + b.toughness + (b.bonus ?? 0), 0)}`; };
-    $("meTough").textContent = tough(g.sides[me]); $("themTough").textContent = tough(g.sides[them]);
+    // the side's firewall, at the right of its top line (kura, Nov 3: "instead of TOUGHNESS can we call it FIREWALL"): life left on all
+    // its buttons still in the match (field and deck), out of all its buttons' toughness (kura, Nov 3: "like life")
+    const tough = (el, s) => { const all = [...s.buttons, ...(s.deck ?? []), ...(s.gone ?? [])];
+      el.replaceChildren("firewall", mk("b", "", `${all.reduce((n, b) => n + life(b), 0)}/${all.reduce((n, b) => n + b.toughness + (b.bonus ?? 0), 0)}`)); };
+    tough($("meTough"), g.sides[me]); tough($("themTough"), g.sides[them]);
     // you can drag from your deck before the first attack, and on your turn to fill an out spot or make your one swap
     const fill = (g.sides[me].deck ?? []).length > 0 && mine.some((b) => b.out);
     // on your turn with a knocked-out spot, a plain tap on a deck button brings it into the first such spot
@@ -362,7 +367,7 @@ const $ = (id) => document.getElementById(id);
     for (const [s, id, to, glow] of fx.pings ?? []) {
       const btn = cardOf(s, id), targets = to.map((t) => cardOf(s === me ? them : me, t)).filter(Boolean);
       if (!btn || !targets.length) continue;
-      const p = makePing(btn, targets);
+      const p = makePing(btn, targets, s !== me);   // the guest's ping is blue
       if (glow) p.run(targets, PING_DRAW); else pending.push(p);
     }
     // fx.glow: [side, ids]: the waiting lines' glow runs to those cards (the ones you placed damage on)
@@ -394,11 +399,11 @@ const $ = (id) => document.getElementById(id);
   // and they merge again at the forks on the way home.
   const PING_DRAW = 600, PING_TRAVEL = 1400, PING_FADE = 300, PING_MS = PING_DRAW + PING_TRAVEL;   // kura, Nov 3: "way slower", then "speed it up a bit", then "just a little more" (travel was 2400, then 1800)
   let pending = [];   // the guest's ping lines, waiting for you to place its damage
-  function makePing(btn, targets) {
+  function makePing(btn, targets, theirs) {
     // the card itself (.gc), not its spot: a tapped card lies sideways and smaller inside its spot
     const box = (el) => (el.querySelector(".gc") ?? el).getBoundingClientRect();
     const a = box(btn), ns = "http://www.w3.org/2000/svg", svg = document.createElementNS(ns, "svg");
-    svg.setAttribute("class", "pingfx"); document.body.append(svg);
+    svg.setAttribute("class", theirs ? "pingfx theirs" : "pingfx"); document.body.append(svg);
     // the line snakes around the button between the panels, always in sight (kura, Nov 3: "snake around the UI ... but still be
     // always visible"): out of the card to the gap between its panel and the button, along it to the end of the button nearer the
     // card, down (or up) past that end in the page's margin, back along the gap on the other side, then into the target card
@@ -433,7 +438,7 @@ const $ = (id) => document.getElementById(id);
       for (const b of branches) if (!go.includes(b)) b.ln.classList.add("unused");
       for (const b of go) svg.append(b.ln);   // the used branches on top, so the shared part stays pink
       if (!go.length) return fade(delay);
-      for (const b of go) { b.sp = mk("div", "spark"); b.sp.style.opacity = 0; document.body.append(b.sp); }
+      for (const b of go) { b.sp = mk("div", theirs ? "spark theirs" : "spark"); b.sp.style.opacity = 0; document.body.append(b.sp); }
       // how far each branch runs along the longest one: leg by leg, while both start at the same point and head the same way, the
       // shorter of the two legs is shared; the first leg that parts them ends it
       const max = Math.max(...go.map((b) => b.len)), L = go.find((b) => b.len === max);
@@ -512,11 +517,11 @@ const $ = (id) => document.getElementById(id);
   }
   // a button drawn as a card: name (smaller when long, so it fits on one line, as Magic does), art, type line, an empty text box,
   // and power/life left in a box on the text box's bottom edge (none once it's out)
-  // card text by type: only the effects the rules have (rules.js ALWAYS_ONLINE, BROADBAND, WEBCOUNTER, GLOW, LAG_SPIKE, FIREWALL)
+  // card text by type: only the effects the rules have (rules.js ALWAYS_ONLINE, BROADBAND, WEBCOUNTER, GLOW, LAG_SPIKE, DAEMON)
   const ONLINE = ["guestbook"], BROAD = ["webring"];   // rules.js ALWAYS_ONLINE and BROADBAND
   const TEXT = { guestbook: ["Always Online", "pinging doesn't tap it."], webring: ["Broadband", "can ping the turn it comes in."],
     counter: ["Webcounter", "+1/+0 each time it hits back."], neon: ["Glow", "+0/+1 for each other Neon on your field."],
-    divider: ["Lag Spike", "a button its ping knocks out doesn't hit back."], construction: ["Firewall", "even tapped, it hits back for 1."] };
+    divider: ["Lag Spike", "a button its ping knocks out doesn't hit back."], construction: ["Daemon", "even tapped, it hits back for 1."] };
   // a button's picture only moves while it's tapped (kura, Nov 3): ready or knocked out, it's drawn once onto a canvas, kept per button so
   // it doesn't change frame on every redraw
   // made-up flavour lines by type (kura, Nov 3); each card shows one, picked by its button and this match, so it stays put during a match
