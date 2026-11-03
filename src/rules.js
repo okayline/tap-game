@@ -57,11 +57,15 @@ export const toPlace = (g) => Math.min(
   g.sides[other(g.attack.by)].buttons.reduce((n, b) => n + life(b), 0),
 );
 
-// Deal both decks from the pool: n times, pick a type (weighted by how many of its buttons are left) and give each side a
-// different button of it. A type needs 2 buttons left to be picked, so a type with 2 in the pool comes up at most once.
+// Deal both decks from the pool: n times, pick a type (weighted by how many of its common buttons are left) and give each side a
+// different common button of it. A type needs 2 commons left to be picked, so a type with 2 commons comes up at most once.
+// Then the mystery slot (kura, Nov 3: "too many mystery buttons", "one per deck"): each deck swaps one of its buttons, at a random
+// spot, for a non-common of the same type (if the pool has one left), so both decks keep the same types. Rarities aren't weighted:
+// any non-common of that type is as likely as another. A button with no rarity counts as common.
+const isCommon = (b) => (b.rarity ?? "common") === "common";
 export function dealDecks(pool, n = DECK, rand = Math.random) {
-  const left = {};
-  for (const b of pool) (left[b.type] ??= []).push(b);
+  const left = {}, rare = {};
+  for (const b of pool) ((isCommon(b) ? left : rare)[b.type] ??= []).push(b);
   const take = (list) => list.splice(Math.floor(rand() * list.length), 1)[0];
   const a = [], b = [];
   for (let k = 0; k < n; k++) {
@@ -70,6 +74,10 @@ export function dealDecks(pool, n = DECK, rand = Math.random) {
     let r = rand() * types.reduce((m, t) => m + left[t].length, 0), t = types[0];
     for (const x of types) { if (r < left[x].length) { t = x; break; } r -= left[x].length; }
     a.push(take(left[t])); b.push(take(left[t]));
+  }
+  for (const deck of [a, b]) {
+    const spots = deck.map((_, i) => i).filter((i) => rare[deck[i].type]?.length);
+    if (spots.length) { const i = spots[Math.floor(rand() * spots.length)]; deck[i] = take(rare[deck[i].type]); }
   }
   return [a, b];
 }

@@ -34,6 +34,15 @@ test("decks: same types on both sides; swaps until the first attack; out buttons
     assert.ok(a.filter((x) => x.type === "divider").length <= 1);
     assert.equal(new Set([...a, ...b]).size, a.length + b.length); // no button dealt twice
   }
+  // the mystery slot: with rarer buttons in the pool, each deck gets exactly one, and the types still match
+  const mixed = pool.concat([..."uuuu"].map((_, i) => ({ name: "r" + i, type: i % 2 ? "neon" : "webring", rarity: "rare" })));
+  for (let k = 0; k < 20; k++) {
+    const [a, b] = dealDecks(mixed, 5);
+    assert.deepEqual(a.map((x) => x.type), b.map((x) => x.type));
+    assert.equal(a.filter((x) => x.rarity === "rare").length, 1);
+    assert.equal(b.filter((x) => x.rarity === "rare").length, 1);
+    assert.equal(new Set([...a, ...b]).size, a.length + b.length);
+  }
   // a: 3 guestbooks on the field, a divider in the deck; b: 3 webrings and one in the deck
   const g = newGame([0, 1, 2].map((i) => ({ name: "n" + i, type: "guestbook" })).concat({ name: "d", type: "divider" }),
     [0, 1, 2, 3].map((i) => ({ name: "w" + i, type: "webring" })), "a");

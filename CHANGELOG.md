@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.79 "One Mystery" · Tue Nov 3, 8:41 AM
+- Each deck has exactly one mystery button, and the other buttons are commons. Removed: decks where about half the buttons were mystery buttons.
+
 ## v0.78 "Daemon" · Tue Nov 3, 8:34 AM
 - The guest's ping lines are blue (yours stay pink). The guest's deck row sits above its cards. Each side's total is called Firewall, with bigger, bold numbers. Construction's effect is renamed Daemon. Removed: the guest's pink ping lines, its deck row below its cards, the name Toughness, and Firewall as Construction's effect.
 
