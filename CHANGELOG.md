@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.90 "Guestbook Count" · Tue Nov 3, 10:05 AM
+- Webcounter (Counter) now reads "+1/+0 for each Guestbook on your field": a Counter's power is its base plus the Guestbooks on its side's field, going up or down as they come in or go out, and back to its base in the deck. Its first card that names another type. Removed: Webcounter's +1/+0 each time it hits back, and the "gets +1/+0" log line.
+
 ## v0.89 "Quick Load" · Tue Nov 3, 9:55 AM
 - Faster loading on phones. The fonts (Cinzel and EB Garamond, latin only, from npm's @fontsource, with their Open Font License files) are served from this site's new public/ folder and kept for a year. The shared footer script is deferred, so the game connects without waiting for it. Button pictures come from this site's new /img/N, which fetches each one from 88x31 once, keeps it in Cloudflare's cache and lets the browser keep it for a day. Removed: Google Fonts, the footer script holding up the game, and pictures loaded from 88x31.app/api/img (a database lookup and a redirect on every request).
 

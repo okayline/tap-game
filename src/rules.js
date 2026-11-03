@@ -33,8 +33,10 @@ export const DECK = 9; // 3 on the field, 6 in the deck row (kura, Nov 3)
 export const ALWAYS_ONLINE = ["guestbook"];
 // Broadband (kura, Nov 3; Magic's "haste"): a button of these types can attack the turn it comes in (no summoning sickness).
 export const BROADBAND = ["webring"];
-// Webcounter (kura, Nov 3): a button of these types gets +1/+0 each time it hits back, for the rest of the match.
+// Webcounter (kura, Nov 3): a field button of these types gets +1/+0 for each Guestbook on its side's field (b.boost, kept by settle()).
+// A card that names another type, as Magic's cards name creature types (kura, Nov 3: visitors signing the guestbook raise the count).
 export const WEBCOUNTER = ["counter"];
+export const WEBCOUNTER_COUNTS = "guestbook";
 // Glow (kura, Nov 3): a button of these types gets +0/+1 for each other one of them on its side's field (b.bonus, kept by settle()).
 export const GLOW = ["neon"];
 // Lag Spike (kura, Nov 3; Magic's "first strike"): when an attack has one of these, a button the attack knocks out doesn't hit back.
@@ -97,13 +99,15 @@ export function newGame(deckA, deckB, first = Math.random() < 0.5 ? "a" : "b") {
   return g;
 }
 
-// Glow: give each field button its bonus toughness (deck buttons get none), then put out any field button whose life is gone, again
-// until nothing changes (a Neon going out lowers the others' bonus).
+// Glow and Webcounter: give each field button its bonus toughness and power (deck buttons get none), then put out any field button
+// whose life is gone, again until nothing changes (a Neon going out lowers the others' bonus; a Guestbook going out lowers a Counter's power).
 export function settle(g) {
   for (let changed = true; changed;) {
     changed = false;
     for (const s of Object.values(g.sides)) {
-      for (const b of s.deck ?? []) b.bonus = 0;
+      for (const b of s.deck ?? []) { b.bonus = 0; b.boost = 0; b.power = STATS[b.type]?.[0] ?? 1; }
+      const books = s.buttons.filter((b) => !b.out && b.type === WEBCOUNTER_COUNTS).length;
+      for (const b of s.buttons) { b.boost = !b.out && WEBCOUNTER.includes(b.type) ? books : 0; b.power = (STATS[b.type]?.[0] ?? 1) + b.boost; }
       const glow = s.buttons.filter((b) => !b.out && GLOW.includes(b.type)).length;
       for (const b of s.buttons) b.bonus = !b.out && GLOW.includes(b.type) ? glow - 1 : 0;
       for (const b of s.buttons) if (!b.out && life(b) <= 0) { b.out = true; g.log.push(`${b.name} is out`); changed = true; }
@@ -186,7 +190,6 @@ export function place(g, seat, split) {
     b.damage += d;
     g.log.push(`${b.name} takes ${d}${hit ? `, hits back for ${backBy(b)}` : ""}`);
     if (life(b) <= 0) { b.out = true; g.log.push(`${b.name} is out`); }
-    else if (hit && !b.tapped && WEBCOUNTER.includes(b.type)) { b.power++; b.boost = (b.boost ?? 0) + 1; g.log.push(`${b.name} gets +1/+0`); }   // after its hit back (counted above)
   }
   for (const i of g.attack.attackers) {
     const a = att.buttons[i], d = Math.min(back, life(a));
