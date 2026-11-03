@@ -1,6 +1,6 @@
 # tap-game
 
-A tap/untap button duel with 88x31 buttons, to work out mechanics. One Cloudflare Worker, one Durable Object per match.
+**UN/CLICK**: a tap/untap button duel with 88x31 buttons, to work out mechanics. One Cloudflare Worker, one Durable Object per match.
 
 - `/` starts a new match against the scripted dummy.
 - The dummy's moves are in `src/dummy.js`; edit `SCRIPT` to try a situation.

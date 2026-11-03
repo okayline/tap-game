@@ -4,6 +4,13 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.22 "UN/CLICK"
+**Mon Nov 2, 2026 · 11:51 PM HST** (no migration)
+- kura: "UN/CLICK" ... "sure let's do that ! change the title please and push !"
+- Changed: the game is called UN/CLICK: the page heading, the browser tab title and the README. The repo and address stay `tap-game` / tap.88x31.app. Footer v0.22.
+- Removed: the name "tap" on the page.
+- Not checked: the live site.
+
 ## v0.21 "Fixed Frame"
 **Mon Nov 2, 2026 · 11:49 PM HST** (no migration)
 - kura: "could we show 2 less text lines in the log, and have the whole page not be scrollable please"
