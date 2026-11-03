@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.69 "Replay" · Tue Nov 3, 6:20 AM
+- A fight plays out in steps instead of all at once: the attackers tap and light up, then the buttons that took damage shake and show how much, then the attackers that were hit back do the same, then the turn passes. The log keeps pace with each step. Cards turn when they tap and untap instead of jumping. Removed: the whole fight landing at once, and cards being redrawn from scratch on every change.
+
 ## v0.68 "Flavour Text" · Tue Nov 3, 5:55 AM
 - Every card's text box has a made-up flavour line in quotes under its effect, after a thin line: one of four per type, picked by the button and the match, so it stays the same all match. The effect name is followed by a middle dot, and the card text is a little smaller so the flavour line clears the power/toughness box. Removed: the long dash after the effect name, and the bigger card text.
 

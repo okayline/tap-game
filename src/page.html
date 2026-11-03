@@ -33,7 +33,7 @@
   .row { display: flex; gap: 12px; justify-content: space-between; align-items: center; margin-top: 8px; height: calc(150 * var(--u)); }
   .btn { position: relative; width: var(--w); height: calc(150 * var(--u)); display: flex; align-items: center; justify-content: center; border: 0; background: none; padding: 0; border-radius: calc(7 * var(--u)); color: var(--ink); }
   /* the card: blue frame, cream inside */
-  .gc { width: 100%; height: 100%; background: var(--frame); border-radius: calc(7 * var(--u)); padding: calc(5 * var(--u)); display: flex; flex-direction: column; transition: transform .2s, filter .2s; }
+  .gc { width: 100%; height: 100%; background: var(--frame); border-radius: calc(7 * var(--u)); padding: calc(5 * var(--u)); display: flex; flex-direction: column; transition: transform .45s ease, filter .45s; }
   .gc-in { flex: 1; position: relative; background: var(--cream); border-radius: calc(3 * var(--u)); padding: calc(4 * var(--u)); display: flex; flex-direction: column; gap: calc(4 * var(--u)); border: 1px solid var(--line); text-align: left; }
   .gc-name { font: 600 calc(8.5 * var(--u))/1 var(--title); color: var(--ink); background: #ffe1ee; border: 1px solid #f0b8d0; border-radius: 2px; padding: 0 calc(4 * var(--u));
              height: calc(15 * var(--u)); display: flex; align-items: center; white-space: nowrap; overflow: hidden; }
@@ -76,6 +76,14 @@
   /* damage being placed on a button, over its art */
   .dmg { position: absolute; left: 50%; top: calc(42 * var(--u)); transform: translateX(-50%); font: 800 calc(14 * var(--u))/1 var(--title); color: #c2416b;
          background: var(--cream); border: 1.5px solid var(--pink); border-radius: 6px; padding: 2px 6px; pointer-events: none; z-index: 2; }
+  /* the fight replay (v0.69): a number rising off a card (red: damage it took; blue: an attacker's power), and a shake when it's hit */
+  .pop { position: absolute; left: 50%; top: calc(40 * var(--u)); font: 800 calc(18 * var(--u))/1 var(--title); color: #c2416b; pointer-events: none; z-index: 3;
+         text-shadow: 0 0 3px #fff, 0 0 6px #fff; animation: rise 1.1s ease-out forwards; }
+  .pop.atk { color: var(--blue); }
+  @keyframes rise { 0% { opacity: 0; transform: translate(-50%, 8px) scale(.7); } 15% { opacity: 1; transform: translate(-50%, 0) scale(1.15); }
+                    70% { opacity: 1; transform: translate(-50%, -18px) scale(1); } 100% { opacity: 0; transform: translate(-50%, -28px) scale(1); } }
+  .btn.hit { animation: shake .4s; }
+  @keyframes shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-5px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(3px); } }
   .bar { text-align: center; }
   /* your status line, at the top of your panel: this turn, then (smaller, at the right) only the end of the match, an error or a disconnect; one line, cut with … if too long */
   .statusline { display: flex; align-items: baseline; gap: 10px; white-space: nowrap; min-width: 0; }
@@ -115,18 +123,64 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.68" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.69" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
   const ws = new WebSocket(`${location.protocol === "https:" ? "wss" : "ws"}://${location.host}${location.pathname}/ws`);
   let g = null;
   const send = (o) => ws.send(JSON.stringify(o));
+  // boards wait their turn: a fight in a new board is replayed (replay(), below) before the next board is shown
+  const queue = [];
+  let pumping = false, playing = false, fx = {}, lastPing = [];
   ws.onmessage = (e) => {
     const d = JSON.parse(e.data);
     if (d.error) { $("err").textContent = d.error; return; }
-    g = d.g; $("err").textContent = ""; draw();
+    queue.push(d.g); pump();
   };
+  async function pump() {
+    if (pumping) return;
+    pumping = true;
+    while (queue.length) {
+      const next = queue.shift();
+      if (g) await replay(g, next);
+      g = next; fx = {}; $("err").textContent = ""; draw();
+    }
+    pumping = false;
+  }
+  // THE FIGHT REPLAY (kura, Nov 3: "too instant and hard to follow"): the server sends only the board after a fight, so the page
+  // compares it with the board before and shows the fight in beats, BEAT_MS apart, with the log keeping pace:
+  //   1. the attackers tap and light up, each showing its power (only when you pinged; when you took, you already saw them)
+  //   2. the defenders that took damage shake and show it; any it knocks out go out
+  //   3. the attackers that took hit-back damage shake and show it; any it knocks out go out
+  //   then the real board: the turn passes. Damage (not life left) is compared, since Glow changes life without a hit.
+  const BEAT_MS = 700;
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const otherSeat = (s) => (s === "a" ? "b" : "a");
+  async function replay(prev, next) {
+    const ids = (s) => new Map(next.sides[s].buttons.map((b) => [b.id, b]));
+    const hits = (s) => { const m = ids(s); return prev.sides[s].buttons.flatMap((b) => { const n = m.get(b.id); return n && n.damage > b.damage ? [[s, b.id, `-${n.damage - b.damage}`, "", true]] : []; }); };
+    if (!hits("a").length && !hits("b").length) return;
+    const by = prev.attack ? prev.attack.by : prev.turn, def = otherSeat(by);
+    const idxs = prev.attack ? prev.attack.attackers : lastPing;
+    const att = idxs.map((i) => prev.sides[by].buttons[i]).filter(Boolean);
+    // where the log's lines split: the first attacker "takes" line starts beat 3; the last line (the turn, or the result) waits for the real board
+    const start = prev.log.length, end = next.log.length - 1, names = next.sides[by].buttons.map((b) => `${b.name} takes `);
+    let k = next.log.findIndex((t, j) => j >= start && names.some((n) => t.startsWith(n)));
+    if (k < 0) k = end;
+    const board = structuredClone(prev);
+    board.attack = { by, attackers: idxs };
+    const copy = (s, fields) => { const m = ids(s); for (const b of board.sides[s].buttons) { const n = m.get(b.id); if (n) for (const f of fields) b[f] = n[f]; } };
+    const beat = async (cap, pops) => { board.log = next.log.slice(0, cap); g = board; fx = { att: att.map((b) => b.id), pops }; playing = true; draw(); await sleep(BEAT_MS); };
+    const FIGHT = ["damage", "out", "power", "boost", "bonus"];
+    copy(by, ["tapped"]);
+    if (!prev.attack) await beat(start + 1, att.map((b) => [by, b.id, String(b.power), "atk", false]));
+    const back = hits(by);
+    copy(def, FIGHT);
+    await beat(k, hits(def));
+    if (back.length) { copy(by, FIGHT); await beat(end, back); }
+    playing = false;
+  }
   // shrink the whole screen to fit a short window (never grow it); offsetHeight is the unshrunk height, since a transform doesn't change layout
   const fit = () => { const g = $("game"); g.style.transform = `scale(${Math.min(1, innerHeight / g.offsetHeight)})`; };
   addEventListener("resize", fit); fit();
@@ -137,14 +191,17 @@ const $ = (id) => document.getElementById(id);
   function showLog() {
     logTimer = null;
     if (shown < g.log.length) shown++; else shown = g.log.length;
+    renderLog();
+    if (shown < g.log.length) logTimer = setTimeout(showLog, LINE_MS);
+  }
+  function renderLog() {
     // newest on top at full strength, each older line fainter, down to 50% for the fifth
     $("log").replaceChildren(...g.log.slice(0, shown).slice(-5).reverse().map((t, k) => {
       const d = document.createElement("div"); d.textContent = `C:\\> ${t}`; d.style.opacity = 1 - k * 0.125; return d;   // a DOS prompt before each line (kura, Nov 3)
     }));
-    if (shown < g.log.length) logTimer = setTimeout(showLog, LINE_MS);
   }
   let picked = new Set(), split = {}, seen = "";
-  $("attack").onclick = () => send({ do: "attack", idxs: [...picked] });
+  $("attack").onclick = () => { lastPing = [...picked]; send({ do: "attack", idxs: lastPing }); };   // kept for the replay
   $("take").onclick = () => send({ do: "take", split });
   $("start").onclick = () => send({ do: "start" });
   $("again").onclick = () => location.assign("/"); // the main page starts a new match
@@ -153,16 +210,18 @@ const $ = (id) => document.getElementById(id);
     const me = "a", them = "b", mine = g.sides[me].buttons, theirs = g.sides[them].buttons;
     const key = `${g.turn}|${g.attack ? g.attack.by : ""}|${g.log.length}|${mine.map((b) => b.id).join()}`;
     if (key !== seen) { seen = key; picked = new Set(); split = {}; } // a new step: clear picks
-    const taking = g.attack && g.attack.by === them && !g.winner;
+    const taking = !playing && g.attack && g.attack.by === them && !g.winner;   // while a replay plays, nothing can be clicked
     const life = (b) => (b.out ? 0 : b.toughness + (b.bonus ?? 0) - b.damage);   // rules.js life (bonus: Glow)
-    const myTurn = g.turn === me && !g.attack && !g.winner;
+    const myTurn = !playing && g.turn === me && !g.attack && !g.winner;
     const ready = (b) => !b.out && !b.tapped;
     // what you must place when they attack: their attack's total, or all your buttons' life left if that's less
     const need = taking ? Math.min(g.attack.attackers.reduce((n, i) => n + theirs[i].power, 0), mine.reduce((n, b) => n + life(b), 0)) : 0;
     const placed = Object.values(split).reduce((n, d) => n + d, 0);
     // your row: on your turn click to pick up to g.limit attackers (1 on the match's first turn, then 2; they show tapped; no more can be picked); when they attack, each click puts 1 damage on
     // that button (up to its life left; one more click clears it)
-    row($("me"), mine, (b, i) => {
+    // lit attackers: the replay's, or theirs while you place their ping
+    const att = new Set(fx.att ?? (taking ? g.attack.attackers.map((i) => theirs[i].id) : []));
+    row($("me"), mine, att, (b, i) => {
       if (myTurn && ready(b) && (!b.sick || BROAD.includes(b.type)) && (picked.has(i) || picked.size < g.limit)) return { can: true, tapped: picked.has(i) && !ONLINE.includes(b.type), sel: picked.has(i) && ONLINE.includes(b.type), click: () => { picked.has(i) ? picked.delete(i) : picked.add(i); draw(); } };
       if (taking && !b.out) {
         const d = split[i] ?? 0;
@@ -171,7 +230,7 @@ const $ = (id) => document.getElementById(id);
       }
       return {};
     });
-    row($("them"), theirs, (b, i) => (taking && g.attack.attackers.includes(i) ? { att: true } : {}));
+    row($("them"), theirs, att, () => ({}));
     // THIS TURN: attack = power of your buttons tapped or picked to attack; defense = life left on your ready buttons (the ones that hit back)
     const up = (b, i) => !b.out && (b.tapped || picked.has(i));
     const atk = mine.reduce((n, b, i) => n + (up(b, i) ? b.power : 0), 0);
@@ -187,11 +246,11 @@ const $ = (id) => document.getElementById(id);
     const fill = (g.sides[me].deck ?? []).length > 0 && mine.some((b) => b.out);
     // on your turn with a knocked-out spot, a plain tap on a deck button brings it into the first such spot
     tapInto = myTurn && fill ? mine.findIndex((b) => b.out) : -1;
-    deckRow($("meDeck"), g.sides[me], (g.locked === false && !g.winner) || (myTurn && (fill || !g.swapped)));
+    deckRow($("meDeck"), g.sides[me], !playing && ((g.locked === false && !g.winner) || (myTurn && (fill || !g.swapped))));
     deckRow($("themDeck"), g.sides[them], false);
     // the dummy won the flip: it waits for start, so you can swap first
     const startNow = g.locked === false && g.turn === them && !g.winner;
-    $("start").hidden = !startNow;
+    $("start").hidden = !startNow; $("start").disabled = playing;
     $("result").textContent = g.winner ? `${g.winner === "draw" ? "draw" : g.winner === me ? "you win" : "you lose"}` : "";
     // the attack button is always there unless take or new match takes its place; greyed out while it isn't your move
     $("attack").hidden = taking || !!g.winner || startNow;
@@ -204,8 +263,15 @@ const $ = (id) => document.getElementById(id);
     // whose move it is: the side whose turn it is, or the defender while it places an attack; nobody is dimmed once the match is over
     const moving = g.winner ? null : g.attack ? (g.attack.by === me ? them : me) : g.turn;
     $("meSide").classList.toggle("dim", moving === them); $("themSide").classList.toggle("dim", moving === me);
-    if (shown === null) shown = g.log.length; // first board after loading: the whole log at once
-    if (!logTimer) showLog();
+    if (playing) { clearTimeout(logTimer); logTimer = null; shown = g.log.length; renderLog(); }   // a replay beat: its lines at once
+    else { if (shown === null) shown = g.log.length; if (!logTimer) showLog(); }   // first board after loading: the whole log at once
+    // the replay beat's rising numbers and shakes
+    for (const [s, id, text, cls, hit] of fx.pops ?? []) {
+      const btn = [...$(s === me ? "me" : "them").querySelectorAll(".btn")].find((x) => x.dataset.id === String(id));
+      if (!btn) continue;
+      const p = mk("span", `pop ${cls}`, text); p.onanimationend = () => p.remove(); btn.append(p);
+      if (hit) { btn.classList.remove("hit"); void btn.offsetWidth; btn.classList.add("hit"); }
+    }
     fit();
   }
   // a side's deck row: its deck (next on the left; power/life left), then its knocked-out buttons, crossed out
@@ -291,10 +357,11 @@ const $ = (id) => document.getElementById(id);
       l = mk("span", b.damage ? "hurt" : b.bonus ? "up" : "", String(b.toughness + (b.bonus ?? 0) - b.damage));
     return [p, "/", l];
   }
-  function card(b, moving) {
+  // a card is built once per button and kept (row(), below), so its parts are handed back for updates
+  function card(b) {
     const gc = mk("div", "gc"), inn = mk("div", "gc-in"), name = mk("div", "gc-name", b.name), art = mk("div", "gc-art"), img = mk("img");
     name.style.fontSize = `calc(${Math.min(8.5, 102 / b.name.length).toFixed(1)} * var(--u))`;
-    img.alt = ""; img.src = b.image; art.append(moving ? img : still(b, ""));
+    img.alt = ""; img.src = b.image;
     const txt = mk("div", "gc-txt"), t = TEXT[b.type], fx = mk("div", "");
     if (t) { fx.append(mk("b", "", t[0]), ` · ${t[1]}`); txt.append(fx, mk("div", "rule")); }
     const q = QUOTES[b.type];
@@ -302,24 +369,36 @@ const $ = (id) => document.getElementById(id);
     const type = mk("div", "gc-type");
     type.append(mk("span", "", `${b.type[0].toUpperCase()}${b.type.slice(1)}${SUB[b.type] ? ` — ${SUB[b.type]}` : ""}`));
     if (SIGN[b.series]) type.append(sign(b));
-    inn.append(name, art, type, txt);
-    if (!b.out) { const pt = mk("span", "pt"); pt.append(...ptText(b)); inn.append(pt); }
-    gc.append(inn); return gc;
+    const pt = mk("span", "pt");   // power/life left; hidden once it's out
+    inn.append(name, art, type, txt, pt);
+    gc.append(inn); return { gc, art, img, pt };
   }
-  function row(el, buttons, how) {
-    el.innerHTML = "";
+  // a side's field row. Each spot keeps its card while the same button is in it, and only its classes and numbers change, so
+  // tapping and untapping turn the card (the .gc transition) instead of it jumping; a new button in a spot gets a new card.
+  function row(el, buttons, att, how) {
+    el.slots ??= [];
     buttons.forEach((b, i) => {
       const h = how(b, i);
-      const wrap = document.createElement("div");
-      const btn = document.createElement("button");
-      btn.className = "btn" + (b.out ? " out" : "") + (b.tapped || h.tapped ? " tapped" : "") + (h.can ? " can" : "") + (h.sel ? " sel" : "") + (h.att ? " att" : "");
-      btn.append(card(b, !b.out && (b.tapped || h.tapped)));
-      if (h.click) btn.onclick = h.click;
+      let s = el.slots[i];
+      if (!s || s.id !== b.id) {
+        const wrap = document.createElement("div"), btn = document.createElement("button"), parts = card(b);
+        btn.append(parts.gc); wrap.append(btn);
+        if (el.children[i]) el.children[i].replaceWith(wrap); else el.append(wrap);
+        s = el.slots[i] = { id: b.id, btn, parts, moving: null };
+      }
+      const { btn, parts } = s, tapped = b.tapped || h.tapped;
+      btn.className = "btn" + (b.out ? " out" : "") + (tapped ? " tapped" : "") + (h.can ? " can" : "") + (h.sel ? " sel" : "") + (att.has(b.id) ? " att" : "");
+      const moving = !b.out && !!tapped;   // the picture only moves while tapped
+      if (s.moving !== moving) { parts.art.replaceChildren(moving ? parts.img : still(b, "")); s.moving = moving; }
+      parts.pt.replaceChildren(...ptText(b)); parts.pt.hidden = !!b.out;
+      btn.onclick = h.click ?? null;
+      btn.querySelector(".dmg")?.remove();
       if (h.note) { const d = document.createElement("span"); d.className = "dmg"; d.textContent = h.note; btn.append(d); }
       btn.title = b.sick ? `${b.name}: came in this turn, can't ping` : b.name;
-      btn.dataset.i = i;
-      wrap.append(btn); el.append(wrap);
+      btn.dataset.i = i; btn.dataset.id = b.id;
     });
+    while (el.children.length > buttons.length) el.lastChild.remove();
+    el.slots.length = buttons.length;
   }
 }
 </script>
