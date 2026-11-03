@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.88 "Accept" · Tue Nov 3, 9:35 AM
+- The button for taking a ping says "accept 1" instead of "take 1", and "port 2 more" instead of "place 2 more" while you're still choosing. Removed: the words "take" and "place" on that button.
+
 ## v0.87 "Name Size" · Tue Nov 3, 9:35 AM
 - Card names are bigger: 8.5 units on every card, in the same 12-unit pink bar. All 52 button names and "a mystery button" still fit. Removed: v0.86's 7.5-unit names.
 

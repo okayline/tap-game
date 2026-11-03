@@ -199,7 +199,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.87" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.88" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -380,7 +380,7 @@ const $ = (id) => document.getElementById(id);
     $("attack").textContent = myTurn && fill ? "bring in a button" : "ping";
     $("take").hidden = !taking;
     $("take").disabled = placed !== need;
-    $("take").textContent = placed === need ? `take ${need}` : `place ${need - placed} more`;
+    $("take").textContent = placed === need ? `accept ${need}` : `port ${need - placed} more`;   // (kura, Nov 3: "ACCEPT" for take, "PORT" for place)
     $("again").hidden = !g.winner;
     // whose move it is: the side whose turn it is, or the defender while it places an attack; nobody is dimmed once the match is over
     const moving = g.winner ? null : g.attack ? (g.attack.by === me ? them : me) : g.turn;
