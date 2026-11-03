@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.80 "Booster" · Tue Nov 3, 8:55 AM
+- Decks are dealt like a booster pack: 5 commons, 2 uncommons, 1 rare and 1 wildcard, which is usually a common and sometimes something rarer. Uncommons show with their name and picture; rares and prototypes are still mystery buttons. Ultras aren't dealt. Removed: v0.79's one-mystery deck, and uncommons as mystery buttons.
+
 ## v0.79 "One Mystery" · Tue Nov 3, 8:41 AM
 - Each deck has exactly one mystery button, and the other buttons are commons. Removed: decks where about half the buttons were mystery buttons.
 

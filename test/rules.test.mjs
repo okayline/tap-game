@@ -34,14 +34,18 @@ test("decks: same types on both sides; swaps until the first attack; out buttons
     assert.ok(a.filter((x) => x.type === "divider").length <= 1);
     assert.equal(new Set([...a, ...b]).size, a.length + b.length); // no button dealt twice
   }
-  // the mystery slot: with rarer buttons in the pool, each deck gets exactly one, and the types still match
-  const mixed = pool.concat([..."uuuu"].map((_, i) => ({ name: "r" + i, type: i % 2 ? "neon" : "webring", rarity: "rare" })));
+  // a booster-pack deck: 5 commons, 2 uncommons, 1 rare and a wildcard; same type and rarity in each slot on both sides; no ultras
+  const kinds = { common: 8, uncommon: 4, rare: 4, prototype: 4, ultra: 4 };
+  const pack = Object.entries(kinds).flatMap(([rarity, n]) => ["neon", "webring", "counter"].flatMap((type) => [...Array(n)].map((_, i) => ({ name: `${rarity}-${type}-${i}`, type, rarity }))));
   for (let k = 0; k < 20; k++) {
-    const [a, b] = dealDecks(mixed, 5);
-    assert.deepEqual(a.map((x) => x.type), b.map((x) => x.type));
-    assert.equal(a.filter((x) => x.rarity === "rare").length, 1);
-    assert.equal(b.filter((x) => x.rarity === "rare").length, 1);
-    assert.equal(new Set([...a, ...b]).size, a.length + b.length);
+    const [a, b] = dealDecks(pack);
+    assert.equal(a.length, 9);
+    assert.deepEqual(a.map((x) => [x.type, x.rarity]), b.map((x) => [x.type, x.rarity]));
+    const count = (r) => a.filter((x) => x.rarity === r).length;
+    assert.equal(count("ultra"), 0);
+    assert.ok(count("common") >= 5 && count("uncommon") >= 2 && count("rare") >= 1);
+    assert.ok(count("prototype") <= 1 && count("common") + count("uncommon") + count("rare") + count("prototype") === 9);
+    assert.equal(new Set([...a, ...b]).size, 18);
   }
   // a: 3 guestbooks on the field, a divider in the deck; b: 3 webrings and one in the deck
   const g = newGame([0, 1, 2].map((i) => ({ name: "n" + i, type: "guestbook" })).concat({ name: "d", type: "divider" }),

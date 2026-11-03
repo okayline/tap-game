@@ -26,13 +26,14 @@ export default {
 // 88x31's buttons of every rarity, from the shared item table's deal pool (dungeon-items' Registry entrypoint, through the REGISTRY
 // service binding; kura, Nov 3: "all rarities show up", as mystery cards). The table keeps 88x31's non-commons secret: they come
 // with their type, rarity and series but no name or picture, so here they get the name "a mystery button" (dungeon-items' own
-// words for them) and a "?" picture. Rarity changes nothing in a match: power and toughness come from the type.
+// words for them) and a "?" picture. Uncommons come in full (kura, Nov 3: shown in UN/TAP only). Rarity changes nothing in a
+// match: power and toughness come from the type.
 const MYSTERY_IMG = "data:image/svg+xml," + encodeURIComponent(
   '<svg xmlns="http://www.w3.org/2000/svg" width="88" height="31" viewBox="0 0 88 31"><rect width="88" height="31" fill="#2b3350"/>'
   + '<rect x="1.5" y="1.5" width="85" height="28" fill="none" stroke="#8fb6de" stroke-dasharray="3 2"/>'
   + '<text x="44" y="23" text-anchor="middle" font-family="monospace" font-size="20" font-weight="700" fill="#e98ab3">?</text></svg>');
 async function buttons(env) {
-  return (await env.REGISTRY.dealPool("88x31")).map((it) => (it.hidden
+  return (await env.REGISTRY.dealPool("88x31", { uncommons: true })).map((it) => (it.hidden
     ? { id: it.id, name: "a mystery button", type: it.type, rarity: it.rarity, series: it.series, image: MYSTERY_IMG, hidden: true }
     : { id: it.id, name: it.name, type: it.type, rarity: it.rarity, series: it.series, image: it.image }));
 }

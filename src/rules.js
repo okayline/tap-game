@@ -57,27 +57,31 @@ export const toPlace = (g) => Math.min(
   g.sides[other(g.attack.by)].buttons.reduce((n, b) => n + life(b), 0),
 );
 
-// Deal both decks from the pool: n times, pick a type (weighted by how many of its common buttons are left) and give each side a
-// different common button of it. A type needs 2 commons left to be picked, so a type with 2 commons comes up at most once.
-// Then the mystery slot (kura, Nov 3: "too many mystery buttons", "one per deck"): each deck swaps one of its buttons, at a random
-// spot, for a non-common of the same type (if the pool has one left), so both decks keep the same types. Rarities aren't weighted:
-// any non-common of that type is as likely as another. A button with no rarity counts as common.
-const isCommon = (b) => (b.rarity ?? "common") === "common";
+// Deal both decks from the pool like a booster pack (kura, Nov 3: copy a Magic pack): the deck's 9 slots are 5 commons, 2 uncommons,
+// 1 rare and 1 wildcard, in a shuffled order (the first 3 go on the field). A wildcard's rarity is drawn from WILD (prototypes only
+// come from it). Each slot's rarity is the same for both sides; its type is picked weighted by how many buttons of that rarity are
+// left, among types with 2 left, and each side gets a different button of it, so both decks keep the same types. A slot whose
+// rarity has no pair left falls back to common. Ultras (and any other rarity) are never dealt. A button with no rarity is common.
+export const SLOTS = ["common", "common", "common", "common", "common", "uncommon", "uncommon", "rare", "wild"];
+export const WILD = { common: 60, uncommon: 25, rare: 10, prototype: 5 };   // a wildcard's odds, out of 100
 export function dealDecks(pool, n = DECK, rand = Math.random) {
-  const left = {}, rare = {};
-  for (const b of pool) ((isCommon(b) ? left : rare)[b.type] ??= []).push(b);
+  const left = {};   // left[rarity][type]: buttons not yet dealt
+  for (const b of pool) ((left[b.rarity ?? "common"] ??= {})[b.type] ??= []).push(b);
   const take = (list) => list.splice(Math.floor(rand() * list.length), 1)[0];
+  const types = (r) => Object.keys(left[r] ?? {}).filter((t) => left[r][t].length >= 2);
+  const wild = () => { let x = rand() * 100; for (const [r, w] of Object.entries(WILD)) { if (x < w) return r; x -= w; } return "common"; };
+  const slots = [...SLOTS];
+  for (let i = slots.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [slots[i], slots[j]] = [slots[j], slots[i]]; }
   const a = [], b = [];
   for (let k = 0; k < n; k++) {
-    const types = Object.keys(left).filter((t) => left[t].length >= 2);
-    if (!types.length) break;
-    let r = rand() * types.reduce((m, t) => m + left[t].length, 0), t = types[0];
-    for (const x of types) { if (r < left[x].length) { t = x; break; } r -= left[x].length; }
-    a.push(take(left[t])); b.push(take(left[t]));
-  }
-  for (const deck of [a, b]) {
-    const spots = deck.map((_, i) => i).filter((i) => rare[deck[i].type]?.length);
-    if (spots.length) { const i = spots[Math.floor(rand() * spots.length)]; deck[i] = take(rare[deck[i].type]); }
+    let r = slots[k % slots.length];
+    if (r === "wild") r = wild();
+    if (!types(r).length) r = "common";
+    const ts = types(r);
+    if (!ts.length) break;
+    let x = rand() * ts.reduce((m, t) => m + left[r][t].length, 0), t = ts[0];
+    for (const y of ts) { if (x < left[r][y].length) { t = y; break; } x -= left[r][y].length; }
+    a.push(take(left[r][t])); b.push(take(left[r][t]));
   }
   return [a, b];
 }
