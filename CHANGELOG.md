@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.60 "Glow, Ping, Firewall" · Tue Nov 3, 4:20 AM
+- Neon has Glow: +0/+1 for each other Neon on your field (its life shows green when raised). Divider has Ping: when an attack has a Divider, a button the attack knocks out doesn't hit back. Construction has Firewall: it can't attack, and it hits back for 2 (Construction is now 2/3). All six types now have card text. Removed: Construction attacking, Construction's power of 1, and knocked-out buttons hitting back against a Divider's attack.
+
 ## v0.59 "Pastel Numbers" · Tue Nov 3, 4:10 AM
 - The green (raised power) and red (damage) numbers in power/toughness boxes are lighter pastel shades. Removed: the darker green and red.
 

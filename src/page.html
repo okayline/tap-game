@@ -102,7 +102,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.59" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.60" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -141,7 +141,7 @@ const $ = (id) => document.getElementById(id);
     const key = `${g.turn}|${g.attack ? g.attack.by : ""}|${g.log.length}|${mine.map((b) => b.id).join()}`;
     if (key !== seen) { seen = key; picked = new Set(); split = {}; } // a new step: clear picks
     const taking = g.attack && g.attack.by === them && !g.winner;
-    const life = (b) => (b.out ? 0 : b.toughness - b.damage);
+    const life = (b) => (b.out ? 0 : b.toughness + (b.bonus ?? 0) - b.damage);   // rules.js life (bonus: Glow)
     const myTurn = g.turn === me && !g.attack && !g.winner;
     const ready = (b) => !b.out && !b.tapped;
     // what you must place when they attack: their attack's total, or all your buttons' life left if that's less
@@ -150,7 +150,7 @@ const $ = (id) => document.getElementById(id);
     // your row: on your turn click to pick up to g.limit attackers (1 on the match's first turn, then 2; they show tapped; no more can be picked); when they attack, each click puts 1 damage on
     // that button (up to its life left; one more click clears it)
     row($("me"), mine, (b, i) => {
-      if (myTurn && ready(b) && (!b.sick || BROAD.includes(b.type)) && (picked.has(i) || picked.size < g.limit)) return { can: true, tapped: picked.has(i) && !ONLINE.includes(b.type), sel: picked.has(i) && ONLINE.includes(b.type), click: () => { picked.has(i) ? picked.delete(i) : picked.add(i); draw(); } };
+      if (myTurn && ready(b) && !FIRE.includes(b.type) && (!b.sick || BROAD.includes(b.type)) && (picked.has(i) || picked.size < g.limit)) return { can: true, tapped: picked.has(i) && !ONLINE.includes(b.type), sel: picked.has(i) && ONLINE.includes(b.type), click: () => { picked.has(i) ? picked.delete(i) : picked.add(i); draw(); } };
       if (taking && !b.out) {
         const d = split[i] ?? 0;
         return { can: true, sel: d > 0, note: d ? `-${d}` : "",
@@ -168,7 +168,7 @@ const $ = (id) => document.getElementById(id);
     // toughness, at the right of each side's top line: life left on all its buttons still in the match (field and deck), out of all its
     // buttons' toughness (kura, Nov 3: "like life")
     const tough = (s) => { const all = [...s.buttons, ...(s.deck ?? []), ...(s.gone ?? [])];
-      return `toughness ${all.reduce((n, b) => n + life(b), 0)}/${all.reduce((n, b) => n + b.toughness, 0)}`; };
+      return `toughness ${all.reduce((n, b) => n + life(b), 0)}/${all.reduce((n, b) => n + b.toughness + (b.bonus ?? 0), 0)}`; };
     $("meTough").textContent = tough(g.sides[me]); $("themTough").textContent = tough(g.sides[them]);
     // you can drag from your deck before the first attack, and on your turn to fill an out spot or make your one swap
     const fill = (g.sides[me].deck ?? []).length > 0 && mine.some((b) => b.out);
@@ -230,10 +230,11 @@ const $ = (id) => document.getElementById(id);
   }
   // a button drawn as a card: name (smaller when long, so it fits on one line, as Magic does), art, type line, an empty text box,
   // and power/life left in a box on the text box's bottom edge (none once it's out)
-  // card text by type: only the effects the rules have (rules.js ALWAYS_ONLINE, BROADBAND, WEBCOUNTER)
-  const ONLINE = ["guestbook"], BROAD = ["webring"];   // rules.js ALWAYS_ONLINE and BROADBAND
+  // card text by type: only the effects the rules have (rules.js ALWAYS_ONLINE, BROADBAND, WEBCOUNTER, GLOW, PING, FIREWALL)
+  const ONLINE = ["guestbook"], BROAD = ["webring"], FIRE = ["construction"];   // rules.js ALWAYS_ONLINE, BROADBAND and FIREWALL
   const TEXT = { guestbook: ["Always Online", "attacking doesn't tap it."], webring: ["Broadband", "can attack the turn it comes in."],
-    counter: ["Webcounter", "+1/+0 each time it hits back."] };
+    counter: ["Webcounter", "+1/+0 each time it hits back."], neon: ["Glow", "+0/+1 for each other Neon on your field."],
+    divider: ["Ping", "a button its attack knocks out doesn't hit back."], construction: ["Firewall", "can't attack."] };
   // a button's picture only moves while it's tapped (kura, Nov 3): ready or knocked out, it's drawn once onto a canvas, kept per button so
   // it doesn't change frame on every redraw
   const stills = new Map();
@@ -246,9 +247,10 @@ const $ = (id) => document.getElementById(id);
     c.className = cls; return c;
   }
   const mk = (tag, cls, text) => { const e = document.createElement(tag); e.className = cls; if (text != null) e.textContent = text; return e; };
-  // power/life left: power in green when Webcounter has raised it, life in red when the button has taken damage
+  // power/life left: power in green when Webcounter has raised it; life in red when the button has taken damage, else green when Glow raises it
   function ptText(b) {
-    const p = mk("span", b.boost ? "up" : "", String(b.power)), l = mk("span", b.damage ? "hurt" : "", String(b.toughness - b.damage));
+    const p = mk("span", b.boost ? "up" : "", String(b.power)),
+      l = mk("span", b.damage ? "hurt" : b.bonus ? "up" : "", String(b.toughness + (b.bonus ?? 0) - b.damage));
     return [p, "/", l];
   }
   function card(b, moving) {

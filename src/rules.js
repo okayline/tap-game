@@ -21,7 +21,7 @@
 export const STATS = {
   neon: [1, 2],
   guestbook: [1, 3],
-  construction: [1, 3],
+  construction: [2, 3],   // Firewall (kura, Nov 3): it can't attack, so its power is only what it hits back with: 2
   counter: [2, 3],
   webring: [3, 2],
   divider: [3, 3],
@@ -34,6 +34,12 @@ export const ALWAYS_ONLINE = ["guestbook"];
 export const BROADBAND = ["webring"];
 // Webcounter (kura, Nov 3): a button of these types gets +1/+0 each time it hits back, for the rest of the match.
 export const WEBCOUNTER = ["counter"];
+// Glow (kura, Nov 3): a button of these types gets +0/+1 for each other one of them on its side's field (b.bonus, kept by settle()).
+export const GLOW = ["neon"];
+// Ping (kura, Nov 3; Magic's "first strike"): when an attack has one of these, a button the attack knocks out doesn't hit back.
+export const PING = ["divider"];
+// Firewall (kura, Nov 3; Magic's "defender"): a button of these types can't attack.
+export const FIREWALL = ["construction"];
 export const MAX_ATTACKERS = 2; // at most this many attack in a turn, so one button always stays home (kura, Nov 3)
 // A coin flip decides who goes first, and that side attacks with only 1 on the match's first turn (kura, Nov 3).
 // g.limit is how many may attack this turn.
@@ -41,7 +47,7 @@ export const MAX_ATTACKERS = 2; // at most this many attack in a turn, so one bu
 // the names the log and the page use for the seats (kura, Nov 3): seat b is the dummy
 export const NAMES = { a: "Player", b: "Guest #1337" };
 export const other = (seat) => (seat === "a" ? "b" : "a");
-export const life = (b) => (b.out ? 0 : b.toughness - b.damage);
+export const life = (b) => (b.out ? 0 : b.toughness + (b.bonus ?? 0) - b.damage);
 // how much of an attack the defender must place: all of it, or as much as its buttons can still take
 export const toPlace = (g) => Math.min(
   g.attack.attackers.reduce((n, i) => n + g.sides[g.attack.by].buttons[i].power, 0),
@@ -70,8 +76,24 @@ const fresh = (b) => { const [power, toughness] = STATS[b.type] ?? [1, 1]; retur
 // deckA / deckB: a side's whole deck; the first 3 go on the field.
 export function newGame(deckA, deckB, first = Math.random() < 0.5 ? "a" : "b") {
   const side = (list) => { const all = list.map(fresh); return { buttons: all.slice(0, 3), deck: all.slice(3) }; };
-  return { turn: first, limit: 1, sides: { a: side(deckA), b: side(deckB) }, attack: null, winner: null, locked: false,
+  const g = { turn: first, limit: 1, sides: { a: side(deckA), b: side(deckB) }, attack: null, winner: null, locked: false,
     log: [`coin flip: ${NAMES[first]} goes first, with 1 attacker`, `${NAMES[first]}'s turn`] };
+  settle(g);
+  return g;
+}
+
+// Glow: give each field button its bonus toughness (deck buttons get none), then put out any field button whose life is gone, again
+// until nothing changes (a Neon going out lowers the others' bonus).
+export function settle(g) {
+  for (let changed = true; changed;) {
+    changed = false;
+    for (const s of Object.values(g.sides)) {
+      for (const b of s.deck ?? []) b.bonus = 0;
+      const glow = s.buttons.filter((b) => !b.out && GLOW.includes(b.type)).length;
+      for (const b of s.buttons) b.bonus = !b.out && GLOW.includes(b.type) ? glow - 1 : 0;
+      for (const b of s.buttons) if (!b.out && life(b) <= 0) { b.out = true; g.log.push(`${b.name} is out`); changed = true; }
+    }
+  }
 }
 
 // Before the first attack: swap field button i with deck button j. Returns an error string or null.
@@ -83,10 +105,11 @@ export function swap(g, seat, i, j) {
   if (!Number.isInteger(i) || !Number.isInteger(j) || !s.buttons[i] || !s.deck[j]) return "No such button.";
   if (g.locked && (g.winner || g.turn !== seat || g.attack)) return "Only on your turn, before you attack.";
   const [n] = s.deck.splice(j, 1), b = s.buttons[i];
-  if (b.out) { s.gone.push(b); s.buttons[i] = n; if (g.locked) n.sick = true; g.log.push(`${n.name} comes in`); return null; }
+  if (b.out) { s.gone.push(b); s.buttons[i] = n; if (g.locked) n.sick = true; g.log.push(`${n.name} comes in`); settle(g); return null; }
   if (g.locked && g.swapped) { s.deck.splice(j, 0, n); return "One swap a turn."; }
   s.buttons[i] = n; s.deck.splice(j, 0, b);
   if (g.locked) { g.swapped = true; n.sick = true; g.log.push(`${NAMES[seat]} swaps ${b.name} for ${n.name}`); }
+  settle(g);
   return null;
 }
 
@@ -109,6 +132,7 @@ export function attack(g, seat, idxs) {
   if (!list.every((i) => ready(g.sides[seat], i))) return "Only ready buttons can attack.";
   if (list.length > g.limit) return `At most ${g.limit} can attack this turn.`;
   if (mustFill(g, seat)) return "Bring in a button first.";
+  if (list.some((i) => FIREWALL.includes(g.sides[seat].buttons[i].type))) return "A Firewall can't attack.";
   if (list.some((i) => g.sides[seat].buttons[i].sick && !BROADBAND.includes(g.sides[seat].buttons[i].type))) return "A button that came in this turn can't attack.";
   g.locked = true;
   if (!list.length) { g.log.push(`${NAMES[seat]} doesn't attack`); passTurn(g); return null; }
@@ -126,14 +150,17 @@ export function place(g, seat, split) {
   const parts = Object.entries(split).map(([k, v]) => [Number(k), Number(v)]).filter(([, d]) => d > 0);
   if (!parts.every(([i, d]) => Number.isInteger(d) && def.buttons[i] && d <= life(def.buttons[i]))) return "A button can't take that much.";
   if (parts.reduce((n, [, d]) => n + d, 0) !== toPlace(g)) return `Place exactly ${toPlace(g)}.`;
-  // hitting back: untapped buttons that take damage, counted before anything goes out (it all happens at once)
-  let back = parts.filter(([i]) => !def.buttons[i].tapped).reduce((n, [i]) => n + def.buttons[i].power, 0);
+  // hitting back: untapped buttons that take damage, counted before anything goes out (it all happens at once), except with Ping in
+  // the attack, where a button this attack knocks out doesn't hit back
+  const ping = g.attack.attackers.some((i) => PING.includes(att.buttons[i].type));
+  const hits = ([i, d]) => !def.buttons[i].tapped && !(ping && d >= life(def.buttons[i]));
+  let back = parts.filter(hits).reduce((n, [i]) => n + def.buttons[i].power, 0);
   for (const [i, d] of parts) {
-    const b = def.buttons[i];
+    const b = def.buttons[i], hit = hits([i, d]);
     b.damage += d;
-    g.log.push(`${b.name} takes ${d}${b.tapped ? "" : `, hits back for ${b.power}`}`);
+    g.log.push(`${b.name} takes ${d}${hit ? `, hits back for ${b.power}` : ""}`);
     if (life(b) <= 0) { b.out = true; g.log.push(`${b.name} is out`); }
-    else if (!b.tapped && WEBCOUNTER.includes(b.type)) { b.power++; b.boost = (b.boost ?? 0) + 1; g.log.push(`${b.name} gets +1/+0`); }   // after its hit back (counted above)
+    else if (hit && WEBCOUNTER.includes(b.type)) { b.power++; b.boost = (b.boost ?? 0) + 1; g.log.push(`${b.name} gets +1/+0`); }   // after its hit back (counted above)
   }
   for (const i of g.attack.attackers) {
     const a = att.buttons[i], d = Math.min(back, life(a));
@@ -144,6 +171,7 @@ export function place(g, seat, split) {
     if (life(a) <= 0) { a.out = true; g.log.push(`${a.name} is out`); }
   }
   g.attack = null;
+  settle(g);
   const empty = (s) => g.sides[s].buttons.every((b) => b.out) && !(g.sides[s].deck ?? []).length;
   if (empty(seat) || empty(by)) {
     g.winner = empty(seat) && empty(by) ? "draw" : empty(seat) ? by : seat;

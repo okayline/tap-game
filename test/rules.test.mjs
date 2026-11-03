@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { newGame, attack, place } from "../src/rules.js";
 
-// a: webring 3/2, neon 1/2, counter 2/3. b: construction 1/3, divider 3/3, neon 1/2 (hand-set from STATS).
+// a: webring 3/2, neon 1/2, counter 2/3. b: construction 2/3, divider 3/3, neon 1/2 (hand-set from STATS; one Neon a side, so no Glow).
 const A = [{ name: "w", type: "webring" }, { name: "n", type: "neon" }, { name: "c", type: "counter" }];
 const B = [{ name: "k", type: "construction" }, { name: "d", type: "divider" }, { name: "m", type: "neon" }];
 
@@ -16,9 +16,9 @@ test("an attack is placed on the defender's buttons; untapped ones that take dam
   // b puts 3 on construction (out) and 2 on divider (1 left); neon takes nothing
   assert.equal(place(g, "b", { 0: 3, 1: 2 }), null);
   assert.deepEqual(g.sides.b.buttons.map((b) => b.out), [true, false, false]);
-  // hit back: construction 1 + divider 3 = 4 over the attackers in order: webring takes 2 (out), counter takes 2 (1 left)
-  assert.deepEqual(g.sides.a.buttons.map((b) => b.out), [true, false, false]);
-  assert.equal(g.sides.a.buttons[2].damage, 2);
+  // hit back: construction 2 + divider 3 = 5 over the attackers in order: webring takes 2 (out), counter takes 3 (out)
+  assert.deepEqual(g.sides.a.buttons.map((b) => b.out), [true, false, true]);
+  assert.equal(g.sides.a.buttons[2].damage, 3);
   assert.equal(g.winner, null);
   assert.equal(g.turn, "b");
   assert.equal(g.sides.b.buttons[1].damage, 2);      // damage stays
@@ -34,8 +34,8 @@ test("decks: same types on both sides; swaps until the first attack; out buttons
     assert.ok(a.filter((x) => x.type === "divider").length <= 1);
     assert.equal(new Set([...a, ...b]).size, a.length + b.length); // no button dealt twice
   }
-  // a: 3 neons on the field, a divider in the deck; b: 3 webrings and one in the deck
-  const g = newGame([0, 1, 2].map((i) => ({ name: "n" + i, type: "neon" })).concat({ name: "d", type: "divider" }),
+  // a: 3 guestbooks on the field, a divider in the deck; b: 3 webrings and one in the deck
+  const g = newGame([0, 1, 2].map((i) => ({ name: "n" + i, type: "guestbook" })).concat({ name: "d", type: "divider" }),
     [0, 1, 2, 3].map((i) => ({ name: "w" + i, type: "webring" })), "a");
   assert.equal(swap(g, "a", 0, 0), null);
   assert.equal(g.sides.a.buttons[0].name, "d");
@@ -43,7 +43,7 @@ test("decks: same types on both sides; swaps until the first attack; out buttons
   swap(g, "a", 0, 0); // back
   assert.equal(attack(g, "a", [0]), null);
   assert.equal(swap(g, "a", 0, 0), "Only on your turn, before you attack."); // a is mid-attack
-  // b puts the neon's 1 power on webring 0 (2 toughness, survives); hit back 3 takes neon 0 out
+  // b puts the guestbook's 1 power on webring 0 (2 toughness, survives); hit back 3 takes guestbook 0 out
   assert.equal(place(g, "b", { 0: 1 }), null);
   assert.equal(g.sides.a.buttons[0].out, true);
   g.limit = 2; attack(g, "b", []); // b passes; a's turn: the out button waits in its spot until a brings one in
