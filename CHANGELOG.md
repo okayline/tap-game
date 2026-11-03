@@ -4,6 +4,13 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.19 "Ticker"
+**Mon Nov 2, 2026 · 11:50 PM HST** (no migration)
+- kura: "can you make the under panel log, show the newest lines at top, pushing the older ones down. could we also make the font bigger. and have the lines appear one line at at time, so they dont all appear at once"
+- Changed: the log shows the newest line at the top; new lines appear one at a time, 0.45 seconds apart (`LINE_MS` in `src/page.html`); 15px text (was 12px), taller box (240px), long lines wrap. On loading a match the whole log shows at once. Footer v0.19.
+- Removed: oldest-first order and the jump to the bottom.
+- Not checked: the live site.
+
 ## v0.18 "Quiet"
 **Mon Nov 2, 2026 · 11:48 PM HST** (no migration)
 - kura: "okay can we take the status line out please haha"

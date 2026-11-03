@@ -41,7 +41,8 @@
   button.act { width: 100%; height: 54px; border-radius: 14px; border: 0; cursor: pointer; color: var(--ink);
                background: linear-gradient(135deg, #b084ff, #ff6fcf); font-family: var(--meme); font-size: 19px; letter-spacing: .5px;
                text-transform: uppercase; text-shadow: 0 0 6px rgba(255,255,255,.35); box-shadow: 0 0 22px rgba(255,111,207,.45); }
-  #log { white-space: pre; font-size: 12px; max-height: 160px; overflow: auto; background: var(--panel); border: 1px solid var(--line);
+  /* the log: newest line at the top; new lines appear one at a time (LINE_MS apart) */
+  #log { white-space: pre-wrap; font-size: 15px; line-height: 1.5; max-height: 240px; overflow: auto; background: var(--panel); border: 1px solid var(--line);
          border-radius: 14px; padding: 10px 12px; color: var(--dim); font-family: ui-monospace, Menlo, Consolas, monospace; }
   .err { color: #ffb3b3; }
   .ddfoot { margin: 1px 0 0 !important; padding: 0 12px !important; }
@@ -57,7 +58,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.18" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.19" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -70,6 +71,16 @@ const $ = (id) => document.getElementById(id);
     g = d.g; $("err").textContent = ""; draw();
   };
   ws.onclose = () => { $("err").textContent = "disconnected: reload"; };
+  const LINE_MS = 450;
+  let shown = null, logTimer = null;
+  // shows one more log line each LINE_MS until the log is caught up, newest at the top
+  function showLog() {
+    logTimer = null;
+    if (shown < g.log.length) shown++; else shown = g.log.length;
+    $("log").textContent = g.log.slice(0, shown).slice(-30).reverse().join("\n");
+    $("log").scrollTop = 0;
+    if (shown < g.log.length) logTimer = setTimeout(showLog, LINE_MS);
+  }
   let picked = new Set(), blocks = {}, chosen = null, seen = "";
   $("attack").onclick = () => send({ do: "attack", idxs: [...picked] });
   $("block").onclick = () => send({ do: "block", blocks });
@@ -104,8 +115,8 @@ const $ = (id) => document.getElementById(id);
     $("result").textContent = g.winner ? `${g.winner === me ? "you win" : "you lose"} (reload the main page for a new match)` : "";
     $("attack").hidden = !myTurn;
     $("block").hidden = !blocking;
-    $("log").textContent = g.log.slice(-30).join("\n");
-    $("log").scrollTop = 1e9;
+    if (shown === null) shown = g.log.length; // first board after loading: the whole log at once
+    if (!logTimer) showLog();
   }
   function row(el, buttons, how) {
     el.innerHTML = "";
