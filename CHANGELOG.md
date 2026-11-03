@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.56 "Both Sides" · Tue Nov 3, 4:25 AM
+- Toughness sits at the right of your top line, and the dummy gets its own at the right of its top line. Removed: toughness in the middle of your status line.
+
 ## v0.55 "Toughness" · Tue Nov 3, 4:20 AM
 - Your status line also shows toughness: the life left on all your buttons still in the match (field and deck), out of all your buttons' toughness. A tapped card is shrunk a little more, so it no longer sticks out of the leftmost spot. Removed: tapped cards sticking out past their panel.
 
