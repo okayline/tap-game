@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.59 "Pastel Numbers" · Tue Nov 3, 4:10 AM
+- The green (raised power) and red (damage) numbers in power/toughness boxes are lighter pastel shades. Removed: the darker green and red.
+
 ## v0.58 "C:\\>" · Tue Nov 3, 4:35 AM
 - Each log line starts with a DOS prompt, C:\\>. Older log lines fade less: down to 50% for the bottom one. Removed: log lines with nothing before them, and the fade down to 25%.
 
