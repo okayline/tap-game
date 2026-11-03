@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.91 "Big Card" · Tue Nov 3, 10:20 AM
+- Hold a card or deck button still for about half a second (or rest the mouse on it) to see it as a big card in the middle of the screen, with its flavour line; letting go or moving off closes it. A hold doesn't also tap, swap or drop the button, and moving your finger first still drags as before. Long presses on cards and deck buttons open no menu. Removed: the flavour line (and the line above it) on the normal cards.
+
 ## v0.90 "Guestbook Count" · Tue Nov 3, 10:05 AM
 - Webcounter (Counter) now reads "+1/+0 for each Guestbook on your field": a Counter's power is its base plus the Guestbooks on its side's field, going up or down as they come in or go out, and back to its base in the deck. Its first card that names another type. Removed: Webcounter's +1/+0 each time it hits back, and the "gets +1/+0" log line.
 

@@ -177,6 +177,12 @@
   .deck .dpt { position: absolute; right: 4px; bottom: 4px; font: 800 10px/1 var(--title); color: var(--ink); background: #fff3c9; border: 1px solid #e2c56e;
                border-radius: 4px; padding: 2px 4px; box-shadow: 0 0 0 1px var(--cream); pointer-events: none; }
   .ghost { position: fixed; transform: translate(-50%, -50%); pointer-events: none; opacity: .85; z-index: 9; width: var(--dw); image-rendering: pixelated; }
+  /* the flavour line (and the line above it) only shows on the big card (kura, Nov 3: more room for the effect on the field) */
+  .gc-txt .rule, .gc-txt .flav { display: none; }
+  .zoom .gc-txt .rule, .zoom .gc-txt .flav { display: block; }
+  /* the big card: hold a card or deck button (hover with a mouse) to see it whole (kura, Nov 3); --u is set again here so the whole card scales */
+  .zoom { position: fixed; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; background: rgba(20, 26, 48, .45); pointer-events: none; }
+  .zoom .zbox { --w: min(78vw, 300px); --u: calc(var(--w) / 108); width: var(--w); height: calc(var(--h) * var(--u)); position: relative; filter: drop-shadow(0 8px 24px rgba(0,0,0,.45)); }
   .ddfoot { margin: 1px 0 0 !important; padding: 0 12px !important; }
   /* on a phone the panels run to the screen's edges so the three cards are as wide as they can be (kura, Nov 3: "as big as they can reasonably get");
      24px = the panel's 4px sides and two 8px gaps (each just wide enough for a tappable card's dashed outline) */
@@ -206,7 +212,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.90" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.91" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -334,6 +340,36 @@ const $ = (id) => document.getElementById(id);
   $("take").onclick = () => send({ do: "take", split });
   $("start").onclick = () => send({ do: "start" });
   $("again").onclick = () => location.assign("/"); // the main page starts a new match
+  // the big card (kura, Nov 3): press and hold a card or deck button still for HOLD_MS (or rest the mouse on it) to see it whole, with its
+  // flavour line; letting go (or moving off) closes it. A hold doesn't also tap, swap or drop: the click after it is swallowed.
+  const HOLD_MS = 450;
+  let bigCard = null, held = false;
+  function showBig(b) {
+    hideBig();
+    const p = card(b), box = mk("div", "zbox");
+    p.art.append(p.img); p.pt.replaceChildren(...ptText(b)); p.pt.hidden = !!b.out;
+    box.append(p.gc); bigCard = mk("div", "zoom"); bigCard.append(box); document.body.append(bigCard);
+    document.querySelectorAll(".ghost").forEach((x) => (x.style.visibility = "hidden"));
+  }
+  function hideBig() { bigCard?.remove(); bigCard = null; }
+  addEventListener("click", (e) => { if (held) { held = false; e.stopPropagation(); e.preventDefault(); } }, true);
+  document.addEventListener("contextmenu", (e) => { if (e.target.closest(".row, .deck")) e.preventDefault(); });   // a long press opens no menu
+  // one press at a time: a hold starts on a card (zoomable, below); moving the finger or letting go anywhere ends it
+  let holdTimer = null, hx = 0, hy = 0;
+  const endHold = () => { clearTimeout(holdTimer); holdTimer = null; if (bigCard && held) { hideBig(); setTimeout(() => (held = false), 400); } };
+  addEventListener("pointermove", (e) => { if (holdTimer && Math.hypot(e.clientX - hx, e.clientY - hy) > 8) { clearTimeout(holdTimer); holdTimer = null; } });
+  addEventListener("pointerup", endHold); addEventListener("pointercancel", endHold);
+  // el shows getB()'s card when held (touch or pen) or hovered (mouse)
+  function zoomable(el, getB) {
+    el.addEventListener("pointerdown", (e) => {
+      if (e.pointerType === "mouse") return;
+      hx = e.clientX; hy = e.clientY; held = false; clearTimeout(holdTimer);
+      holdTimer = setTimeout(() => { holdTimer = null; held = true; showBig(getB()); }, HOLD_MS);
+    });
+    let hover = null;
+    el.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") hover = setTimeout(() => { if (el.isConnected) showBig(getB()); }, HOLD_MS); });
+    el.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") { clearTimeout(hover); hideBig(); } });
+  }
 
   function draw() {
     const me = "a", them = "b", mine = g.sides[me].buttons, theirs = g.sides[them].buttons;
@@ -539,17 +575,19 @@ const $ = (id) => document.getElementById(id);
     return [...row, ...gone.filter((b) => !shown.has(b)).map((b) => ({ b, gone: true }))];
   }
   function deckRow(el, side, can) {
+    if (bigCard && !held && el.contains(document.querySelector(".deck .card:hover"))) hideBig();   // a mouse preview of a button being redrawn
     el.innerHTML = "";
     for (const { b, j, gone } of rowOf(side)) {
       if (gone) {
         const card = document.createElement("div"); card.className = "card gone"; card.title = `${b.name} (out)`;
-        card.append(still(b, "")); el.append(card); continue;
+        card.append(still(b, "")); zoomable(card, () => b); el.append(card); continue;
       }
       const card = document.createElement("div"); card.className = "card"; card.title = `${b.name} ${b.power}/${b.toughness - b.damage}`;
       const img = document.createElement("img"); img.alt = ""; img.src = b.image;
       const pt = document.createElement("span"); pt.className = "dpt"; pt.append(...ptText(b));
       card.append(img, pt);
       if (can) { card.classList.add("drag"); card.onpointerdown = (e) => drag(e, j, img); }
+      zoomable(card, () => b);
       el.append(card);
     }
   }
@@ -563,6 +601,7 @@ const $ = (id) => document.getElementById(id);
     const end = (ev) => {
       ghost.remove();
       removeEventListener("pointermove", at); removeEventListener("pointerup", end); removeEventListener("pointercancel", end);
+      if (held) return;   // the press was a hold for the big card, not a drag
       const t = ev.type === "pointerup" && document.elementFromPoint(ev.clientX, ev.clientY)?.closest("#me .btn");
       if (t) send({ do: "swap", i: Number(t.dataset.i), j });
       else if (ev.type === "pointerup" && tapInto >= 0 && Math.hypot(ev.clientX - x0, ev.clientY - y0) < 8) send({ do: "swap", i: tapInto, j });
@@ -651,8 +690,10 @@ const $ = (id) => document.getElementById(id);
         const wrap = document.createElement("div"), btn = document.createElement("button"), parts = card(b);
         btn.append(parts.gc); wrap.append(btn);
         if (el.children[i]) el.children[i].replaceWith(wrap); else el.append(wrap);
-        s = el.slots[i] = { id: b.id, btn, parts, moving: null };
+        s = el.slots[i] = { id: b.id, btn, parts, moving: null, b };
+        const slot = s; zoomable(btn, () => slot.b);
       }
+      s.b = b;
       const { btn, parts } = s, tapped = b.tapped || h.tapped;
       btn.className = "btn" + (b.out ? " out" : "") + (tapped ? " tapped" : "") + (h.can ? " can" : "") + (h.sel ? " sel" : "") + (att.has(b.id) ? " att" : "");
       const moving = !b.out && !!tapped;   // the picture only moves while tapped
