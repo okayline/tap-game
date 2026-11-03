@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.68 "Flavour Text" · Tue Nov 3, 5:55 AM
+- Every card's text box has a made-up flavour line in quotes under its effect, after a thin line: one of four per type, picked by the button and the match, so it stays the same all match. The effect name is followed by a middle dot, and the card text is a little smaller so the flavour line clears the power/toughness box. Removed: the long dash after the effect name, and the bigger card text.
+
 ## v0.67 "Set Signs" · Tue Nov 3, 5:00 AM
 - The sign at the right of the type line is the button's set: a globe for Series Alpha, a floppy disk for Series Beta, none for a button outside a series. It's coloured by rarity in pastel (common slate, uncommon aqua, rare butter, ultra pink, prototype silver). Removed: the same small button shape on every card, and its bright 88x31 colours.
 
