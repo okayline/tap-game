@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.94 "Small Flavour" · Tue Nov 3, 10:15 AM
+- The flavour line on the big card is a little smaller: 5.8 units instead of 6.8. Removed: the 6.8-unit flavour on the big card.
+
 ## v0.93 "Long Names" · Tue Nov 3, 10:30 AM
 - Card names are 8.5 units again, and a name of 16 letters or more is 6.7. In Cinzel every seed name of 15 letters or fewer fits at 8.5, and the 8 longer ones (and "a mystery button") fit at 6.7; checked on a 390px phone and a 1280px desktop. Removed: v0.92's single 6.7 size for every name.
 

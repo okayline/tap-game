@@ -182,6 +182,7 @@
   /* the flavour line (and the line above it) only shows on the big card (kura, Nov 3: more room for the effect on the field) */
   .gc-txt .rule, .gc-txt .flav { display: none; }
   .zoom .gc-txt .rule, .zoom .gc-txt .flav { display: block; }
+  .zoom .gc-txt .flav { font-size: calc(5.8 * var(--t) * var(--u)); }   /* a little smaller than the effect (kura, Nov 3; was 6.8) */
   /* the big card: hold a card or deck button (hover with a mouse) to see it whole (kura, Nov 3); --u is set again here so the whole card scales */
   .zoom { position: fixed; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; background: rgba(20, 26, 48, .45); pointer-events: none; }
   .zoom .zbox { --w: min(78vw, 300px); --u: calc(var(--w) / 108); width: var(--w); height: calc(var(--h) * var(--u)); position: relative; filter: drop-shadow(0 8px 24px rgba(0,0,0,.45)); }
@@ -214,7 +215,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.93" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.94" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
