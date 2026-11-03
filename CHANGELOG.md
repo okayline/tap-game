@@ -4,6 +4,13 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.25 "Corner Stats"
+**Mon Nov 2, 2026 · 11:58 PM HST** (no migration)
+- kura: "could we take the name and toughness line off from under the panels and add the power/toughness like this" (a sketch with "3/1" in the button box's bottom-right corner) "can you make it look nice please !"
+- Changed: power/life left sits in each button box's bottom-right corner in glowing Impact; damage you're placing shows as a pink "-2" in the top-right. The name shows on hover (tooltip). Footer v0.25.
+- Removed: the line under each button (name · power/toughness · out · damage being placed); an out button is shown only by fading.
+- Not checked: the live site.
+
 ## v0.24 "Buttons Are HP"
 **Mon Nov 2, 2026 · 11:59 PM HST** (no migration)
 - kura: "could we distribute that damage somehow. so when the enemy attacks for 3 lets say, cyber cafe could take -2 and hex takes -1?" ... "yeah the buttons are the HP !!!"

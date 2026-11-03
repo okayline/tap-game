@@ -24,7 +24,7 @@
   .side { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 14px; }
   .side > div:first-child { font-family: var(--meme); font-size: 18px; letter-spacing: .5px; text-transform: uppercase; text-shadow: 0 0 10px rgba(176,132,255,.75); }
   .row { display: flex; gap: 12px; justify-content: space-between; align-items: flex-start; margin-top: 8px; }
-  .btn { width: var(--w); height: var(--w); display: flex; align-items: center; justify-content: center; border: 0; background: none; padding: 0; border-radius: 10px; color: var(--ink); }
+  .btn { position: relative; width: var(--w); height: var(--w); display: flex; align-items: center; justify-content: center; border: 0; background: none; padding: 0; border-radius: 10px; color: var(--ink); }
   /* untapped (ready, hits back): lies flat and greyed out; tapped (attacking): stands up sideways and lights up in colour */
   .btn img { width: var(--w); height: calc(var(--w) * 31 / 88); image-rendering: pixelated; transition: transform .2s, filter .2s; filter: grayscale(1) brightness(.6); }
   .btn.tapped img { transform: rotate(90deg); filter: drop-shadow(0 0 8px rgba(255,111,207,.8)); }
@@ -32,7 +32,10 @@
   .btn.sel { outline: 2px solid var(--H); box-shadow: 0 0 16px rgba(255,111,207,.6); }
   .btn.att { outline: 2px solid var(--D); box-shadow: 0 0 16px rgba(90,209,255,.6); }
   .out { opacity: .25; }
-  .name { font-size: 13px; text-align: center; width: var(--w); color: var(--mute); margin-top: 4px; }
+  /* power/life left in the button's bottom-right corner, and damage being placed on it in the top-right */
+  .pt, .dmg { position: absolute; font-family: var(--meme); letter-spacing: .5px; line-height: 1; pointer-events: none; }
+  .pt { right: 8px; bottom: 6px; font-size: calc(var(--w) * .16); color: var(--ink); text-shadow: 0 0 8px rgba(176,132,255,.9), 0 0 16px rgba(255,111,207,.5); }
+  .dmg { right: 8px; top: 6px; font-size: calc(var(--w) * .14); color: var(--H); text-shadow: 0 0 8px var(--H); }
   .bar { text-align: center; }
   /* your status line, at the top of your panel: this turn, then (smaller, at the right) only the end of the match, an error or a disconnect; one line, cut with … if too long */
   .statusline { display: flex; align-items: baseline; gap: 10px; white-space: nowrap; min-width: 0; }
@@ -59,7 +62,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.24" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.25" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -137,9 +140,11 @@ const $ = (id) => document.getElementById(id);
       btn.className = "btn" + (b.tapped || h.tapped ? " tapped" : "") + (h.can ? " can" : "") + (h.sel ? " sel" : "") + (h.att ? " att" : "");
       const img = document.createElement("img"); img.alt = ""; img.src = b.image; btn.append(img);
       if (h.click) btn.onclick = h.click;
-      const n = document.createElement("div"); n.className = "name";
-      n.textContent = `${b.name} · ${b.power}/${b.toughness - b.damage}${b.out ? " · out" : ""}${h.note ? " · " + h.note : ""}`;
-      wrap.append(btn, n); el.append(wrap);
+      const pt = document.createElement("span"); pt.className = "pt"; pt.textContent = `${b.power}/${b.toughness - b.damage}`;
+      btn.append(pt);
+      if (h.note) { const d = document.createElement("span"); d.className = "dmg"; d.textContent = h.note; btn.append(d); }
+      btn.title = b.name;
+      wrap.append(btn); el.append(wrap);
     });
   }
 }
