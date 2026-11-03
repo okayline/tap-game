@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>UN/CLICK</title>
+<title>UN/TAP</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=EB+Garamond:ital,wght@0,500;0,700;1,500&display=swap" rel="stylesheet">
 <style>
@@ -94,7 +94,7 @@
 </head>
 <body>
 <div id="game">
-<h1>UN/CLICK</h1>
+<h1>UN/TAP</h1>
   <div class="side" id="themSide"><div class="statusline"><span id="themHp"></span><span class="tough" id="themTough"></span></div><div class="row" id="them"></div><div class="deck" id="themDeck"></div></div>
   <div class="bar"><button class="act" id="start" hidden>start</button> <button class="act" id="attack" hidden>attack</button> <button class="act" id="take" hidden>take</button> <button class="act" id="again" hidden>new match</button></div>
   <div class="side" id="meSide"><div class="statusline"><span id="meHp"></span><span id="status"><span id="result"></span> <span id="err" class="err"></span></span><span class="tough" id="meTough"></span></div><div class="row" id="me"></div><div class="deck" id="meDeck"></div></div>
@@ -102,7 +102,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.61" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.62" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {

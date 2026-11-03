@@ -1,8 +1,11 @@
-# UN/CLICK Changelog
+# UN/TAP Changelog
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.62 "UN/TAP" · Tue Nov 3, 4:35 AM
+- The game is called UN/TAP. Removed: the name UN/CLICK (older entries below keep it).
 
 ## v0.61 "Hits Back for 2" · Tue Nov 3, 4:30 AM
 - Firewall's card text says it hits back for 2. Removed: the shorter text "can't attack." alone.
