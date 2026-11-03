@@ -202,6 +202,6 @@ function passTurn(g) {
   s.deck ??= []; // a match started before decks (v0.35 or older) has none
   g.swapped = false;
   for (const b of s.buttons) b.sick = false;
-  for (const b of g.sides[g.turn].buttons) b.tapped = false;
+  for (const b of g.sides[g.turn].buttons) if (!b.out) b.tapped = false;   // a knocked-out button stays as it went out, tapped or not (kura, Nov 3)
   g.log.push(`${NAMES[g.turn]}'s turn`);
 }

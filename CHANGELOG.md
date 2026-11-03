@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.76 "Stay Down" · Tue Nov 3, 8:10 AM
+- A button knocked out while tapped stays sideways until it's replaced. Removed: knocked-out buttons standing back up at the start of their side's turn.
+
 ## v0.75 "Glitch" · Tue Nov 3, 8:06 AM
 - The ping line snakes around the button with right angles, so it's always in sight. When you take a ping, the branches to cards you didn't pick turn grey. A hit card glitches instead of shaking: one of tear, signal loss, glyph, mojibake or missing image, picked at random, and its damage number rises once the glitch is over. Each type has three subtypes, and a button always shows the same one. Removed: the line crossing over the button, the shake, and the single subtype per type (Neon is no longer a Sign).
 
