@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.47 "Fit" · Tue Nov 3, 3:30 AM
+- On a window too short for the whole screen, the screen shrinks to fit, like zooming out, so the cards stay full width. The footer line with the version number shows (it was light grey on the blue). Removed: cards shrinking on a short window.
+
 ## v0.46 "Grimoire Pastel" · Tue Nov 3, 3:35 AM
 - New look: every button is a card like a Magic card (name bar, art, type line, an empty text box, power/toughness in a box on the text box's edge) in light pastel blue, pink and cream, with Cinzel and EB Garamond. Long names get a smaller font so they fit on one line. Cards shrink on a short window so the page still fits. Removed: the aura-farm look (purple glow, Impact, gradient buttons), and greyed-out ready buttons (all cards are in colour; tapped ones turn sideways).
 

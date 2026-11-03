@@ -17,12 +17,14 @@
   * { box-sizing: border-box; }
   html, body { margin: 0; background: var(--bg); color: var(--ink); height: 100%; overflow: hidden; }   /* the page itself never scrolls */
   body { min-height: 100vh; font: 15px/1.35 var(--body); }
-  /* a card is --w wide (108px at the mockup's size, up to 176px, smaller on a narrow or short screen so three fit across and the
-     whole page fits the window) and 150/108 as tall; --u is the mockup's 1px at that width, so every size in a card scales with it */
-  :root { --w: min(176px, calc((100vw - 92px) / 3), calc((100vh - 470px) * 108 / 300)); --u: calc(var(--w) / 108); }
+  /* a card is --w wide (108px at the mockup's size, up to 176px, smaller on a narrow screen so three fit across) and 150/108 as tall;
+     --u is the mockup's 1px at that width, so every size in a card scales with it */
+  :root { --w: min(176px, calc((100vw - 92px) / 3)); --u: calc(var(--w) / 108); }
   /* nothing on the game screen can be selected or long-pressed into a selection, so taps and drags never highlight text */
   #game { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
   #game { max-width: 620px; margin: 0 auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  /* on a window too short for the whole screen, the screen is shrunk to fit (fit(), below), as if zoomed out, so the cards keep their size */
+  #game { transform-origin: top center; }
   h1 { font: 800 24px/1 var(--title); letter-spacing: 2px; color: #d97aa6; margin: 0; }
   .side { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 10px 18px; }
   .side > div:first-child { font: 600 12px/1 var(--title); letter-spacing: 1.5px; text-transform: uppercase; color: var(--blue); }
@@ -78,7 +80,7 @@
   .deck .card.drag { cursor: grab; outline: 1px dashed var(--pink); outline-offset: 2px; touch-action: none; }
   .deck .dpt { position: absolute; right: 2px; bottom: -9px; font: 800 8px/1 var(--title); color: var(--ink); pointer-events: none; }
   .ghost { position: fixed; transform: translate(-50%, -50%); pointer-events: none; opacity: .85; z-index: 9; width: var(--dw); image-rendering: pixelated; }
-  .ddfoot { margin: 1px 0 0 !important; padding: 0 12px !important; }
+  .ddfoot { margin: 1px 0 0 !important; padding: 0 12px !important; color: var(--mute) !important; }   /* the footer's own light grey can't be seen on the blue */
 </style>
 </head>
 <body>
@@ -91,7 +93,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.46" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.47" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -103,6 +105,9 @@ const $ = (id) => document.getElementById(id);
     if (d.error) { $("err").textContent = d.error; return; }
     g = d.g; $("err").textContent = ""; draw();
   };
+  // shrink the whole screen to fit a short window (never grow it); offsetHeight is the unshrunk height, since a transform doesn't change layout
+  const fit = () => { const g = $("game"); g.style.transform = `scale(${Math.min(1, innerHeight / g.offsetHeight)})`; };
+  addEventListener("resize", fit); fit();
   ws.onclose = () => { $("err").textContent = "disconnected: reload"; };
   const LINE_MS = 450;
   let shown = null, logTimer = null;
@@ -171,6 +176,7 @@ const $ = (id) => document.getElementById(id);
     $("again").hidden = !g.winner;
     if (shown === null) shown = g.log.length; // first board after loading: the whole log at once
     if (!logTimer) showLog();
+    fit();
   }
   // a side's deck row: its deck (next on the left; power/life left), then its knocked-out buttons, crossed out
   function deckRow(el, side, can) {
