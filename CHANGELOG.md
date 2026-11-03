@@ -4,6 +4,13 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.16 "One Line"
+**Mon Nov 2, 2026 · 11:45 PM HST** (no migration)
+- kura: "can we fit it all on one line?"
+- Changed: your status is one line: "YOU · HP 4 · THIS TURN: 2/2" then the last result (and errors) in smaller plain text; a result too long for the space is cut with "…". Footer v0.16.
+- Removed: the result's own line under the header.
+- Not checked: the live site; how often results get cut.
+
 ## v0.15 "Status Area"
 **Mon Nov 2, 2026 · 11:43 PM HST** (no migration)
 - kura: "instead of putting the status line above the Attack button, could we put it in that same YOU . HP 4 . line ... make that a status line area or something, consolidate them all"
