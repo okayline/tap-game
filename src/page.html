@@ -35,7 +35,6 @@
   .name { font-size: 13px; text-align: center; width: var(--w); color: var(--mute); margin-top: 4px; }
   .bar { text-align: center; }
   #status { font-weight: 700; text-shadow: 0 0 10px rgba(176,132,255,.75); }
-  #timer { font-family: var(--meme); font-size: 18px; color: var(--H); text-shadow: 0 0 8px var(--H); }
   button.act { width: 100%; height: 54px; border-radius: 14px; border: 0; cursor: pointer; color: var(--ink);
                background: linear-gradient(135deg, #b084ff, #ff6fcf); font-family: var(--meme); font-size: 19px; letter-spacing: .5px;
                text-transform: uppercase; text-shadow: 0 0 6px rgba(255,255,255,.35); box-shadow: 0 0 22px rgba(255,111,207,.45); }
@@ -49,14 +48,14 @@
 <div id="game">
 <h1>tap</h1>
   <div class="side"><div id="themHp"></div><div class="row" id="them"></div></div>
-  <div class="bar"><span id="status"></span> <span id="timer"></span> <span id="err" class="err"></span></div>
+  <div class="bar"><span id="status"></span> <span id="err" class="err"></span></div>
   <div class="bar"><button class="act" id="attack" hidden>attack</button> <button class="act" id="block" hidden>block</button></div>
   <div class="side"><div id="meHp"></div><div class="row" id="me"></div></div>
   <div id="log"></div>
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.13" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.14" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -126,9 +125,6 @@ const $ = (id) => document.getElementById(id);
       wrap.append(btn, n); el.append(wrap);
     });
   }
-  setInterval(() => {
-    $("timer").textContent = g && g.attack && g.attack.until ? Math.max(0, Math.ceil((g.attack.until - Date.now()) / 1000)) + "s" : "";
-  }, 200);
 }
 </script>
 </body>

@@ -2,7 +2,7 @@
 //   GET /                 a new match against the scripted dummy (src/dummy.js): redirects to it
 //   GET /m/<id>           the match page; GET /m/<id>/ws the match's WebSocket. You are seat a in every tab; the dummy is b.
 import { DurableObject } from "cloudflare:workers";
-import { newGame, attack, block, other, BLOCK_MS } from "./rules.js";
+import { newGame, attack, block } from "./rules.js";
 
 const PAUSE_MS = 1000; // the dummy waits this long before it attacks
 import { dummyAttack, dummyBlocks } from "./dummy.js";
@@ -61,13 +61,11 @@ export class Match extends DurableObject {
     await this.save(g);
   }
 
-  // Save, run the dummy if it's its move, set the block timer, and send the board to everyone.
+  // Save, run the dummy if it's its move, set its pause alarm, and send the board to everyone.
   async save(g) {
     this.dummy(g);
-    if (g.attack && !g.attack.until) g.attack.until = Date.now() + BLOCK_MS;
     await this.ctx.storage.put("g", g);
-    const next = g.attack ? g.attack.until : g.dummyAt;
-    if (next) await this.ctx.storage.setAlarm(next);
+    if (g.dummyAt) await this.ctx.storage.setAlarm(g.dummyAt);
     for (const ws of this.ctx.getWebSockets()) ws.send(JSON.stringify({ g }));
   }
 
@@ -84,12 +82,10 @@ export class Match extends DurableObject {
     g.dummyTurn++;
   }
 
-  // An alarm: the block moment ran out (whatever wasn't blocked lands), or the dummy's pause is over.
+  // The alarm: the dummy's pause is over.
   async alarm() {
     const g = await this.ctx.storage.get("g");
-    if (!g) return;
-    if (g.attack && Date.now() >= g.attack.until) block(g, other(g.attack.by), {});
-    else if (!(g.dummyAt && Date.now() >= g.dummyAt)) return;
+    if (!g?.dummyAt || Date.now() < g.dummyAt) return;
     await this.save(g);
   }
 }

@@ -4,6 +4,13 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.14 "No Clock"
+**Mon Nov 2, 2026 · 11:41 PM HST** (no migration)
+- kura: "yeah can we remove the block timer for now please !"
+- Changed: when the dummy attacks, you block whenever you're ready: the attack waits until you press block. The Durable Object's alarm now only runs the dummy's 1-second pause. Footer v0.14.
+- Removed: the 6-second block timer (`BLOCK_MS`, the attack's `until`, the alarm's timeout path that let unblocked attacks land) and the countdown on the page.
+- Not checked: the live site.
+
 ## v0.13 "This Turn"
 **Mon Nov 2, 2026 · 11:40 PM HST** (no migration)
 - kura: "next to YOU . HP 4 could we put "THIS TURN: 2/2" (the amount of my attack and defense that turn), it should change as i tap/untap the buttons"

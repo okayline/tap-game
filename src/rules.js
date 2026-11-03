@@ -1,12 +1,11 @@
 // The rules, with no Cloudflare in them, so tests can run them directly.
 // Seats are "a" and "b". A side has hp and 3 buttons. A button is untapped (ready) or tapped, and alive or out of the match.
 // Your turn: your buttons untap; you pick any number of ready buttons to attack and press attack (they tap).
-// The other side then has a moment to block: each of its ready buttons may block one attacker (blocking doesn't tap).
+// The other side then blocks (no time limit): each of its ready buttons may block one attacker (blocking doesn't tap).
 // Fights: a blocked attacker and its blockers deal their power to each other; a button that takes damage equal to
 // its toughness or more is out of the match. An unblocked attacker deals its power to the other side's hp.
 // A button only untaps at the start of its own side's turn, so attacking with it means it can't block next turn.
 export const HP = 5;
-export const BLOCK_MS = 6000;
 
 // power / toughness by type: the more buttons of a type exist, the weaker it is (kura, Nov 2: counts from the live
 // item table, all active 88x31 buttons: neon 32, guestbook 21, construction 19, counter 17, webring 13, divider 5).
