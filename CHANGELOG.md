@@ -4,6 +4,13 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.15 "Status Area"
+**Mon Nov 2, 2026 · 11:43 PM HST** (no migration)
+- kura: "instead of putting the status line above the Attack button, could we put it in that same YOU . HP 4 . line ... make that a status line area or something, consolidate them all"
+- Changed: your panel's top is now one status area: "you · hp · this turn" and under it the last result, errors and "disconnected". Footer v0.15.
+- Removed: the status line between the dummy's panel and the attack button.
+- Not checked: the live site.
+
 ## v0.14 "No Clock"
 **Mon Nov 2, 2026 · 11:41 PM HST** (no migration)
 - kura: "yeah can we remove the block timer for now please !"
