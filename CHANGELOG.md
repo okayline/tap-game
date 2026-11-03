@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.75 "Glitch" · Tue Nov 3, 8:06 AM
+- The ping line snakes around the button with right angles, so it's always in sight. When you take a ping, the branches to cards you didn't pick turn grey. A hit card glitches instead of shaking: one of tear, signal loss, glyph, mojibake or missing image, picked at random, and its damage number rises once the glitch is over. Each type has three subtypes, and a button always shows the same one. Removed: the line crossing over the button, the shake, and the single subtype per type (Neon is no longer a Sign).
+
 ## v0.74 "In Its Place" · Tue Nov 3, 7:41 AM
 - When you bring a deck button in for a knocked-out one, the knocked-out one sits in the deck row where the new one was, instead of moving to the end. Removed: knocked-out buttons collecting at the right end of the deck row (older matches still show them there).
 

@@ -78,21 +78,59 @@
   /* damage being placed on a button, over its art */
   .dmg { position: absolute; left: 50%; top: calc(42 * var(--u)); transform: translateX(-50%); font: 800 calc(14 * var(--u))/1 var(--title); color: var(--hit);
          background: var(--cream); border: 1.5px solid var(--hit); border-radius: 6px; padding: 2px 6px; pointer-events: none; z-index: 2; }
-  /* the fight replay (v0.69): a number rising off a card (--hit: damage it took; --zap: an attacker's power), in a cream outline, and a shake when it's hit */
+  /* the fight replay (v0.69): a number rising off a card (--hit: damage it took; --zap: an attacker's power), in a cream outline */
   .pop { position: absolute; left: 50%; top: calc(40 * var(--u)); font: 800 calc(18 * var(--u))/1 var(--title); color: var(--hit); pointer-events: none; z-index: 3;
-         text-shadow: 0 0 2px var(--cream), 0 0 2px var(--cream), 0 0 5px var(--cream); animation: rise 1.6s ease-out forwards; }
+         text-shadow: 0 0 2px var(--cream), 0 0 2px var(--cream), 0 0 5px var(--cream); animation: rise 1.6s ease-out both; }   /* both: hidden while it waits */
   .pop.atk { color: var(--zap); }
   @keyframes rise { 0% { opacity: 0; transform: translate(-50%, 8px) scale(.7); } 15% { opacity: 1; transform: translate(-50%, 0) scale(1.15); }
                     70% { opacity: 1; transform: translate(-50%, -18px) scale(1); } 100% { opacity: 0; transform: translate(-50%, -28px) scale(1); } }
-  .btn.hit { animation: shake .6s; }
+  /* a hit glitches (kura, Nov 3: "instead of shakes ... some glitchy animations", "a couple different effects and have it randomly
+     choose one"), snapping from frame to frame; each hit picks one (GLITCHES, below). The card itself (.gc) carries the colour
+     effects, so a tapped card keeps its turn; the spot (.btn) carries the movement.
+       g1 tear:   the spot jumps about; pink and cyan fringes split off and the card tears into slices
+       g2 signal: the spot jumps about; the card flickers out, flashes inverted, goes washed-out grey, like a signal dropping
+       glyph:     the card's text scrambles into junk characters and settles back (glyphs(), below), with faint fringes on the
+                  letters, and the spot jumps about like the others (kura, Nov 3: no shear, it "moves too much"; "give glyph a small
+                  jitter too")
+       moji:      the card's text turns into wrong-encoding mess ("Ã©", "â€™") and snaps back (mojibake(), below)
+       noimg:     the whole card front is replaced by an old browser's broken image: a dotted box, the broken-picture icon and the
+                  alt text at the top left (kura, Nov 3: "make the whole card front the missing image"), then comes back (noImage())
+     (kura, Nov 3: mojibake and missing image, from a list of ideas) */
+  .btn.hit.g1, .btn.hit.g2, .btn.hit.glyph, .btn.hit.moji, .btn.hit.noimg { animation: jitter .6s steps(1, end); }
+  .btn.hit.g1 .gc { animation: tear .6s steps(1, end); }
+  .btn.hit.g2 .gc { animation: signal .6s steps(1, end); }
+  .btn.hit.glyph .gc { animation: fringe .6s steps(1, end); }
+  /* the missing image: the card's front becomes a dotted box with a broken-picture icon and the button's name, in an old browser's look */
+  .broken { flex: 1; display: flex; align-items: flex-start; gap: calc(4 * var(--u)); padding: calc(5 * var(--u));
+            border: 1px dotted #8a8a8a; border-radius: calc(3 * var(--u)); background: #fff; font: calc(9 * var(--u))/1.2 "Times New Roman", serif; color: #000; overflow: hidden; }
+  .broken svg { flex: none; width: calc(13 * var(--u)); height: calc(16 * var(--u)); }
+  @keyframes signal {
+    0% { opacity: 1; filter: none; } 10% { opacity: .2; filter: brightness(2); } 20% { opacity: 1; filter: invert(1) hue-rotate(180deg); }
+    30% { opacity: .45; filter: none; } 45% { opacity: 1; filter: contrast(1.8) saturate(0); } 60% { opacity: .15; filter: none; }
+    75% { opacity: 1; filter: brightness(1.35); } 90%, 100% { opacity: 1; filter: none; } }
+  @keyframes fringe {
+    0% { text-shadow: none; } 10% { text-shadow: -1px 0 #ff6fb0, 1px 0 #5fdcff; } 30% { text-shadow: 1px 0 #ff6fb0, -1px 0 #5fdcff; }
+    50% { text-shadow: none; } 65% { text-shadow: -1px 0 #ff6fb0, 1px 0 #5fdcff; } 85%, 100% { text-shadow: none; } }
+  @keyframes jitter { 0% { transform: translate(0, 0); } 10% { transform: translate(-4px, 1px); } 20% { transform: translate(3px, -1px); } 30% { transform: translate(-2px, 0); }
+                      45% { transform: translate(5px, 0); } 60% { transform: translate(-3px, 2px); } 75% { transform: translate(2px, 0); } 90%, 100% { transform: translate(0, 0); } }
+  @keyframes tear {
+    0% { filter: none; clip-path: none; }
+    10% { filter: drop-shadow(-3px 0 0 #ff6fb0) drop-shadow(3px 0 0 #5fdcff); clip-path: inset(8% 0 52% 0); }
+    20% { filter: drop-shadow(3px 0 0 #ff6fb0) drop-shadow(-3px 0 0 #5fdcff); clip-path: inset(58% 0 6% 0); }
+    30% { filter: hue-rotate(80deg) saturate(1.8); clip-path: none; }
+    45% { filter: drop-shadow(-2px 0 0 #ff6fb0) drop-shadow(2px 0 0 #5fdcff); clip-path: inset(30% 0 38% 0); }
+    60% { filter: none; clip-path: inset(0 0 68% 0); }
+    75% { filter: drop-shadow(2px 0 0 #ff6fb0) drop-shadow(-2px 0 0 #5fdcff) brightness(1.15); clip-path: none; }
+    90%, 100% { filter: none; clip-path: none; } }
   /* a ping (kura, Nov 3: "a line travels over and connects, then a little glow of light goes over and comes back"): a pink line
-     from the pinging card to the cards it reaches, at right angles only ("not at diagonals"), and a glow that runs along each
+     from the pinging card around the button to the cards it reaches, at right angles only ("not at diagonals"), and a glow that runs along each
      branch and back, slowly (makePing(), below) */
   .pingfx { position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 8; overflow: visible; }
+  /* a branch to a card you didn't pick turns grey when the glow runs (kura, Nov 3) */
+  .pingfx polyline.unused { stroke: #9aa3b8; filter: none; opacity: .7; transition: stroke .3s, opacity .3s; }
   .pingfx polyline { fill: none; stroke-linejoin: round; stroke: var(--pink); stroke-width: 3; stroke-linecap: round; filter: drop-shadow(0 0 3px rgba(233,138,179,.9)); }
   .spark { position: fixed; left: 0; top: 0; width: 14px; height: 14px; border-radius: 50%; background: #fff; pointer-events: none; z-index: 9;
            box-shadow: 0 0 8px 4px #fff, 0 0 18px 8px rgba(233,138,179,.8); }
-  @keyframes shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-5px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(3px); } }
   .bar { text-align: center; }
   /* your status line, at the top of your panel: this turn, then (smaller, at the right) only the end of the match, an error or a disconnect; one line, cut with … if too long */
   .statusline { display: flex; align-items: baseline; gap: 10px; white-space: nowrap; min-width: 0; }
@@ -132,7 +170,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.74" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.75" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -163,15 +201,52 @@ const $ = (id) => document.getElementById(id);
   // THE FIGHT REPLAY (kura, Nov 3: "too instant and hard to follow"): the server sends only the board after a fight, so the page
   // compares it with the board before and shows the fight in beats, BEAT_MS apart, with the log keeping pace:
   //   1. the attackers tap and light up, each showing its power (only when you pinged; when you took, you already saw them)
-  //   2. the defenders that took damage shake and show it; any it knocks out go out
-  //   3. the attackers that took hit-back damage shake and show it; any it knocks out go out
+  //   2. the defenders that took damage glitch and show it; any it knocks out go out
+  //   3. the attackers that took hit-back damage glitch and show it; any it knocks out go out
   //   then the real board: the turn passes. Damage (not life left) is compared, since Glow changes life without a hit.
-  const BEAT_MS = 1000;   // kura, Nov 3: "a little slower" (was 700)
+  const BEAT_MS = 1000;
+  const GLITCHES = ["g1", "g2", "glyph", "moji", "noimg"];   // a hit's glitch, picked at random (the CSS above .btn.hit)
+  const GLITCH_MS = { g1: 600, g2: 600, glyph: 600, moji: 600, noimg: 1000 };   // how long each plays (kura, Nov 3: the missing image "a little longer")
+  const pickGlitch = () => GLITCHES[Math.floor(Math.random() * GLITCHES.length)];
+  // the glyph glitch: every text on the card turns into junk characters, fewer and fewer over 0.6 s, then back to itself
+  const JUNK = "█▓▒░#@%&$*+=?!<>/\\|_~^¥§¤∆◊¶01";
+  // scramble(btn, swap, ms): every text on the card has characters swapped by swap(c, k) (k: 0 to 1 over the time), every `ms`, for
+  // 0.6 s, then back to itself
+  function scramble(btn, swap, ms, skip) {
+    const gc = btn.querySelector(".gc"), walk = document.createTreeWalker(gc, NodeFilter.SHOW_TEXT), nodes = [];
+    for (let n; (n = walk.nextNode());) if (n.textContent.trim() && !(skip && n.parentElement.closest(skip))) nodes.push([n, n.textContent]);
+    const t0 = performance.now(), tick = () => {
+      const k = (performance.now() - t0) / 600;
+      if (k >= 1) { for (const [n, t] of nodes) n.textContent = t; return; }
+      for (const [n, t] of nodes) n.textContent = t.replace(/\S/g, (c) => swap(c, k));
+      setTimeout(tick, ms);
+    };
+    tick();
+  }
+  const glyphs = (btn) => scramble(btn, (c, k) => (Math.random() < 0.75 * (1 - k) ? JUNK[Math.floor(Math.random() * JUNK.length)] : c), 50);
+  // mojibake: what UTF-8 text looks like read as the wrong code page; it flickers between a few messes, then snaps back at the end
+  const MOJI = ["Ã©", "Ã¨", "â€™", "â€œ", "Ã¢", "Ã¼", "Ã±", "Â", "Ã", "ï¿½", "Ã¶", "Ã§"];
+  // (not the power/life box: its two-letter messes made it twice as wide)
+  const mojibake = (btn) => scramble(btn, (c) => (Math.random() < 0.45 ? MOJI[Math.floor(Math.random() * MOJI.length)] : c), 150, ".pt");
+  // the missing image: the card's front (.gc-in) hidden behind the old broken-image box (icon and alt text) for 0.6 s
+  function noImage(btn) {
+    const gc = btn.querySelector(".gc"), inn = gc.querySelector(".gc-in"), name = btn.querySelector(".gc-name")?.textContent ?? "";
+    const box = mk("span", "broken");
+    box.innerHTML = '<svg viewBox="0 0 10 12" aria-hidden="true"><path d="M.5 .5h6l3 3v8h-9z" fill="#fff" stroke="#808080"/><path d="M6.5 .5v3h3" fill="none" stroke="#808080"/>'
+      + '<rect x="2" y="5" width="2.5" height="2.5" fill="#c00"/><circle cx="6.5" cy="8" r="1.3" fill="#080"/><path d="M2 10.5l1.8-1.8 1.4 1.4" fill="none" stroke="#00c"/></svg>';
+    box.append(name);
+    inn.style.display = "none"; gc.append(box);   // (not the hidden attribute: .gc-in's display: flex would win over it)
+    setTimeout(() => { box.remove(); inn.style.display = ""; }, GLITCH_MS.noimg);
+  }
+  const GLITCH_DO = { glyph: glyphs, moji: mojibake, noimg: noImage };   // the glitches with code of their own   // kura, Nov 3: "a little slower" (was 700)
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const otherSeat = (s) => (s === "a" ? "b" : "a");
   async function replay(prev, next) {
     const ids = (s) => new Map(next.sides[s].buttons.map((b) => [b.id, b]));
-    const hits = (s) => { const m = ids(s); return prev.sides[s].buttons.flatMap((b) => { const n = m.get(b.id); return n && n.damage > b.damage ? [[s, b.id, `-${n.damage - b.damage}`, "", true]] : []; }); };
+    // each card that took damage: [side, id, "-N", class, its glitch] (the glitch is picked here, so the beat knows how long to hold)
+    const hit = {};
+    for (const s of ["a", "b"]) { const m = ids(s); hit[s] = prev.sides[s].buttons.flatMap((b) => { const n = m.get(b.id); return n && n.damage > b.damage ? [[s, b.id, `-${n.damage - b.damage}`, "", pickGlitch()]] : []; }); }
+    const hits = (s) => hit[s];
     if (!hits("a").length && !hits("b").length) return;
     const by = prev.attack ? prev.attack.by : prev.turn, def = otherSeat(by);
     const idxs = prev.attack ? prev.attack.attackers : lastPing;
@@ -183,7 +258,8 @@ const $ = (id) => document.getElementById(id);
     const board = structuredClone(prev);
     board.attack = { by, attackers: idxs };
     const copy = (s, fields) => { const m = ids(s); for (const b of board.sides[s].buttons) { const n = m.get(b.id); if (n) for (const f of fields) b[f] = n[f]; } };
-    const beat = async (cap, pops, pings, ms = BEAT_MS, glow) => { board.log = next.log.slice(0, cap); g = board; fx = { att: att.map((b) => b.id), pops, pings, glow }; playing = true; draw(); await sleep(ms); };
+    // a beat with hits holds BEAT_MS after its longest glitch, since each damage number only rises once its glitch is over
+    const beat = async (cap, pops, pings, ms = BEAT_MS + Math.max(0, ...pops.map((p) => GLITCH_MS[p[4]] ?? 0)), glow) => { board.log = next.log.slice(0, cap); g = board; fx = { att: att.map((b) => b.id), pops, pings, glow }; playing = true; draw(); await sleep(ms); };
     const FIGHT = ["damage", "out", "power", "boost", "bonus"];
     copy(by, ["tapped"]);
     if (!prev.attack) await beat(start + 1, att.map((b) => [by, b.id, String(b.power), "atk", false]), att.map((b) => [by, b.id, hits(def).map((h) => h[1]), true]), PING_MS);
@@ -292,17 +368,23 @@ const $ = (id) => document.getElementById(id);
     // fx.glow: [side, ids]: the waiting lines' glow runs to those cards (the ones you placed damage on)
     if (fx.glow) { const to = fx.glow[1].map((t) => cardOf(fx.glow[0], t)).filter(Boolean); for (const p of pending) p.run(to, 0); pending = []; }
     else if (!g.attack) { for (const p of pending) p.fade(); pending = []; }   // the ping is over some other way (the match ended)
-    // the replay beat's rising numbers and shakes
-    for (const [s, id, text, cls, hit] of fx.pops ?? []) {
+    // the replay beat's rising numbers and glitches
+    for (const [s, id, text, cls, glitch] of fx.pops ?? []) {
       const btn = [...$(s === me ? "me" : "them").querySelectorAll(".btn")].find((x) => x.dataset.id === String(id));
       if (!btn) continue;
-      const p = mk("span", `pop ${cls}`, text); p.onanimationend = () => p.remove(); btn.append(p);
-      if (hit) { btn.classList.remove("hit"); void btn.offsetWidth; btn.classList.add("hit"); }
+      // a damage number rises once its card's glitch is over (kura, Nov 3: "pop up after the animation has finished playing")
+      const p = mk("span", `pop ${cls}`, text); p.onanimationend = () => p.remove();
+      if (glitch) p.style.animationDelay = `${GLITCH_MS[glitch]}ms`;
+      btn.append(p);
+      if (glitch) {
+        btn.classList.remove("hit", ...GLITCHES); void btn.offsetWidth; btn.classList.add("hit", glitch);
+        GLITCH_DO[glitch]?.(btn);
+      }
     }
     fit();
   }
-  // a ping: makePing() draws a line from the card to each target card at right angles (out to the gap between the panels, across,
-  // into the card's near edge; it forks when there are several) in PING_DRAW ms. Its run(targets, delay) sends a glow along the
+  // a ping: makePing() draws a line from the card to each target card at right angles, around the button (below), into the card's
+  // near edge; it forks when there are several; in PING_DRAW ms. Its run(targets, delay) sends a glow along the
   // branches to those targets and back in PING_TRAVEL ms, then the line fades. Your ping draws and runs at once; the guest's ping
   // draws to all your cards and waits there while you place it, and the glow runs only to the cards you picked, when you take
   // (kura, Nov 3: "have the fork come in but the glow only comes in after you pick"). Like a real ping ("going out and bouncing
@@ -317,11 +399,17 @@ const $ = (id) => document.getElementById(id);
     const box = (el) => (el.querySelector(".gc") ?? el).getBoundingClientRect();
     const a = box(btn), ns = "http://www.w3.org/2000/svg", svg = document.createElementNS(ns, "svg");
     svg.setAttribute("class", "pingfx"); document.body.append(svg);
+    // the line snakes around the button between the panels, always in sight (kura, Nov 3: "snake around the UI ... but still be
+    // always visible"): out of the card to the gap between its panel and the button, along it to the end of the button nearer the
+    // card, down (or up) past that end in the page's margin, back along the gap on the other side, then into the target card
+    const bar = document.querySelector(".bar").getBoundingClientRect();
+    const gapBy = (el) => { const p = el.closest(".side").getBoundingClientRect(); return p.top < bar.top ? (p.bottom + bar.top) / 2 : (bar.bottom + p.top) / 2; };
+    const left = a.left + a.width / 2 <= (bar.left + bar.right) / 2;
+    const xm = left ? bar.left - Math.min(8, bar.left / 2) : bar.right + Math.min(8, (innerWidth - bar.right) / 2), yA = gapBy(btn);
     const branches = targets.map((target) => {
       const t = box(target), up = a.top > t.top;
       const x1 = a.left + a.width / 2, y1 = up ? a.top : a.bottom, x2 = t.left + t.width / 2, y2 = up ? t.bottom : t.top;
-      const sa = btn.getBoundingClientRect(), st = target.getBoundingClientRect(), ym = up ? (sa.top + st.bottom) / 2 : (sa.bottom + st.top) / 2;   // the middle of the gap between the rows' spots, the same for every branch
-      const pts = [[x1, y1], [x1, ym], [x2, ym], [x2, y2]];
+      const yB = gapBy(target), pts = [[x1, y1], [x1, yA], [xm, yA], [xm, yB], [x2, yB], [x2, y2]];
       const seg = pts.slice(1).map((p, k) => Math.hypot(p[0] - pts[k][0], p[1] - pts[k][1])), len = seg.reduce((n, d) => n + d, 0) || 1;
       const ln = document.createElementNS(ns, "polyline");
       ln.setAttribute("points", pts.map((p) => p.join(",")).join(" "));
@@ -342,12 +430,24 @@ const $ = (id) => document.getElementById(id);
     };
     function run(to, delay) {
       const go = branches.filter((b) => to.includes(b.target));
+      for (const b of branches) if (!go.includes(b)) b.ln.classList.add("unused");
+      for (const b of go) svg.append(b.ln);   // the used branches on top, so the shared part stays pink
       if (!go.length) return fade(delay);
       for (const b of go) { b.sp = mk("div", "spark"); b.sp.style.opacity = 0; document.body.append(b.sp); }
-      // how far each branch runs along the longest one: all share the first leg (out to the gap); the leg across is shared as far
-      // as both go the same way
-      const max = Math.max(...go.map((b) => b.len)), L = go.find((b) => b.len === max), dir = (b) => Math.sign(b.pts[2][0] - b.pts[1][0]);
-      for (const b of go) b.shared = b === L ? max : b.seg[0] + (dir(b) === dir(L) ? Math.min(b.seg[1], L.seg[1]) : 0);
+      // how far each branch runs along the longest one: leg by leg, while both start at the same point and head the same way, the
+      // shorter of the two legs is shared; the first leg that parts them ends it
+      const max = Math.max(...go.map((b) => b.len)), L = go.find((b) => b.len === max);
+      const same = (p, q) => Math.abs(p[0] - q[0]) < 0.5 && Math.abs(p[1] - q[1]) < 0.5;
+      const head = (b, k) => [Math.sign(Math.round(b.pts[k + 1][0] - b.pts[k][0])), Math.sign(Math.round(b.pts[k + 1][1] - b.pts[k][1]))].join();
+      for (const b of go) {
+        if (b === L) { b.shared = max; continue; }
+        b.shared = 0;
+        for (let k = 0; k < b.seg.length && same(b.pts[k], L.pts[k]); k++) {
+          if (head(b, k) !== head(L, k) && b.seg[k] && L.seg[k]) break;
+          b.shared += Math.min(b.seg[k], L.seg[k]);
+          if (b.seg[k] !== L.seg[k]) break;
+        }
+      }
       // s runs 0 to 2 over PING_TRAVEL: 0 to 1 out, 1 to 2 back. p = u² (speeding up out, a bounce at full speed at s = 1, slowing
       // down home), where u is s out and 2 - s back. At p the longest glow is p * max px along; another glow is the same until its
       // branch turns off, then covers the rest of its branch in the time the longest needs for the rest of its own.
@@ -429,8 +529,12 @@ const $ = (id) => document.getElementById(id);
     divider: ["Breaks the page, not the heart.", "A line in the sand.", "Keeping things tidy.", "<hr>"],
   };
   const pickQuote = (b, n) => { let h = 0; for (const ch of `${location.pathname}|${b.id}`) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return h % n; };
-  // a made-up subtype for each type, after the dash on the type line (kura, Nov 3: flavour only, nothing uses it)
-  const SUB = { neon: "Sign", guestbook: "Entry", construction: "Site", counter: "Hits", webring: "Link", divider: "HR" };
+  // three made-up subtypes per type, after the dash on the type line (kura, Nov 3: flavour only, nothing uses them); a button always
+  // gets the same one, picked by its id, so its type line never changes, like a real card's
+  const SUB = { neon: ["Marquee", "Flicker", "Blink"], guestbook: ["Sign", "Entry", "Post"], construction: ["Site", "Zone", "Draft"],
+    counter: ["Hits", "Visits", "Views"], webring: ["Link", "Loop", "Ring"], divider: ["HR", "Rule", "Spacer"] };
+  // (a multiplicative hash of the id: a plain id % 3, or a hash built by * 31, clumps, since 31 leaves the remainder by 3 alone)
+  const subOf = (b) => { const l = SUB[b.type]; if (!l) return null; const h = Math.imul(Number(b.id) | 0, 2654435761) >>> 0; return l[Math.floor(h / 2 ** 32 * l.length)]; };
   // the set signs (outline, then inner lines), drawn in a 14x14 box
   const SIGN = {
     Alpha: ["M1 7a6 6 0 1 0 12 0a6 6 0 1 0 -12 0z", "M1 7h12M7 1c-3 3.5 -3 8.5 0 12M7 1c3 3.5 3 8.5 0 12"],   // globe
@@ -470,14 +574,14 @@ const $ = (id) => document.getElementById(id);
     const q = QUOTES[b.type];
     if (q) txt.append(mk("div", "flav", `“${q[pickQuote(b, q.length)]}”`));
     const type = mk("div", "gc-type");
-    type.append(mk("span", "", `${b.type[0].toUpperCase()}${b.type.slice(1)}${SUB[b.type] ? ` — ${SUB[b.type]}` : ""}`));
+    type.append(mk("span", "", `${b.type[0].toUpperCase()}${b.type.slice(1)}${subOf(b) ? ` — ${subOf(b)}` : ""}`));
     if (SIGN[b.series]) type.append(sign(b));
     const pt = mk("span", "pt");   // power/life left; hidden once it's out
     inn.append(name, art, type, txt, pt);
     gc.append(inn); return { gc, art, img, pt };
   }
   // a side's field row. Each spot keeps its card while the same button is in it, and only its classes and numbers change (so the
-  // replay can shake and mark it); a new button in a spot gets a new card. Tapping snaps sideways at once (kura, Nov 3: no turning).
+  // replay can glitch and mark it); a new button in a spot gets a new card. Tapping snaps sideways at once (kura, Nov 3: no turning).
   function row(el, buttons, att, how) {
     el.slots ??= [];
     buttons.forEach((b, i) => {
