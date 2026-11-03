@@ -4,6 +4,13 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.11 "Result Line"
+**Mon Nov 2, 2026 · 11:35 PM HST** (no migration)
+- kura: "after i do my turn, all the next events happen at once and it's hard to tell what happened ... could we put a "-4 health" result somewhere on the game screen ... remove the explainer text over the attack button ... put a status line there that shows "-4 health" or the result of the round?"
+- Changed: the line above attack/block now shows the last attack's result: "dummy -4 health" or "you -4 health" (or "no damage", or "didn't attack"), then which buttons went out. The game keeps that result (`g.last` in `src/rules.js`). Footer v0.11.
+- Removed: the explainer lines ("your turn: click buttons…", "they attack: click your button…", "their turn").
+- Not checked: the live site.
+
 ## v0.10 "Big Buttons"
 **Mon Nov 2, 2026 · 11:30 PM HST** (no migration)
 - kura: "could we show the buttons a lot bigger? like 2x bigger? under the button, can we remove the type. so it just says (name) (dot) 1/2"

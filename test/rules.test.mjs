@@ -16,6 +16,7 @@ test("an attack: blocked fights by power and toughness, unblocked hits hp, attac
   assert.equal(g.sides.a.buttons[2].out, false); // counter takes 1, toughness 2
   assert.equal(g.sides.b.buttons[0].out, true);  // construction takes 2, toughness 2
   assert.equal(g.sides.b.hp, 4);                 // neon's 1
+  assert.deepEqual(g.last.hp, 1);
   assert.equal(g.turn, "b");
   assert.equal(g.sides.a.buttons[2].tapped, true);
 });

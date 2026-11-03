@@ -29,7 +29,7 @@ export function newGame(buttonsA, buttonsB) {
       return { ...b, power, toughness, tapped: false, out: false };
     }),
   });
-  return { turn: "a", sides: { a: side(buttonsA), b: side(buttonsB) }, attack: null, winner: null, log: ["a's turn"] };
+  return { turn: "a", sides: { a: side(buttonsA), b: side(buttonsB) }, attack: null, last: null, winner: null, log: ["a's turn"] };
 }
 
 const ready = (side, i) => side.buttons[i] && !side.buttons[i].out && !side.buttons[i].tapped;
@@ -40,7 +40,7 @@ export function attack(g, seat, idxs) {
   if (g.turn !== seat || g.attack) return "Not your turn.";
   const list = [...new Set(idxs)];
   if (!list.every((i) => ready(g.sides[seat], i))) return "Only ready buttons can attack.";
-  if (!list.length) { g.log.push(`${seat} doesn't attack`); passTurn(g); return null; }
+  if (!list.length) { g.log.push(`${seat} doesn't attack`); g.last = { by: seat, hp: 0, out: [], pass: true }; passTurn(g); return null; }
   for (const i of list) g.sides[seat].buttons[i].tapped = true;
   g.attack = { by: seat, attackers: list };
   g.log.push(`${seat} attacks with ${list.map((i) => g.sides[seat].buttons[i].name).join(", ")}`);
@@ -52,6 +52,7 @@ export function block(g, seat, blocks) {
   if (!g.attack || g.attack.by === seat) return "Nothing to block.";
   const by = g.attack.by, att = g.sides[by], def = g.sides[seat];
   const on = new Map(); // attacker -> its blockers, in the order given
+  const last = { by, hp: 0, out: [] }; // the attack's result, for the page: hp the defender lost, buttons that went out
   for (const [k, v] of Object.entries(blocks)) {
     const bi = Number(k), ai = Number(v);
     if (!ready(def, bi)) return "Only ready buttons can block.";
@@ -62,6 +63,7 @@ export function block(g, seat, blocks) {
     const a = att.buttons[ai], blockers = on.get(ai) ?? [];
     if (!blockers.length) {
       def.hp -= a.power;
+      last.hp += a.power;
       g.log.push(`${a.name} hits ${seat} for ${a.power} (hp ${def.hp})`);
       continue;
     }
@@ -73,11 +75,12 @@ export function block(g, seat, blocks) {
       left -= dealt;
       back += b.power;
       g.log.push(`${b.name} blocks ${a.name}`);
-      if (dealt >= b.toughness) { b.out = true; g.log.push(`${b.name} is out`); }
+      if (dealt >= b.toughness) { b.out = true; last.out.push({ seat, name: b.name }); g.log.push(`${b.name} is out`); }
     }
-    if (back >= a.toughness) { a.out = true; g.log.push(`${a.name} is out`); }
+    if (back >= a.toughness) { a.out = true; last.out.push({ seat: by, name: a.name }); g.log.push(`${a.name} is out`); }
   }
   g.attack = null;
+  g.last = last;
   if (def.hp <= 0) { g.winner = by; g.log.push(`${by} wins`); return null; }
   passTurn(g);
   return null;

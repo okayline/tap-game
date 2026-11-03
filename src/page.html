@@ -56,7 +56,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.10" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.11" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -96,9 +96,12 @@ const $ = (id) => document.getElementById(id);
     });
     $("meHp").textContent = `you · hp ${g.sides[me].hp}`;
     $("themHp").textContent = `dummy · hp ${g.sides[them].hp}`;
-    $("status").textContent = g.winner ? (g.winner === me ? "you win (reload the main page for a new match)" : "you lose (reload the main page for a new match)")
-      : blocking ? "they attack: click your button, then the attacker it blocks; then block"
-      : myTurn ? "your turn: click buttons to tap them, then attack (none = pass)" : "their turn";
+    // the status line: the last attack's result ("dummy -4 health", who went out), or the end of the match
+    const L = g.last, who = (seat) => (seat === me ? "you" : "dummy");
+    const result = !L ? "" : L.pass ? `${who(L.by)} didn't attack`
+      : [L.hp ? `${who(them === L.by ? me : them)} -${L.hp} health` : `${who(L.by)} attacked: no damage`,
+         ...L.out.map((o) => `${o.seat === me ? "your" : "dummy's"} ${o.name} is out`)].join(" · ");
+    $("status").textContent = g.winner ? `${result}${result ? " · " : ""}${g.winner === me ? "you win" : "you lose"} (reload the main page for a new match)` : result;
     $("attack").hidden = !myTurn;
     $("block").hidden = !blocking;
     $("log").textContent = g.log.slice(-30).join("\n");
