@@ -30,6 +30,10 @@ export const STATS = {
 export const DECK = 9; // 3 on the field, 6 in the deck row (kura, Nov 3)
 // Always Online (kura, Nov 3; Magic's "vigilance"): attacking doesn't tap a button of these types, so it can still hit back on the other side's turn.
 export const ALWAYS_ONLINE = ["guestbook"];
+// Broadband (kura, Nov 3; Magic's "haste"): a button of these types can attack the turn it comes in (no summoning sickness).
+export const BROADBAND = ["webring"];
+// Webcounter (kura, Nov 3): a button of these types gets +1/+0 each time it hits back, for the rest of the match.
+export const WEBCOUNTER = ["counter"];
 export const MAX_ATTACKERS = 2; // at most this many attack in a turn, so one button always stays home (kura, Nov 3)
 // A coin flip decides who goes first, and that side attacks with only 1 on the match's first turn (kura, Nov 3).
 // g.limit is how many may attack this turn.
@@ -103,7 +107,7 @@ export function attack(g, seat, idxs) {
   if (!list.every((i) => ready(g.sides[seat], i))) return "Only ready buttons can attack.";
   if (list.length > g.limit) return `At most ${g.limit} can attack this turn.`;
   if (mustFill(g, seat)) return "Bring in a button first.";
-  if (list.some((i) => g.sides[seat].buttons[i].sick)) return "A button that came in this turn can't attack.";
+  if (list.some((i) => g.sides[seat].buttons[i].sick && !BROADBAND.includes(g.sides[seat].buttons[i].type))) return "A button that came in this turn can't attack.";
   g.locked = true;
   if (!list.length) { g.log.push(`${seat} doesn't attack`); passTurn(g); return null; }
   for (const i of list) if (!ALWAYS_ONLINE.includes(g.sides[seat].buttons[i].type)) g.sides[seat].buttons[i].tapped = true;
@@ -127,6 +131,7 @@ export function place(g, seat, split) {
     b.damage += d;
     g.log.push(`${b.name} takes ${d}${b.tapped ? "" : `, hits back for ${b.power}`}`);
     if (life(b) <= 0) { b.out = true; g.log.push(`${b.name} is out`); }
+    else if (!b.tapped && WEBCOUNTER.includes(b.type)) { b.power++; g.log.push(`${b.name} gets +1/+0`); }   // after its hit back (counted above)
   }
   for (const i of g.attack.attackers) {
     const a = att.buttons[i], d = Math.min(back, life(a));
