@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.82 "Phone Cards" · Tue Nov 3, 9:30 AM
+- On a phone (500px wide or less) the space round the cards is trimmed, so the three cards fill the width: on a 390px-wide phone a card is about 115px wide instead of 99px. The deck row narrows to match. Removed: the 16px screen edges, 10px panel edges and 12px gaps between cards on phones (now 6px, 6px and 8px).
+
 ## v0.81 "Aim" · Tue Nov 3, 9:08 AM
 - Tapping a card to ping draws its line out, forking into every guest card that can take damage; untapping takes it away. Pressing ping sends the glow down the branches to the cards hit, and the others turn grey. Lines lying on each other no longer look brighter. Removed: the line only appearing when you press ping, and one glow per line.
 
