@@ -1,6 +1,6 @@
 // The scripted second player (seat b). Edit SCRIPT to try a situation; it loops.
 // Each line is one of the dummy's turns:
-//   attack: how many of its ready buttons it attacks with (left to right), at most MAX_ATTACKERS.
+//   attack: how many of its ready buttons it attacks with (left to right), at most the turn's limit (g.limit).
 //   take:   how it places your next attack on its buttons:
 //           "spread" = one point at a time across its buttons, untapped ones first (so they hit back),
 //           "focus"  = fills one button before the next, tapped ones first (sacrifices a button that can't hit back).
@@ -18,7 +18,7 @@ const line = (n) => SCRIPT[((n % SCRIPT.length) + SCRIPT.length) % SCRIPT.length
 const readyIdx = (side) => side.buttons.map((b, i) => (b.out || b.tapped ? -1 : i)).filter((i) => i >= 0);
 
 // Its attackers this turn.
-export const dummyAttack = (g) => readyIdx(g.sides.b).slice(0, line(g.dummyTurn).attack);
+export const dummyAttack = (g) => readyIdx(g.sides.b).slice(0, Math.min(line(g.dummyTurn).attack, g.limit));
 
 // How it places your attack: { buttonIndex: damage }.
 export function dummyPlace(g) {

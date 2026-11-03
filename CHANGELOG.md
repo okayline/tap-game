@@ -4,6 +4,13 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.30 "Coin Flip"
+**Tue Nov 3, 2026 · 12:11 AM HST** (no migration)
+- kura: "first round, can only attack with one. then from the second turn you can attack with two" ... "can we do a coin flip on who goes first?" ... "both !"
+- Changed: each match starts with a coin flip for who goes first (shown as the log's first line). Whoever goes first attacks with at most 1 on that opening turn; every turn after, either side attacks with up to 2 (`g.limit`). If the dummy wins the flip it opens after its 1-second pause. The page lets you pick only as many as the turn allows. The test covers the opening limit. Footer v0.30.
+- Removed: you always going first.
+- Not checked: the live site; the dummy opening a match (runs on the Durable Object alarm).
+
 ## v0.29 "Two Out"
 **Tue Nov 3, 2026 · 12:07 AM HST** (no migration)
 - kura: "i think per turn maybe only two buttons can attack? if i can do 3 it's OP everytime" ... "yes please! only 2 can attack"

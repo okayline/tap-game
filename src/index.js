@@ -36,7 +36,9 @@ export class Match extends DurableObject {
   async setup(pool) {
     const g = newGame(pick(pool, 3), pick(pool, 3));
     g.dummyTurn = 0;
+    if (g.turn === "b") g.dummyAt = Date.now() + PAUSE_MS; // the dummy won the flip: it opens after its pause
     await this.ctx.storage.put("g", g);
+    if (g.dummyAt) await this.ctx.storage.setAlarm(g.dummyAt);
   }
 
   async fetch(req) {

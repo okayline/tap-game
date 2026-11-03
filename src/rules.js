@@ -20,6 +20,8 @@ export const STATS = {
 };
 
 export const MAX_ATTACKERS = 2; // at most this many attack in a turn, so one button always stays home (kura, Nov 3)
+// A coin flip decides who goes first, and that side attacks with only 1 on the match's first turn (kura, Nov 3).
+// g.limit is how many may attack this turn.
 
 export const other = (seat) => (seat === "a" ? "b" : "a");
 export const life = (b) => (b.out ? 0 : b.toughness - b.damage);
@@ -29,14 +31,15 @@ export const toPlace = (g) => Math.min(
   g.sides[other(g.attack.by)].buttons.reduce((n, b) => n + life(b), 0),
 );
 
-export function newGame(buttonsA, buttonsB) {
+export function newGame(buttonsA, buttonsB, first = Math.random() < 0.5 ? "a" : "b") {
   const side = (list) => ({
     buttons: list.map((b) => {
       const [power, toughness] = STATS[b.type] ?? [1, 1];
       return { ...b, power, toughness, damage: 0, tapped: false, out: false };
     }),
   });
-  return { turn: "a", sides: { a: side(buttonsA), b: side(buttonsB) }, attack: null, winner: null, log: ["a's turn"] };
+  return { turn: first, limit: 1, sides: { a: side(buttonsA), b: side(buttonsB) }, attack: null, winner: null,
+    log: [`coin flip: ${first} goes first, with 1 attacker`, `${first}'s turn`] };
 }
 
 const ready = (side, i) => side.buttons[i] && !side.buttons[i].out && !side.buttons[i].tapped;
@@ -47,7 +50,7 @@ export function attack(g, seat, idxs) {
   if (g.turn !== seat || g.attack) return "Not your turn.";
   const list = [...new Set(idxs)];
   if (!list.every((i) => ready(g.sides[seat], i))) return "Only ready buttons can attack.";
-  if (list.length > MAX_ATTACKERS) return `At most ${MAX_ATTACKERS} can attack.`;
+  if (list.length > g.limit) return `At most ${g.limit} can attack this turn.`;
   if (!list.length) { g.log.push(`${seat} doesn't attack`); passTurn(g); return null; }
   for (const i of list) g.sides[seat].buttons[i].tapped = true;
   g.attack = { by: seat, attackers: list };
@@ -92,6 +95,7 @@ export function place(g, seat, split) {
 
 function passTurn(g) {
   g.turn = other(g.turn);
+  g.limit = MAX_ATTACKERS;
   for (const b of g.sides[g.turn].buttons) b.tapped = false;
   g.log.push(`${g.turn}'s turn`);
 }

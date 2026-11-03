@@ -7,8 +7,10 @@ const A = [{ name: "w", type: "webring" }, { name: "n", type: "neon" }, { name: 
 const B = [{ name: "k", type: "construction" }, { name: "d", type: "divider" }, { name: "m", type: "neon" }];
 
 test("an attack is placed on the defender's buttons; untapped ones that take damage hit back; damage stays", () => {
-  const g = newGame(A, B);
-  assert.equal(attack(g, "a", [0, 1, 2]), "At most 2 can attack.");
+  const g = newGame(A, B, "a");
+  assert.equal(attack(g, "a", [0, 2]), "At most 1 can attack this turn."); // a won the flip: 1 on the first turn
+  g.limit = 2; // as from the second turn on
+  assert.equal(attack(g, "a", [0, 1, 2]), "At most 2 can attack this turn.");
   assert.equal(attack(g, "a", [0, 2]), null);      // webring 3 + counter 2 = 5
   assert.equal(place(g, "b", { 0: 2, 1: 2 }), "Place exactly 5.");
   // b puts 2 on construction, 2 on divider, 1 on neon: all three are out
