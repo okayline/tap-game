@@ -4,6 +4,13 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.8 "Aura Glow"
+**Mon Nov 2, 2026 · 11:27 PM HST** (no migration)
+- kura: "could you theme the page like aura-farm please"
+- Changed: the page uses aura-farm's look (its colours, copied from its `public/index.html`): near-black with purple light, Impact headings, rounded glowing panels, the purple-to-pink gradient for attack and block, glowing status and timer. Tapped buttons glow pink, the dummy's attackers cyan, your picked blocker pink. Footer v0.8.
+- Removed: the grey Windows-style look (#c0c0c0, inset borders, monospace page font).
+- Not checked: the live site.
+
 ## v0.7 "Stand Up"
 **Mon Nov 2, 2026 · 11:23 PM HST** (no migration)
 - kura: "to me it makes more sense for the horizontal position to be "block" and the vertical position to be "attack" ... start the buttons in the horizontal, block, greyed out, untapped position. and then click to tap/activate / colorize them even though it's sideways"
