@@ -4,6 +4,13 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.33 "Rest"
+**Tue Nov 3, 2026 · 12:21 AM HST** (no migration)
+- kura: "lets try untapping heals one?"
+- Changed: at the start of a side's turn, when its buttons untap, each of its buttons still in the match heals 1 damage (tapped or not). A button that's out stays out. The test checks the heal. Footer v0.33.
+- Removed: damage staying for the whole match.
+- Not checked: the live site; whether matches now stall.
+
 ## v0.32 "Sturdier"
 **Tue Nov 3, 2026 · 12:16 AM HST** (no migration)
 - kura: "too many games end after only 1 or 2 rounds" ... "can we just add 1 point of toughness to everything ?"

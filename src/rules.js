@@ -5,7 +5,7 @@
 // Your turn: your buttons untap; you pick up to MAX_ATTACKERS ready buttons to attack and press attack (they tap).
 // The other side then splits the attack's total power over its own buttons, any way it likes (no time limit).
 // Each of its untapped buttons that takes damage hits back with its power, spread over the attackers in order.
-// A button only untaps at the start of its own side's turn, so attacking with it means it can't hit back next turn.
+// A button only untaps at the start of its own side's turn (and heals 1 damage then, kura Nov 3), so attacking with it means it can't hit back next turn.
 // (kura, Nov 2: "the buttons are the HP !!!")
 
 // power / toughness by type: the more buttons of a type exist, the weaker it is (kura, Nov 2: counts from the live
@@ -97,6 +97,7 @@ export function place(g, seat, split) {
 function passTurn(g) {
   g.turn = other(g.turn);
   g.limit = MAX_ATTACKERS;
-  for (const b of g.sides[g.turn].buttons) b.tapped = false;
+  // untapping heals: at the start of a side's turn each of its buttons still in the match untaps and heals 1 damage
+  for (const b of g.sides[g.turn].buttons) { b.tapped = false; if (!b.out && b.damage > 0) b.damage -= 1; }
   g.log.push(`${g.turn}'s turn`);
 }

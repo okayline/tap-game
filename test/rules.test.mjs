@@ -16,10 +16,10 @@ test("an attack is placed on the defender's buttons; untapped ones that take dam
   // b puts 3 on construction (out) and 2 on divider (1 left); neon takes nothing
   assert.equal(place(g, "b", { 0: 3, 1: 2 }), null);
   assert.deepEqual(g.sides.b.buttons.map((b) => b.out), [true, false, false]);
-  assert.equal(g.sides.b.buttons[1].damage, 2);
   // hit back: construction 1 + divider 3 = 4 over the attackers in order: webring takes 2 (out), counter takes 2 (1 left)
   assert.deepEqual(g.sides.a.buttons.map((b) => b.out), [true, false, false]);
   assert.equal(g.sides.a.buttons[2].damage, 2);
   assert.equal(g.winner, null);
   assert.equal(g.turn, "b");
+  assert.equal(g.sides.b.buttons[1].damage, 1);      // b's turn began: its divider untapped and healed 1 (2 -> 1)
 });
