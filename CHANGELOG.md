@@ -4,6 +4,13 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.13 "This Turn"
+**Mon Nov 2, 2026 · 11:40 PM HST** (no migration)
+- kura: "next to YOU . HP 4 could we put "THIS TURN: 2/2" (the amount of my attack and defense that turn), it should change as i tap/untap the buttons"
+- Added: "this turn: attack/defense" after your hp. Attack is the power of your buttons tapped or picked to attack; defense is the toughness of your ready buttons left to block. It changes as you pick. Footer v0.13.
+- Removed: nothing.
+- Not checked: the live site.
+
 ## v0.12 "Beat"
 **Mon Nov 2, 2026 · 11:37 PM HST** (no migration)
 - kura: "yeah can we have it pause for 1 second please" (before the dummy attacks, so the result of your attack can be read).
