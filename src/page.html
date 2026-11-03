@@ -26,7 +26,9 @@
   /* on a window too short for the whole screen, the screen is shrunk to fit (fit(), below), as if zoomed out, so the cards keep their size */
   #game { transform-origin: top center; }
   h1 { font: 800 24px/1 var(--title); letter-spacing: 2px; color: #d97aa6; margin: 0; }
-  .side { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 10px 18px; }
+  .side { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 10px 18px; transition: filter .3s; }
+  /* the side that isn't moving now is dimmed (kura, Nov 3) */
+  .side.dim { filter: brightness(.8) saturate(.7); }
   .side > div:first-child { font: 600 12px/1 var(--title); letter-spacing: 1.5px; text-transform: uppercase; color: var(--blue); }
   .row { display: flex; gap: 12px; justify-content: space-between; align-items: center; margin-top: 8px; height: calc(150 * var(--u)); }
   .btn { position: relative; width: var(--w); height: calc(150 * var(--u)); display: flex; align-items: center; justify-content: center; border: 0; background: none; padding: 0; border-radius: calc(7 * var(--u)); color: var(--ink); }
@@ -92,14 +94,14 @@
 <body>
 <div id="game">
 <h1>UN/CLICK</h1>
-  <div class="side"><div id="themHp"></div><div class="row" id="them"></div><div class="deck" id="themDeck"></div></div>
+  <div class="side" id="themSide"><div id="themHp"></div><div class="row" id="them"></div><div class="deck" id="themDeck"></div></div>
   <div class="bar"><button class="act" id="start" hidden>start</button> <button class="act" id="attack" hidden>attack</button> <button class="act" id="take" hidden>take</button> <button class="act" id="again" hidden>new match</button></div>
-  <div class="side"><div class="statusline"><span id="meHp"></span><span id="status"><span id="result"></span> <span id="err" class="err"></span></span></div><div class="row" id="me"></div><div class="deck" id="meDeck"></div></div>
+  <div class="side" id="meSide"><div class="statusline"><span id="meHp"></span><span id="status"><span id="result"></span> <span id="err" class="err"></span></span></div><div class="row" id="me"></div><div class="deck" id="meDeck"></div></div>
   <div id="log"></div>
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.52" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.53" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -180,6 +182,9 @@ const $ = (id) => document.getElementById(id);
     $("take").disabled = placed !== need;
     $("take").textContent = placed === need ? `take ${need}` : `place ${need - placed} more`;
     $("again").hidden = !g.winner;
+    // whose move it is: the side whose turn it is, or the defender while it places an attack; nobody is dimmed once the match is over
+    const moving = g.winner ? null : g.attack ? (g.attack.by === me ? them : me) : g.turn;
+    $("meSide").classList.toggle("dim", moving === them); $("themSide").classList.toggle("dim", moving === me);
     if (shown === null) shown = g.log.length; // first board after loading: the whole log at once
     if (!logTimer) showLog();
     fit();

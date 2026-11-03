@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.53 "Spotlight" · Tue Nov 3, 4:10 AM
+- The panel of the side whose move it is stays lit and the other one dims: the side whose turn it is, or the defender while it places an attack. Neither is dimmed when the match is over. Removed: both panels always lit.
+
 ## v0.52 "Green and Red" · Tue Nov 3, 4:05 AM
 - In a power/toughness box, the power is green when Webcounter has raised it, and the life left is red when the button has taken damage (field and deck row). Removed: all-dark numbers in every case.
 
