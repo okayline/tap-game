@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.52 "Green and Red" · Tue Nov 3, 4:05 AM
+- In a power/toughness box, the power is green when Webcounter has raised it, and the life left is red when the button has taken damage (field and deck row). Removed: all-dark numbers in every case.
+
 ## v0.51 "Broadband" · Tue Nov 3, 4:00 AM
 - Webring buttons have Broadband: they can attack the turn they come in. Counter buttons have Webcounter: +1/+0 each time they hit back, for the rest of the match (their P/T box shows it). Both have card text. Removed: summoning sickness for Webrings, and Counters' fixed power.
 

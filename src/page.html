@@ -45,6 +45,8 @@
   /* power/life left, in a box sitting on the bottom edge of the text box (like a Magic card's) */
   .pt { position: absolute; right: calc(4 * var(--u)); bottom: 1px; font: 800 calc(9 * var(--u))/1 var(--title); color: var(--ink); background: #fff3c9; border: 1.5px solid #e2c56e;
         border-radius: calc(5 * var(--u)); padding: calc(2 * var(--u)) calc(5 * var(--u)); box-shadow: 0 0 0 1.5px var(--cream), inset 0 1px 0 #fff; pointer-events: none; }
+  .pt .up, .dpt .up { color: #1f7a4d; }
+  .pt .hurt, .dpt .hurt { color: #c2334d; }
   /* tapped (attacking): the card turns sideways to the right, a little smaller so it fits */
   .btn.tapped .gc { transform: rotate(90deg) scale(.82); }
   .btn.can { cursor: pointer; outline: 2px dashed var(--pink); outline-offset: 2px; }
@@ -97,7 +99,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.51" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.52" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -188,7 +190,7 @@ const $ = (id) => document.getElementById(id);
     (side.deck ?? []).forEach((b, j) => {
       const card = document.createElement("div"); card.className = "card"; card.title = `${b.name} ${b.power}/${b.toughness - b.damage}`;
       const img = document.createElement("img"); img.alt = ""; img.src = b.image;
-      const pt = document.createElement("span"); pt.className = "dpt"; pt.textContent = `${b.power}/${b.toughness - b.damage}`;
+      const pt = document.createElement("span"); pt.className = "dpt"; pt.append(...ptText(b));
       card.append(img, pt);
       if (can) { card.classList.add("drag"); card.onpointerdown = (e) => drag(e, j, img); }
       el.append(card);
@@ -233,6 +235,11 @@ const $ = (id) => document.getElementById(id);
     c.className = cls; return c;
   }
   const mk = (tag, cls, text) => { const e = document.createElement(tag); e.className = cls; if (text != null) e.textContent = text; return e; };
+  // power/life left: power in green when Webcounter has raised it, life in red when the button has taken damage
+  function ptText(b) {
+    const p = mk("span", b.boost ? "up" : "", String(b.power)), l = mk("span", b.damage ? "hurt" : "", String(b.toughness - b.damage));
+    return [p, "/", l];
+  }
   function card(b, moving) {
     const gc = mk("div", "gc"), inn = mk("div", "gc-in"), name = mk("div", "gc-name", b.name), art = mk("div", "gc-art"), img = mk("img");
     name.style.fontSize = `calc(${Math.min(8.5, 102 / b.name.length).toFixed(1)} * var(--u))`;
@@ -240,7 +247,7 @@ const $ = (id) => document.getElementById(id);
     const txt = mk("div", "gc-txt"), t = TEXT[b.type];
     if (t) { const k = mk("b", "", t[0]); txt.append(k, ` — ${t[1]}`); }
     inn.append(name, art, mk("div", "gc-type", `Button — ${b.type[0].toUpperCase()}${b.type.slice(1)}`), txt);
-    if (!b.out) inn.append(mk("span", "pt", `${b.power}/${b.toughness - b.damage}`));
+    if (!b.out) { const pt = mk("span", "pt"); pt.append(...ptText(b)); inn.append(pt); }
     gc.append(inn); return gc;
   }
   function row(el, buttons, how) {

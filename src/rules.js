@@ -131,7 +131,7 @@ export function place(g, seat, split) {
     b.damage += d;
     g.log.push(`${b.name} takes ${d}${b.tapped ? "" : `, hits back for ${b.power}`}`);
     if (life(b) <= 0) { b.out = true; g.log.push(`${b.name} is out`); }
-    else if (!b.tapped && WEBCOUNTER.includes(b.type)) { b.power++; g.log.push(`${b.name} gets +1/+0`); }   // after its hit back (counted above)
+    else if (!b.tapped && WEBCOUNTER.includes(b.type)) { b.power++; b.boost = (b.boost ?? 0) + 1; g.log.push(`${b.name} gets +1/+0`); }   // after its hit back (counted above)
   }
   for (const i of g.attack.attackers) {
     const a = att.buttons[i], d = Math.min(back, life(a));
