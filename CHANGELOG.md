@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.93 "Long Names" · Tue Nov 3, 10:30 AM
+- Card names are 8.5 units again, and a name of 16 letters or more is 6.7. In Cinzel every seed name of 15 letters or fewer fits at 8.5, and the 8 longer ones (and "a mystery button") fit at 6.7; checked on a 390px phone and a 1280px desktop. Removed: v0.92's single 6.7 size for every name.
+
 ## v0.92 "Names Fit" · Tue Nov 3, 10:25 AM
 - Every card name is 6.7 units, the largest size at which all 52 seed names and "a mystery button" fit the pink bar in Cinzel (checked with Cinzel loaded, on a 390px phone and a 1280px desktop). v0.87's check had used a fallback font, so 8 long names were cut off from v0.87 to v0.91. Removed: the 8.5-unit names.
 
