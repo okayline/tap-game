@@ -42,12 +42,20 @@ test("decks: same types on both sides; swaps until the first attack; out buttons
   assert.equal(g.sides.a.deck[0].name, "n0");
   swap(g, "a", 0, 0); // back
   assert.equal(attack(g, "a", [0]), null);
-  assert.equal(swap(g, "a", 0, 0), "Swaps are over once the first attack starts.");
+  assert.equal(swap(g, "a", 0, 0), "Only on your turn, before you attack."); // a is mid-attack
   // b puts the neon's 1 power on webring 0 (2 toughness, survives); hit back 3 takes neon 0 out
   assert.equal(place(g, "b", { 0: 1 }), null);
   assert.equal(g.sides.a.buttons[0].out, true);
-  g.limit = 2; attack(g, "b", []); // b passes; a's turn: the empty spot fills from a's deck
+  g.limit = 2; attack(g, "b", []); // b passes; a's turn: the out button waits in its spot until a brings one in
+  assert.equal(g.sides.a.buttons[0].out, true);
+  assert.equal(attack(g, "a", [1]), "Bring in a button first.");
+  assert.equal(swap(g, "a", 0, 0), null);           // filling doesn't use the turn's swap
   assert.equal(g.sides.a.buttons[0].name, "d");
-  assert.equal(g.sides.a.deck.length, 0);
+  assert.deepEqual(g.sides.a.gone.map((b) => b.name), ["n0"]);
   assert.equal(g.winner, null);
+  // one swap a turn, on your own turn: a has no deck left, so give it one to try
+  g.sides.a.deck.push({ name: "x", type: "neon", power: 1, toughness: 2, damage: 0, tapped: false, out: false });
+  assert.equal(swap(g, "a", 1, 0), null);
+  assert.equal(swap(g, "a", 2, 0), "One swap a turn.");
+  assert.equal(swap(g, "b", 0, 0), "Only on your turn, before you attack.");
 });

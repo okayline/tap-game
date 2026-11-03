@@ -2,7 +2,7 @@
 //   GET /                 a new match against the scripted dummy (src/dummy.js): redirects to it
 //   GET /m/<id>           the match page; GET /m/<id>/ws the match's WebSocket. You are seat a in every tab; the dummy is b.
 import { DurableObject } from "cloudflare:workers";
-import { newGame, attack, place, swap, dealDecks } from "./rules.js";
+import { newGame, attack, place, swap, dealDecks, autoFill } from "./rules.js";
 
 const PAUSE_MS = 1000; // the dummy waits this long before it attacks
 import { dummyAttack, dummyPlace } from "./dummy.js";
@@ -78,6 +78,7 @@ export class Match extends DurableObject {
     if (!g.dummyAt) { g.dummyAt = Date.now() + PAUSE_MS; return; }
     if (Date.now() < g.dummyAt) return;
     g.dummyAt = null;
+    autoFill(g, "b");
     attack(g, "b", dummyAttack(g));
     g.dummyTurn++;
   }

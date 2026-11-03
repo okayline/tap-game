@@ -58,6 +58,11 @@
   .deck .card.drag { cursor: grab; outline: 1px dashed var(--S); outline-offset: 2px; touch-action: none; }
   .deck .dpt { position: absolute; right: 2px; bottom: 1px; font-family: var(--meme); font-size: 11px; line-height: 1; color: var(--ink);
                text-shadow: 0 0 3px #000, 0 0 4px rgba(176,132,255,.6); pointer-events: none; }
+  /* a knocked-out button in the deck row: crossed out, no numbers */
+  .deck .card.gone img { opacity: .35; }
+  .deck .card.gone::before, .deck .card.gone::after { content: ""; position: absolute; left: 50%; top: 50%; width: 110%; height: 2px;
+               background: var(--H); box-shadow: 0 0 4px var(--H); transform: translate(-50%, -50%) rotate(19deg); }
+  .deck .card.gone::after { transform: translate(-50%, -50%) rotate(-19deg); }
   .ghost { position: fixed; transform: translate(-50%, -50%); pointer-events: none; opacity: .85; z-index: 9; width: var(--dw); image-rendering: pixelated; filter: grayscale(1) brightness(.6); }
   .ddfoot { margin: 1px 0 0 !important; padding: 0 12px !important; }
 </style>
@@ -72,7 +77,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.38" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.39" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -129,15 +134,18 @@ const $ = (id) => document.getElementById(id);
     const def = mine.reduce((n, b, i) => n + (!b.out && !up(b, i) ? life(b) : 0), 0);
     $("meHp").textContent = `you · this turn: ${atk}/${def}`;
     $("themHp").textContent = "dummy";
-    deckRow($("meDeck"), g.sides[me].deck ?? [], g.locked === false && !g.winner);
-    deckRow($("themDeck"), g.sides[them].deck ?? [], false);
+    // you can drag from your deck before the first attack, and on your turn to fill an out spot or make your one swap
+    const fill = (g.sides[me].deck ?? []).length > 0 && mine.some((b) => b.out);
+    deckRow($("meDeck"), g.sides[me], (g.locked === false && !g.winner) || (myTurn && (fill || !g.swapped)));
+    deckRow($("themDeck"), g.sides[them], false);
     // the dummy won the flip: it waits for start, so you can swap first
     const startNow = g.locked === false && g.turn === them && !g.winner;
     $("start").hidden = !startNow;
     $("result").textContent = g.winner ? `${g.winner === "draw" ? "draw" : g.winner === me ? "you win" : "you lose"}` : "";
     // the attack button is always there unless take or new match takes its place; greyed out while it isn't your move
     $("attack").hidden = taking || !!g.winner || startNow;
-    $("attack").disabled = !myTurn;
+    $("attack").disabled = !myTurn || fill;
+    $("attack").textContent = myTurn && fill ? "bring in a button" : "attack";
     $("take").hidden = !taking;
     $("take").disabled = placed !== need;
     $("take").textContent = placed === need ? `take ${need}` : `place ${need - placed} more`;
@@ -145,15 +153,21 @@ const $ = (id) => document.getElementById(id);
     if (shown === null) shown = g.log.length; // first board after loading: the whole log at once
     if (!logTimer) showLog();
   }
-  function deckRow(el, list, can) {
+  // a side's deck row: its deck (next on the left; power/life left), then its knocked-out buttons, crossed out
+  function deckRow(el, side, can) {
     el.innerHTML = "";
-    list.forEach((b, j) => {
-      const card = document.createElement("div"); card.className = "card"; card.title = `${b.name} ${b.power}/${b.toughness}`;
+    (side.deck ?? []).forEach((b, j) => {
+      const card = document.createElement("div"); card.className = "card"; card.title = `${b.name} ${b.power}/${b.toughness - b.damage}`;
       const img = document.createElement("img"); img.alt = ""; img.src = b.image;
-      const pt = document.createElement("span"); pt.className = "dpt"; pt.textContent = `${b.power}/${b.toughness}`;
+      const pt = document.createElement("span"); pt.className = "dpt"; pt.textContent = `${b.power}/${b.toughness - b.damage}`;
       card.append(img, pt);
       if (can) { card.classList.add("drag"); card.onpointerdown = (e) => drag(e, j, img); }
       el.append(card);
+    });
+    (side.gone ?? []).forEach((b) => {
+      const card = document.createElement("div"); card.className = "card gone"; card.title = `${b.name} (out)`;
+      const img = document.createElement("img"); img.alt = ""; img.src = b.image;
+      card.append(img); el.append(card);
     });
   }
   // drag a deck picture (mouse or touch) and drop it on one of your field buttons to swap the two

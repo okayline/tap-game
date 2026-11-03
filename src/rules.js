@@ -8,9 +8,11 @@
 // A button only untaps at the start of its own side's turn, so attacking with it means it can't hit back next turn.
 // (kura, Nov 2: "the buttons are the HP !!!")
 // Decks (kura, Nov 3): each side has DECK buttons, 3 on the field and the rest in its deck. Both decks hold the same types
-// (dealDecks), so their stats match. Before the first attack you may swap a field button with a deck button. A button that
-// goes out is gone; at the start of a side's turn its empty spots fill from the top of its deck. A side loses when its field
-// and deck are both empty.
+// (dealDecks), so their stats match. A button that goes out stays in its spot, greyed, until its side brings in a deck button
+// on its own turn (swap onto it); then it moves to its side's `gone` list (shown crossed out). Swaps (kura, Nov 3): before the
+// first attack, as many as you like; after that, one per turn, on your turn before you attack (filling an out spot doesn't
+// count). A swapped-out button keeps its damage. You can't attack while you have an out spot and a deck to fill it from.
+// A side loses when its field is all out and its deck is empty.
 
 // power / toughness by type: the more buttons of a type exist, the weaker it is (kura, Nov 2: counts from the live
 // item table, all active 88x31 buttons: neon 32, guestbook 21, construction 19, counter 17, webring 13, divider 5).
@@ -64,12 +66,28 @@ export function newGame(deckA, deckB, first = Math.random() < 0.5 ? "a" : "b") {
 }
 
 // Before the first attack: swap field button i with deck button j. Returns an error string or null.
+// Swap field button i with deck button j: before the first attack, any number; after, on your turn before you attack.
+// Onto an out button it brings the deck button in (free); onto a live one it is your one swap this turn.
 export function swap(g, seat, i, j) {
-  if (g.locked) return "Swaps are over once the first attack starts.";
   const s = g.sides[seat];
+  s.deck ??= []; s.gone ??= [];
   if (!Number.isInteger(i) || !Number.isInteger(j) || !s.buttons[i] || !s.deck[j]) return "No such button.";
-  [s.buttons[i], s.deck[j]] = [s.deck[j], s.buttons[i]];
+  if (g.locked && (g.winner || g.turn !== seat || g.attack)) return "Only on your turn, before you attack.";
+  const [n] = s.deck.splice(j, 1), b = s.buttons[i];
+  if (b.out) { s.gone.push(b); s.buttons[i] = n; g.log.push(`${n.name} comes in`); return null; }
+  if (g.locked && g.swapped) { s.deck.splice(j, 0, n); return "One swap a turn."; }
+  s.buttons[i] = n; s.deck.splice(j, 0, b);
+  if (g.locked) { g.swapped = true; g.log.push(`${seat} swaps ${b.name} for ${n.name}`); }
   return null;
+}
+
+// A side with an out button and a deck left must bring one in before attacking.
+export const mustFill = (g, seat) => (g.sides[seat].deck ?? []).length > 0 && g.sides[seat].buttons.some((b) => b.out);
+
+// Bring in deck buttons, left first, for every out spot (the dummy does this at the start of its turn).
+export function autoFill(g, seat) {
+  const s = g.sides[seat];
+  s.buttons.forEach((b, i) => { if (b.out && (s.deck ?? []).length) swap(g, seat, i, 0); });
 }
 
 const ready = (side, i) => side.buttons[i] && !side.buttons[i].out && !side.buttons[i].tapped;
@@ -81,6 +99,7 @@ export function attack(g, seat, idxs) {
   const list = [...new Set(idxs)];
   if (!list.every((i) => ready(g.sides[seat], i))) return "Only ready buttons can attack.";
   if (list.length > g.limit) return `At most ${g.limit} can attack this turn.`;
+  if (mustFill(g, seat)) return "Bring in a button first.";
   g.locked = true;
   if (!list.length) { g.log.push(`${seat} doesn't attack`); passTurn(g); return null; }
   for (const i of list) g.sides[seat].buttons[i].tapped = true;
@@ -129,12 +148,7 @@ function passTurn(g) {
   g.limit = MAX_ATTACKERS;
   const s = g.sides[g.turn];
   s.deck ??= []; // a match started before decks (v0.35 or older) has none
-  s.buttons = s.buttons.map((b) => {
-    if (!b.out || !s.deck.length) return b;
-    const n = s.deck.shift();
-    g.log.push(`${n.name} comes in`);
-    return n;
-  });
+  g.swapped = false;
   for (const b of g.sides[g.turn].buttons) b.tapped = false;
   g.log.push(`${g.turn}'s turn`);
 }

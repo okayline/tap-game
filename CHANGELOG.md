@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.39 "Your Pick" · Tue Nov 3, 2:24 AM
+- A knocked-out button stays greyed in its spot until you drag a deck button onto it on your turn ("bring in a button"); then it moves to the deck row, crossed out with no numbers. While attack is lit you can also make one swap a turn; a swapped-out button keeps its damage. The dummy still brings its next one in by itself. Removed: automatic refilling for you.
+
 ## v0.38 "Nine" · Tue Nov 3, 2:18 AM
 - Decks are 9: 3 on the field, 6 in the deck row, which is now as wide as the field. Deck buttons are greyed out like ready buttons and show their power/toughness. Removed: decks of 6, and the coloured deck pictures.
 
