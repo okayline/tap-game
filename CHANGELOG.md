@@ -4,6 +4,13 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.3 "Lights On"
+**Mon Nov 2, 2026 · 11:12 PM HST** (no migration)
+- kura: "could you make the buttons all start in an untapped / vertical position. when they are untapped could they be greyed out. then tapped, they turn on and are the normal button?"
+- Changed: an untapped (ready) button now stands vertical (31x88) and grey; tapping it turns it sideways into the normal coloured 88x31 button.
+- Removed: untapped buttons showing flat in full colour, and tapped ones showing sideways at 60% opacity.
+- Not checked: the live site.
+
 ## v0.2 "Straight In"
 **Mon Nov 2, 2026 · 11:08 PM HST** (no migration)
 - kura: "can it just go into the "tap" main page instead of have the "play the dummy" page ? we dont need the friend link !"

@@ -11,8 +11,9 @@
   .side { background: #fff; border: 2px inset #808080; padding: 8px; margin: 8px 0; max-width: 420px; }
   .row { display: flex; gap: 12px; align-items: center; min-height: 96px; }
   .btn { width: 88px; height: 88px; display: flex; align-items: center; justify-content: center; border: 0; background: none; padding: 0; }
-  .btn img { width: 88px; height: 31px; image-rendering: pixelated; transition: transform .2s; }
-  .btn.tapped img { transform: rotate(90deg); opacity: .6; }
+  /* untapped (ready): stands vertical and greyed out; tapped (used): turns sideways into the normal, lit button */
+  .btn img { width: 88px; height: 31px; image-rendering: pixelated; transition: transform .2s, filter .2s; transform: rotate(90deg); filter: grayscale(1) brightness(.8); }
+  .btn.tapped img { transform: none; filter: none; }
   .btn.can { cursor: pointer; outline: 2px dashed #00e; }
   .name { font-size: 11px; text-align: center; width: 88px; }
   .bar { margin: 8px 0; }
