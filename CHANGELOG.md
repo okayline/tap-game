@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.87 "Name Size" · Tue Nov 3, 9:35 AM
+- Card names are bigger: 8.5 units on every card, in the same 12-unit pink bar. All 52 button names and "a mystery button" still fit. Removed: v0.86's 7.5-unit names.
+
 ## v0.86 "Name Bar" · Tue Nov 3, 9:40 AM
 - Every card's name is the same size, a little smaller (7.5 units, on phones and desktop), and the pink name bar is shorter (12 units instead of 15). All 52 button names and "a mystery button" fit at that size. Removed: names sized by their length (8.5 units for short names, smaller for long ones) and the 20% bigger names on phones.
 
