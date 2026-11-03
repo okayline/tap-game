@@ -13,7 +13,7 @@ export default {
     const url = new URL(req.url);
     if (url.pathname === "/") {
       const id = env.MATCH.newUniqueId();
-      await env.MATCH.get(id).setup(await commons(env));
+      await env.MATCH.get(id).setup(await buttons(env));
       return Response.redirect(`${url.origin}/m/${id}`, 302);
     }
     const m = url.pathname.match(/^\/m\/([0-9a-f]{64})(\/ws)?$/);
@@ -23,9 +23,10 @@ export default {
   },
 };
 
-// 88x31's common buttons, from the shared item table (dungeon-items, through the ITEMS service binding).
-async function commons(env) {
-  const r = await env.ITEMS.fetch("https://items/api/items?source=88x31&rarity=common");
+// 88x31's buttons of every rarity, from the shared item table (dungeon-items, through the ITEMS service binding). Rarity changes
+// nothing in a match: power and toughness come from the type (kura, Nov 3: rares "just show up").
+async function buttons(env) {
+  const r = await env.ITEMS.fetch("https://items/api/items?source=88x31");
   const { items } = await r.json();
   return items.map((it) => ({ id: it.id, name: it.name, type: it.type, image: it.image }));
 }

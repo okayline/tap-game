@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.65 "Every Rarity" · Tue Nov 3, 4:50 AM
+- Decks are dealt from 88x31 buttons of every rarity (common, uncommon, rare, ultra, prototype), not only commons. Rarity changes nothing: power and toughness still come from the type. Removed: commons-only decks.
+
 ## v0.64 "PING" · Tue Nov 3, 4:45 AM
 - Attacking is called pinging: the PING button, "Player pings for 3 with…" in the log, and the messages and card text. Divider's effect is renamed Lag Spike. Removed: the word "attack" on screen, and the name Ping for Divider's effect.
 
