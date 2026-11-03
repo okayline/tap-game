@@ -4,6 +4,13 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.20 "Again"
+**Mon Nov 2, 2026 · 11:47 PM HST** (no migration)
+- kura: "after the game ends, can we get a button (the attack button?) to reload the game please" (reloading a match link stays on the same match).
+- Added: a "new match" button where attack and block are, shown once a match ends; it opens the main page, which starts a new match. Footer v0.20.
+- Removed: "(reload the main page for a new match)" after "you win / you lose".
+- Not checked: the live site.
+
 ## v0.19 "Ticker"
 **Mon Nov 2, 2026 · 11:50 PM HST** (no migration)
 - kura: "can you make the under panel log, show the newest lines at top, pushing the older ones down. could we also make the font bigger. and have the lines appear one line at at time, so they dont all appear at once"
