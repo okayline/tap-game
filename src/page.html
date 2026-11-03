@@ -33,7 +33,7 @@
   .row { display: flex; gap: 12px; justify-content: space-between; align-items: center; margin-top: 8px; height: calc(150 * var(--u)); }
   .btn { position: relative; width: var(--w); height: calc(150 * var(--u)); display: flex; align-items: center; justify-content: center; border: 0; background: none; padding: 0; border-radius: calc(7 * var(--u)); color: var(--ink); }
   /* the card: blue frame, cream inside */
-  .gc { width: 100%; height: 100%; background: var(--frame); border-radius: calc(7 * var(--u)); padding: calc(5 * var(--u)); display: flex; flex-direction: column; transition: transform .45s ease, filter .45s; }
+  .gc { width: 100%; height: 100%; background: var(--frame); border-radius: calc(7 * var(--u)); padding: calc(5 * var(--u)); display: flex; flex-direction: column; }
   .gc-in { flex: 1; position: relative; background: var(--cream); border-radius: calc(3 * var(--u)); padding: calc(4 * var(--u)); display: flex; flex-direction: column; gap: calc(4 * var(--u)); border: 1px solid var(--line); text-align: left; }
   .gc-name { font: 600 calc(8.5 * var(--u))/1 var(--title); color: var(--ink); background: #ffe1ee; border: 1px solid #f0b8d0; border-radius: 2px; padding: 0 calc(4 * var(--u));
              height: calc(15 * var(--u)); display: flex; align-items: center; white-space: nowrap; overflow: hidden; }
@@ -373,8 +373,8 @@ const $ = (id) => document.getElementById(id);
     inn.append(name, art, type, txt, pt);
     gc.append(inn); return { gc, art, img, pt };
   }
-  // a side's field row. Each spot keeps its card while the same button is in it, and only its classes and numbers change, so
-  // tapping and untapping turn the card (the .gc transition) instead of it jumping; a new button in a spot gets a new card.
+  // a side's field row. Each spot keeps its card while the same button is in it, and only its classes and numbers change (so the
+  // replay can shake and mark it); a new button in a spot gets a new card. Tapping snaps sideways at once (kura, Nov 3: no turning).
   function row(el, buttons, att, how) {
     el.slots ??= [];
     buttons.forEach((b, i) => {
