@@ -168,13 +168,17 @@
                border-radius: 4px; padding: 2px 4px; box-shadow: 0 0 0 1px var(--cream); pointer-events: none; }
   .ghost { position: fixed; transform: translate(-50%, -50%); pointer-events: none; opacity: .85; z-index: 9; width: var(--dw); image-rendering: pixelated; }
   .ddfoot { margin: 1px 0 0 !important; padding: 0 12px !important; }
-  /* on a phone the space round the cards is trimmed so the three cards fill the width (kura, Nov 3: "the cards are too small");
-     44px = the screen's 6px sides, the panel's 6px sides and border, and two 8px gaps (just wide enough for a tappable card's dashed outline), with 2px to spare */
+  /* on a phone the panels run to the screen's edges so the three cards are as wide as they can be (kura, Nov 3: "as big as they can reasonably get");
+     24px = the panel's 4px sides and two 8px gaps (each just wide enough for a tappable card's dashed outline) */
   @media (max-width: 500px) {
-    :root { --w: calc((100vw - 44px) / 3); --dw: calc((var(--w) * 3 - 24px) / 6 - 6px); }   /* the deck row is as wide as the narrower card row */
-    #game { padding: 8px 6px; }
-    .side { padding: 8px 6px 14px; }
+    :root { --w: calc((100vw - 24px) / 3); --dw: calc((var(--w) * 3 - 32px) / 6 - 6px); }
+    #game { padding: 8px 0; }
+    .side { padding: 8px 4px 14px; border-left: 0; border-right: 0; border-radius: 0; }
+    .statusline { padding: 0 2px; }
     .row { gap: 8px; }
+    /* the deck row is 8px narrower than the card row and sits 4px in, so its dashed outlines stay off the screen's edges */
+    .deck { padding-left: 4px; padding-right: 4px; }
+    h1, .bar, #log, #ddfoot { margin-left: 6px; margin-right: 6px; }
   }
 </style>
 </head>
@@ -188,7 +192,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.82" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.83" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {

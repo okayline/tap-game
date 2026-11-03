@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.83 "Edge to Edge" · Tue Nov 3, 9:25 AM
+- On a phone the two panels run to the screen's edges (square corners, no side borders, 4px inside), so the cards are as wide as three across allows: about 122px on a 390px-wide phone. The deck row sits 4px further in, so its dashed outlines stay off the edges. The title, the button and the log keep a 6px margin. Removed: v0.82's 6px screen edges, 6px panel sides, panel side borders and rounded panel corners on phones.
+
 ## v0.82 "Phone Cards" · Tue Nov 3, 9:30 AM
 - On a phone (500px wide or less) the space round the cards is trimmed, so the three cards fill the width: on a 390px-wide phone a card is about 115px wide instead of 99px. The deck row narrows to match. Removed: the 16px screen edges, 10px panel edges and 12px gaps between cards on phones (now 6px, 6px and 8px).
 
