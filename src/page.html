@@ -22,7 +22,7 @@
   /* a card is --w wide (108px at the mockup's size, up to 176px, smaller on a narrow screen so three fit across) and --h/108 as tall;
      --u is the mockup's 1px at that width, so every size in a card scales with it */
   :root { --w: min(176px, calc((100vw - 92px) / 3)); --u: calc(var(--w) / 108); }
-  /* --h is a card's height in --u (150 on the mockup); --t scales the name, card text, flavour and P/T (the type line keeps its size, so its set sign fits) */
+  /* --h is a card's height in --u (150 on the mockup); --t scales the card text, flavour and P/T (the name and type line keep their size, so long names and the set sign fit) */
   :root { --h: 150; --t: 1; }
   /* nothing on the game screen can be selected or long-pressed into a selection, so taps and drags never highlight text */
   #game { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
@@ -39,8 +39,9 @@
   /* the card: blue frame, cream inside */
   .gc { width: 100%; height: 100%; background: var(--frame); border-radius: calc(7 * var(--u)); padding: calc(5 * var(--u)); display: flex; flex-direction: column; }
   .gc-in { flex: 1; position: relative; background: var(--cream); border-radius: calc(3 * var(--u)); padding: calc(4 * var(--u)); display: flex; flex-direction: column; gap: calc(4 * var(--u)); border: 1px solid var(--line); text-align: left; }
-  .gc-name { font: 600 calc(8.5 * var(--u))/1 var(--title); color: var(--ink); background: #ffe1ee; border: 1px solid #f0b8d0; border-radius: 2px; padding: 0 calc(4 * var(--u));
-             height: calc(15 * var(--u)); display: flex; align-items: center; white-space: nowrap; overflow: hidden; }
+  /* one name size on every card (kura, Nov 3: "normalize the font across all cards"), small enough that the longest names fit */
+  .gc-name { font: 600 calc(7.5 * var(--u))/1 var(--title); color: var(--ink); background: #ffe1ee; border: 1px solid #f0b8d0; border-radius: 2px; padding: 0 calc(4 * var(--u));
+             height: calc(12 * var(--u)); display: flex; align-items: center; white-space: nowrap; overflow: hidden; }
   .gc-art { height: calc(31 * var(--u)); display: flex; align-items: center; justify-content: center; }
   .gc-art img, .gc-art canvas { width: calc(88 * var(--u)); height: calc(31 * var(--u)); image-rendering: pixelated; }
   .gc-type { font: 500 calc(8 * var(--u))/1 var(--body); color: var(--ink); background: #e2f0ff; border: 1px solid var(--line); border-radius: 2px; padding: 0 calc(4 * var(--u));
@@ -198,7 +199,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.85" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.86" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -619,7 +620,6 @@ const $ = (id) => document.getElementById(id);
   // a card is built once per button and kept (row(), below), so its parts are handed back for updates
   function card(b) {
     const gc = mk("div", "gc"), inn = mk("div", "gc-in"), name = mk("div", "gc-name", b.name), art = mk("div", "gc-art"), img = mk("img");
-    name.style.fontSize = `calc(min(8.5 * var(--t), ${(102 / b.name.length).toFixed(1)}) * var(--u))`;   // a long name keeps the size that fits
     img.alt = ""; img.src = b.image;
     const txt = mk("div", "gc-txt"), t = TEXT[b.type], fx = mk("div", "");
     if (t) { fx.append(mk("b", "", t[0]), ` · ${t[1]}`); txt.append(fx, mk("div", "rule")); }

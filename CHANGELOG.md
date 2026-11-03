@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.86 "Name Bar" · Tue Nov 3, 9:40 AM
+- Every card's name is the same size, a little smaller (7.5 units, on phones and desktop), and the pink name bar is shorter (12 units instead of 15). All 52 button names and "a mystery button" fit at that size. Removed: names sized by their length (8.5 units for short names, smaller for long ones) and the 20% bigger names on phones.
+
 ## v0.85 "A Little Shorter" · Tue Nov 3, 9:30 AM
 - On a phone the cards are shorter: 168 units tall instead of 184 (about 190px on a 390px-wide phone, was 208), with the card text 20% bigger than the desktop size instead of 30%, so the longest effect and flavour still fit. Removed: v0.84's 184-unit height and 30% bigger text.
 
