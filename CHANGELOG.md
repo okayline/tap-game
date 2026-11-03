@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.92 "Names Fit" · Tue Nov 3, 10:25 AM
+- Every card name is 6.7 units, the largest size at which all 52 seed names and "a mystery button" fit the pink bar in Cinzel (checked with Cinzel loaded, on a 390px phone and a 1280px desktop). v0.87's check had used a fallback font, so 8 long names were cut off from v0.87 to v0.91. Removed: the 8.5-unit names.
+
 ## v0.91 "Big Card" · Tue Nov 3, 10:20 AM
 - Hold a card or deck button still for about half a second (or rest the mouse on it) to see it as a big card in the middle of the screen, with its flavour line; letting go or moving off closes it. A hold doesn't also tap, swap or drop the button, and moving your finger first still drags as before. Long presses on cards and deck buttons open no menu. Removed: the flavour line (and the line above it) on the normal cards.
 
