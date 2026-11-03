@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.81 "Aim" · Tue Nov 3, 9:08 AM
+- Tapping a card to ping draws its line out, forking into every guest card that can take damage; untapping takes it away. Pressing ping sends the glow down the branches to the cards hit, and the others turn grey. Lines lying on each other no longer look brighter. Removed: the line only appearing when you press ping, and one glow per line.
+
 ## v0.80 "Booster" · Tue Nov 3, 8:55 AM
 - Decks are dealt like a booster pack: 5 commons, 2 uncommons, 1 rare and 1 wildcard, which is usually a common and sometimes something rarer. Uncommons show with their name and picture; rares and prototypes are still mystery buttons. Ultras aren't dealt. Removed: v0.79's one-mystery deck, and uncommons as mystery buttons.
 

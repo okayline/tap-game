@@ -127,11 +127,16 @@
      branch and back, slowly (makePing(), below) */
   .pingfx { position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 8; overflow: visible; }
   /* the guest's pings are blue, yours pink (kura, Nov 3: "can the enemy ping lines be blue ?"); the glow's halo matches its line */
-  .pingfx.theirs polyline { stroke: var(--blue); filter: drop-shadow(0 0 3px rgba(109,143,208,.9)); }
+  .pingfx.theirs polyline { stroke: var(--blue); }
+  .pingfx.theirs .over { filter: drop-shadow(0 0 3px rgba(109,143,208,.9)); }
   .spark.theirs { box-shadow: 0 0 8px 4px #fff, 0 0 18px 8px rgba(109,143,208,.8); }
   /* a branch to a card you didn't pick turns grey when the glow runs (kura, Nov 3) */
-  .pingfx polyline.unused { stroke: #9aa3b8; filter: none; opacity: .7; transition: stroke .3s, opacity .3s; }
-  .pingfx polyline { fill: none; stroke-linejoin: round; stroke: var(--pink); stroke-width: 3; stroke-linecap: round; filter: drop-shadow(0 0 3px rgba(233,138,179,.9)); }
+  .pingfx polyline.unused { stroke: #9aa3b8; transition: stroke .3s; }
+  .pingfx polyline { fill: none; stroke-linejoin: round; stroke: var(--pink); stroke-width: 3; stroke-linecap: round; }
+  /* one glow for the whole layer (.over), not one per line, so lines lying on each other look like one line (kura, Nov 3: the second
+     attacker's line made the first one's brighter); grey unused branches sit underneath (.under), unglowing and a little faded */
+  .pingfx .over { filter: drop-shadow(0 0 3px rgba(233,138,179,.9)); }
+  .pingfx .under { opacity: .7; }
   .spark { position: fixed; left: 0; top: 0; width: 14px; height: 14px; border-radius: 50%; background: #fff; pointer-events: none; z-index: 9;
            box-shadow: 0 0 8px 4px #fff, 0 0 18px 8px rgba(233,138,179,.8); }
   .bar { text-align: center; }
@@ -175,7 +180,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.80" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.81" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -267,7 +272,8 @@ const $ = (id) => document.getElementById(id);
     const beat = async (cap, pops, pings, ms = BEAT_MS + Math.max(0, ...pops.map((p) => GLITCH_MS[p[4]] ?? 0)), glow) => { board.log = next.log.slice(0, cap); g = board; fx = { att: att.map((b) => b.id), pops, pings, glow }; playing = true; draw(); await sleep(ms); };
     const FIGHT = ["damage", "out", "power", "boost", "bonus"];
     copy(by, ["tapped"]);
-    if (!prev.attack) await beat(start + 1, att.map((b) => [by, b.id, String(b.power), "atk", false]), att.map((b) => [by, b.id, hits(def).map((h) => h[1]), true]), PING_MS);
+    if (!prev.attack) await beat(start + 1, att.map((b) => [by, b.id, String(b.power), "atk", false]), att.map((b) => [by, b.id, hits(def).map((h) => h[1]), true]),
+      att.every((b) => aims.has(b.id)) ? PING_TRAVEL : PING_MS);   // aimed lines are already drawn, so only the glow
     // you placed their ping: its waiting line's glow runs to the cards you picked, then the damage shows (a page loaded mid-ping has
     // no waiting line, so it draws one there and then)
     else if (pending.length) await beat(start, [], null, PING_TRAVEL, [def, hits(def).map((h) => h[1])]);
@@ -367,12 +373,21 @@ const $ = (id) => document.getElementById(id);
     for (const [s, id, to, glow] of fx.pings ?? []) {
       const btn = cardOf(s, id), targets = to.map((t) => cardOf(s === me ? them : me, t)).filter(Boolean);
       if (!btn || !targets.length) continue;
+      // your ping with its aim line already out: the glow runs to the cards hit at once, and the other branches go grey
+      if (s === me && aims.has(id)) { const p = aims.get(id); aims.delete(id); p.run(targets, 0); continue; }
       const p = makePing(btn, targets, s !== me);   // the guest's ping is blue
       if (glow) p.run(targets, PING_DRAW); else pending.push(p);
     }
     // fx.glow: [side, ids]: the waiting lines' glow runs to those cards (the ones you placed damage on)
     if (fx.glow) { const to = fx.glow[1].map((t) => cardOf(fx.glow[0], t)).filter(Boolean); for (const p of pending) p.run(to, 0); pending = []; }
     else if (!g.attack) { for (const p of pending) p.fade(); pending = []; }   // the ping is over some other way (the match ended)
+    // your aim lines: one per attacker you've picked, from when you tap it until you untap it or ping (not during a replay)
+    if (!playing) {
+      const want = new Set(myTurn ? [...picked].map((i) => mine[i]?.id).filter((x) => x != null) : []);
+      for (const [id, p] of aims) if (!want.has(id)) { p.fade(); aims.delete(id); }
+      const open = [...$("them").querySelectorAll(".btn")].filter((x) => !x.classList.contains("out"));
+      for (const id of want) if (!aims.has(id)) { const btn = cardOf(me, id); if (btn && open.length) aims.set(id, makePing(btn, open)); }
+    }
     // the replay beat's rising numbers and glitches
     for (const [s, id, text, cls, glitch] of fx.pops ?? []) {
       const btn = [...$(s === me ? "me" : "them").querySelectorAll(".btn")].find((x) => x.dataset.id === String(id));
@@ -399,11 +414,25 @@ const $ = (id) => document.getElementById(id);
   // and they merge again at the forks on the way home.
   const PING_DRAW = 600, PING_TRAVEL = 1400, PING_FADE = 300, PING_MS = PING_DRAW + PING_TRAVEL;   // kura, Nov 3: "way slower", then "speed it up a bit", then "just a little more" (travel was 2400, then 1800)
   let pending = [];   // the guest's ping lines, waiting for you to place its damage
+  // your aim lines while you pick attackers (kura, Nov 3: "when you "tap", that's when the line goes out and connects to the enemy's
+  // card. then when you ping, that's when the light pulse goes out"): attacker id -> its line, forked into every guest card that
+  // can take damage
+  const aims = new Map();
+  // each side's lines share one overlay: an <svg class="pingfx"> with a group for grey unused branches under one for the rest
+  const layers = {};
+  function pingLayer(theirs) {
+    const k = theirs ? "theirs" : "mine";
+    if (!layers[k]?.svg.isConnected) {
+      const ns = "http://www.w3.org/2000/svg", svg = document.createElementNS(ns, "svg"), under = document.createElementNS(ns, "g"), over = document.createElementNS(ns, "g");
+      svg.setAttribute("class", theirs ? "pingfx theirs" : "pingfx"); under.setAttribute("class", "under"); over.setAttribute("class", "over");
+      svg.append(under, over); document.body.append(svg); layers[k] = { svg, under, over };
+    }
+    return layers[k];
+  }
   function makePing(btn, targets, theirs) {
     // the card itself (.gc), not its spot: a tapped card lies sideways and smaller inside its spot
     const box = (el) => (el.querySelector(".gc") ?? el).getBoundingClientRect();
-    const a = box(btn), ns = "http://www.w3.org/2000/svg", svg = document.createElementNS(ns, "svg");
-    svg.setAttribute("class", theirs ? "pingfx theirs" : "pingfx"); document.body.append(svg);
+    const a = box(btn), ns = "http://www.w3.org/2000/svg", layer = pingLayer(theirs);
     // the line snakes around the button between the panels, always in sight (kura, Nov 3: "snake around the UI ... but still be
     // always visible"): out of the card to the gap between its panel and the button, along it to the end of the button nearer the
     // card, down (or up) past that end in the page's margin, back along the gap on the other side, then into the target card
@@ -411,21 +440,22 @@ const $ = (id) => document.getElementById(id);
     const gapBy = (el) => { const p = el.closest(".side").getBoundingClientRect(); return p.top < bar.top ? (p.bottom + bar.top) / 2 : (bar.bottom + p.top) / 2; };
     const left = a.left + a.width / 2 <= (bar.left + bar.right) / 2;
     const xm = left ? bar.left - Math.min(8, bar.left / 2) : bar.right + Math.min(8, (innerWidth - bar.right) / 2), yA = gapBy(btn);
-    const branches = targets.map((target) => {
+    const branches = [];
+    const branch = (target) => {
       const t = box(target), up = a.top > t.top;
-      const x1 = a.left + a.width / 2, y1 = up ? a.top : a.bottom, x2 = t.left + t.width / 2, y2 = up ? t.bottom : t.top;
-      const yB = gapBy(target), pts = [[x1, y1], [x1, yA], [xm, yA], [xm, yB], [x2, yB], [x2, y2]];
+      const x1 = a.left + a.width / 2, y1 = up ? a.top : a.bottom, yB = gapBy(target), x2 = t.left + t.width / 2, y2 = up ? t.bottom : t.top;
+      const pts = [[x1, y1], [x1, yA], [xm, yA], [xm, yB], [x2, yB], [x2, y2]];
       const seg = pts.slice(1).map((p, k) => Math.hypot(p[0] - pts[k][0], p[1] - pts[k][1])), len = seg.reduce((n, d) => n + d, 0) || 1;
       const ln = document.createElementNS(ns, "polyline");
       ln.setAttribute("points", pts.map((p) => p.join(",")).join(" "));
-      ln.style.strokeDasharray = len; svg.append(ln);
-      return { target, pts, seg, len, ln };
-    });
+      ln.style.strokeDasharray = len; layer.over.append(ln);
+      const b = { target, pts, seg, len, ln }; branches.push(b); return b;
+    };
     // the line: every branch draws at the same speed, so they part where they fork
-    const longest = Math.max(...branches.map((b) => b.len));
-    for (const b of branches) b.ln.animate([{ strokeDashoffset: b.len }, { strokeDashoffset: 0 }], { duration: PING_DRAW * b.len / longest, fill: "both" });
+    const first = targets.map(branch), longest = Math.max(...first.map((b) => b.len));
+    for (const b of first) b.ln.animate([{ strokeDashoffset: b.len }, { strokeDashoffset: 0 }], { duration: PING_DRAW * b.len / longest, fill: "both" });
     let gone = false;
-    const fade = (delay = 0) => { if (gone) return; gone = true; svg.animate([{ opacity: 1 }, { opacity: 0 }], { duration: PING_FADE, delay, fill: "both" }).onfinish = () => svg.remove(); };
+    const fade = (delay = 0) => { if (gone) return; gone = true; for (const b of branches) b.ln.animate([{ opacity: 1 }, { opacity: 0 }], { duration: PING_FADE, delay, fill: "both" }).onfinish = () => b.ln.remove(); };
     // the point d px along a branch
     const along = (b, d) => {
       for (let k = 0; k < b.seg.length; k++) {
@@ -435,8 +465,7 @@ const $ = (id) => document.getElementById(id);
     };
     function run(to, delay) {
       const go = branches.filter((b) => to.includes(b.target));
-      for (const b of branches) if (!go.includes(b)) b.ln.classList.add("unused");
-      for (const b of go) svg.append(b.ln);   // the used branches on top, so the shared part stays pink
+      for (const b of branches) if (!go.includes(b)) { b.ln.classList.add("unused"); layer.under.append(b.ln); }   // under every line still in use
       if (!go.length) return fade(delay);
       for (const b of go) { b.sp = mk("div", theirs ? "spark theirs" : "spark"); b.sp.style.opacity = 0; document.body.append(b.sp); }
       // how far each branch runs along the longest one: leg by leg, while both start at the same point and head the same way, the
