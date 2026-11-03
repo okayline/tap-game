@@ -10,13 +10,14 @@
 
 // power / toughness by type: the more buttons of a type exist, the weaker it is (kura, Nov 2: counts from the live
 // item table, all active 88x31 buttons: neon 32, guestbook 21, construction 19, counter 17, webring 13, divider 5).
+// Every toughness +1 (kura, Nov 3: matches ended after 1 or 2 rounds).
 export const STATS = {
-  neon: [1, 1],
-  guestbook: [1, 2],
-  construction: [1, 2],
-  counter: [2, 2],
-  webring: [3, 1],
-  divider: [3, 2],
+  neon: [1, 2],
+  guestbook: [1, 3],
+  construction: [1, 3],
+  counter: [2, 3],
+  webring: [3, 2],
+  divider: [3, 3],
 };
 
 export const MAX_ATTACKERS = 2; // at most this many attack in a turn, so one button always stays home (kura, Nov 3)

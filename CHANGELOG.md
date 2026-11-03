@@ -4,6 +4,13 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.32 "Sturdier"
+**Tue Nov 3, 2026 · 12:16 AM HST** (no migration)
+- kura: "too many games end after only 1 or 2 rounds" ... "can we just add 1 point of toughness to everything ?"
+- Changed: every type's toughness is 1 higher: neon 1/2, guestbook 1/3, construction 1/3, counter 2/3, webring 3/2, divider 3/3. The test's numbers follow (the attack now leaves a game going). Footer v0.32.
+- Removed: the old toughness values (neon 1, guestbook 2, construction 2, counter 2, webring 1, divider 2).
+- Not checked: the live site; how long matches now run.
+
 ## v0.31 "Five Lines"
 **Tue Nov 3, 2026 · 12:12 AM HST** (no migration)
 - kura: "for the log panel, can we only show at most 5 lines , and can they only appear one line at a time please"
