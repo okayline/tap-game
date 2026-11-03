@@ -4,6 +4,13 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.26 "Tilt"
+**Mon Nov 2, 2026 · 11:59 PM HST** (no migration)
+- kura: "could we have no glow, and a little smaller, and could it be at more of a diagonal ?"
+- Changed: the corner power/toughness is plain white (no glow), 25% smaller, and tilted 30 degrees up toward the corner. Footer v0.26.
+- Removed: the glow on the corner stats.
+- Not checked: the live site.
+
 ## v0.25 "Corner Stats"
 **Mon Nov 2, 2026 · 11:58 PM HST** (no migration)
 - kura: "could we take the name and toughness line off from under the panels and add the power/toughness like this" (a sketch with "3/1" in the button box's bottom-right corner) "can you make it look nice please !"

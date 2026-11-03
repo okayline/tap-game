@@ -32,9 +32,9 @@
   .btn.sel { outline: 2px solid var(--H); box-shadow: 0 0 16px rgba(255,111,207,.6); }
   .btn.att { outline: 2px solid var(--D); box-shadow: 0 0 16px rgba(90,209,255,.6); }
   .out { opacity: .25; }
-  /* power/life left in the button's bottom-right corner, and damage being placed on it in the top-right */
+  /* power/life left in the button's bottom-right corner, tilted on the diagonal, and damage being placed on it in the top-right */
   .pt, .dmg { position: absolute; font-family: var(--meme); letter-spacing: .5px; line-height: 1; pointer-events: none; }
-  .pt { right: 8px; bottom: 6px; font-size: calc(var(--w) * .16); color: var(--ink); text-shadow: 0 0 8px rgba(176,132,255,.9), 0 0 16px rgba(255,111,207,.5); }
+  .pt { right: 10px; bottom: 10px; font-size: calc(var(--w) * .12); color: var(--ink); transform: rotate(-30deg); transform-origin: 100% 100%; }
   .dmg { right: 8px; top: 6px; font-size: calc(var(--w) * .14); color: var(--H); text-shadow: 0 0 8px var(--H); }
   .bar { text-align: center; }
   /* your status line, at the top of your panel: this turn, then (smaller, at the right) only the end of the match, an error or a disconnect; one line, cut with … if too long */
@@ -62,7 +62,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.25" data-copy="no"></script>
+<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.26" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
