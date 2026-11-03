@@ -4,9 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>UN/TAP</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=EB+Garamond:ital,wght@0,500;0,700;1,500&display=swap" rel="stylesheet">
+<!-- the two fonts are served from this Worker (public/fonts, latin only, from npm's @fontsource; SIL Open Font License), not Google Fonts,
+     so a phone doesn't open two more connections before the page shows (kura, Nov 3) -->
+<link rel="preload" href="/fonts/cinzel-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/eb-garamond-latin-500-normal.woff2" as="font" type="font/woff2" crossorigin>
 <style>
+  @font-face { font-family: Cinzel; font-weight: 600; font-display: swap; src: url(/fonts/cinzel-latin-600-normal.woff2) format("woff2"); }
+  @font-face { font-family: Cinzel; font-weight: 800; font-display: swap; src: url(/fonts/cinzel-latin-800-normal.woff2) format("woff2"); }
+  @font-face { font-family: "EB Garamond"; font-weight: 500; font-display: swap; src: url(/fonts/eb-garamond-latin-500-normal.woff2) format("woff2"); }
+  @font-face { font-family: "EB Garamond"; font-weight: 700; font-display: swap; src: url(/fonts/eb-garamond-latin-700-normal.woff2) format("woff2"); }
+  @font-face { font-family: "EB Garamond"; font-weight: 500; font-style: italic; font-display: swap; src: url(/fonts/eb-garamond-latin-500-italic.woff2) format("woff2"); }
   /* themed "Grimoire Pastel" (kura, Nov 3): each button is a card like a Magic card (name bar, art, type line, text box,
      power/toughness box), in light pastel blues, pinks and cream, with Cinzel and EB Garamond */
   :root {
@@ -199,7 +206,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.88" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.89" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {

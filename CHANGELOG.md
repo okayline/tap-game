@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.89 "Quick Load" · Tue Nov 3, 9:55 AM
+- Faster loading on phones. The fonts (Cinzel and EB Garamond, latin only, from npm's @fontsource, with their Open Font License files) are served from this site's new public/ folder and kept for a year. The shared footer script is deferred, so the game connects without waiting for it. Button pictures come from this site's new /img/N, which fetches each one from 88x31 once, keeps it in Cloudflare's cache and lets the browser keep it for a day. Removed: Google Fonts, the footer script holding up the game, and pictures loaded from 88x31.app/api/img (a database lookup and a redirect on every request).
+
 ## v0.88 "Accept" · Tue Nov 3, 9:35 AM
 - The button for taking a ping says "accept 1" instead of "take 1", and "port 2 more" instead of "place 2 more" while you're still choosing. Removed: the words "take" and "place" on that button.
 

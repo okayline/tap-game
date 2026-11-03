@@ -7,5 +7,7 @@
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Match"] }],
   // the shared item table's deal pool, for the buttons (dungeon-items' Registry entrypoint: dealPool)
   "services": [{ "binding": "REGISTRY", "service": "dungeon-items", "entrypoint": "Registry" }],
-  "rules": [{ "type": "Text", "globs": ["**/*.html"], "fallthrough": true }]
+  "rules": [{ "type": "Text", "globs": ["**/*.html"], "fallthrough": true }],
+  // files in public/ (the fonts) are served as they are, before the Worker runs; public/_headers sets how long browsers keep them
+  "assets": { "directory": "./public" }
 }
