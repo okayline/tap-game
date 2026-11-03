@@ -1,17 +1,21 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { newGame, hit, answer, endTurn } from "../src/rules.js";
+import { newGame, attack, block } from "../src/rules.js";
 
-const three = (p) => [1, 2, 3].map((n) => ({ id: n, name: p + n }));
+// a: webring 3/1, neon 1/1, counter 2/2. b: construction 0/3, divider 3/2, neon 1/1 (hand-set from STATS).
+const A = [{ name: "w", type: "webring" }, { name: "n", type: "neon" }, { name: "c", type: "counter" }];
+const B = [{ name: "k", type: "construction" }, { name: "d", type: "divider" }, { name: "m", type: "neon" }];
 
-test("a button that hit stays tapped through the other turn, so it can't block", () => {
-  const g = newGame(three("a"), three("b"));
-  assert.equal(hit(g, "a", 0), null);
-  assert.equal(answer(g, "b", null), null);
-  assert.equal(g.sides.b.hp, 4);
-  assert.equal(endTurn(g, "a"), null);
-  assert.equal(hit(g, "b", 0), null);
-  assert.equal(answer(g, "a", 0), "That button is tapped.");
-  assert.equal(answer(g, "a", 1), null);
-  assert.equal(g.sides.a.hp, 5);
+test("an attack: blocked fights by power and toughness, unblocked hits hp, attackers stay tapped", () => {
+  const g = newGame(A, B);
+  assert.equal(attack(g, "a", [0, 1, 2]), null);
+  // b: divider (3/2) blocks webring (3/1), construction (0/3) blocks counter (2/2); neon (1/1) gets through
+  assert.equal(block(g, "b", { 1: 0, 0: 2 }), null);
+  assert.equal(g.sides.a.buttons[0].out, true);  // webring takes 3, toughness 1
+  assert.equal(g.sides.b.buttons[1].out, true);  // divider takes 3, toughness 2
+  assert.equal(g.sides.a.buttons[2].out, false); // counter takes 0
+  assert.equal(g.sides.b.buttons[0].out, false); // construction takes 2, toughness 3
+  assert.equal(g.sides.b.hp, 4);                 // neon's 1
+  assert.equal(g.turn, "b");
+  assert.equal(g.sides.a.buttons[2].tapped, true);
 });

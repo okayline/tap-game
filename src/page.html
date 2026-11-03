@@ -15,6 +15,9 @@
   .btn img { width: 88px; height: 31px; image-rendering: pixelated; transition: transform .2s, filter .2s; transform: rotate(90deg); filter: grayscale(1) brightness(.8); }
   .btn.tapped img { transform: none; filter: none; }
   .btn.can { cursor: pointer; outline: 2px dashed #00e; }
+  .btn.sel { outline: 2px solid #a00; }
+  .btn.att { outline: 2px solid #e60; }
+  .out { opacity: .25; }
   .name { font-size: 11px; text-align: center; width: 88px; }
   .bar { margin: 8px 0; }
   button.act { font: inherit; padding: 4px 10px; }
@@ -27,7 +30,7 @@
 <div id="game">
   <div class="side"><div id="themHp"></div><div class="row" id="them"></div></div>
   <div class="bar"><span id="status"></span> <span id="timer"></span> <span id="err" class="err"></span></div>
-  <div class="bar"><button class="act" id="take" hidden>take the hit</button> <button class="act" id="end" hidden>end turn</button></div>
+  <div class="bar"><button class="act" id="attack" hidden>attack</button> <button class="act" id="block" hidden>block</button></div>
   <div class="side"><div id="meHp"></div><div class="row" id="me"></div></div>
   <div id="log"></div>
 </div>
@@ -43,38 +46,58 @@ const $ = (id) => document.getElementById(id);
     g = d.g; $("err").textContent = ""; draw();
   };
   ws.onclose = () => { $("status").textContent = "disconnected: reload"; };
-  $("take").onclick = () => send({ do: "take" });
-  $("end").onclick = () => send({ do: "end" });
+  let picked = new Set(), blocks = {}, chosen = null, seen = "";
+  $("attack").onclick = () => send({ do: "attack", idxs: [...picked] });
+  $("block").onclick = () => send({ do: "block", blocks });
 
   function draw() {
-    const me = "a", them = "b";
-    const blocking = g.pending && g.pending.by === them;
-    const myTurn = g.turn === me && !g.pending && !g.winner;
-    row($("me"), g.sides[me].buttons, (b) => !b.tapped && (myTurn || blocking), (i) => send({ do: blocking ? "block" : "hit", i }));
-    row($("them"), g.sides[them].buttons, () => false);
+    const me = "a", them = "b", mine = g.sides[me].buttons, theirs = g.sides[them].buttons;
+    const key = `${g.turn}|${g.attack ? g.attack.by : ""}|${g.log.length}`;
+    if (key !== seen) { seen = key; picked = new Set(); blocks = {}; chosen = null; } // a new step: clear picks
+    const blocking = g.attack && g.attack.by === them && !g.winner;
+    const myTurn = g.turn === me && !g.attack && !g.winner;
+    const ready = (b) => !b.out && !b.tapped;
+    // your row: on your turn click to pick attackers (they show tapped); when blocking click a button, then an attacker
+    row($("me"), mine, (b, i) => {
+      if (myTurn && ready(b)) return { can: true, tapped: picked.has(i), click: () => { picked.has(i) ? picked.delete(i) : picked.add(i); draw(); } };
+      if (blocking && ready(b)) {
+        const on = blocks[i];
+        return { can: true, sel: chosen === i, note: on !== undefined ? `blocks ${theirs[on].name}` : "",
+          click: () => { if (on !== undefined) delete blocks[i]; else chosen = chosen === i ? null : i; draw(); } };
+      }
+      return {};
+    });
+    row($("them"), theirs, (b, i) => {
+      const att = blocking && g.attack.attackers.includes(i);
+      return att ? { att: true, can: chosen !== null, click: () => { if (chosen !== null) { blocks[chosen] = i; chosen = null; draw(); } } } : {};
+    });
     $("meHp").textContent = `you · hp ${g.sides[me].hp}`;
     $("themHp").textContent = `dummy · hp ${g.sides[them].hp}`;
-    $("status").textContent = g.winner ? (g.winner === me ? "you win" : "you lose")
-      : blocking ? "they hit: click a ready button to block" : g.pending ? "waiting for their block" : g.turn === me ? "your turn: click a ready button to hit" : "their turn";
-    $("take").hidden = !blocking;
-    $("end").hidden = !myTurn;
+    $("status").textContent = g.winner ? (g.winner === me ? "you win (reload the main page for a new match)" : "you lose (reload the main page for a new match)")
+      : blocking ? "they attack: click your button, then the attacker it blocks; then block"
+      : myTurn ? "your turn: click buttons to tap them, then attack (none = pass)" : "their turn";
+    $("attack").hidden = !myTurn;
+    $("block").hidden = !blocking;
     $("log").textContent = g.log.slice(-30).join("\n");
     $("log").scrollTop = 1e9;
   }
-  function row(el, buttons, can, click) {
+  function row(el, buttons, how) {
     el.innerHTML = "";
     buttons.forEach((b, i) => {
+      const h = how(b, i);
       const wrap = document.createElement("div");
+      if (b.out) wrap.className = "out";
       const btn = document.createElement("button");
-      btn.className = "btn" + (b.tapped ? " tapped" : "") + (can(b) ? " can" : "");
+      btn.className = "btn" + (b.tapped || h.tapped ? " tapped" : "") + (h.can ? " can" : "") + (h.sel ? " sel" : "") + (h.att ? " att" : "");
       const img = document.createElement("img"); img.alt = ""; img.src = b.image; btn.append(img);
-      if (can(b)) btn.onclick = () => click(i);
-      const n = document.createElement("div"); n.className = "name"; n.textContent = `${b.name} · ${b.type}`;
+      if (h.click) btn.onclick = h.click;
+      const n = document.createElement("div"); n.className = "name";
+      n.textContent = `${b.name} · ${b.type} ${b.power}/${b.toughness}${b.out ? " · out" : ""}${h.note ? " · " + h.note : ""}`;
       wrap.append(btn, n); el.append(wrap);
     });
   }
   setInterval(() => {
-    $("timer").textContent = g && g.pending && g.pending.until ? Math.max(0, Math.ceil((g.pending.until - Date.now()) / 1000)) + "s" : "";
+    $("timer").textContent = g && g.attack && g.attack.until ? Math.max(0, Math.ceil((g.attack.until - Date.now()) / 1000)) + "s" : "";
   }, 200);
 }
 </script>

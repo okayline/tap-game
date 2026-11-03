@@ -2,8 +2,8 @@
 //   GET /                 a new match against the scripted dummy (src/dummy.js): redirects to it
 //   GET /m/<id>           the match page; GET /m/<id>/ws the match's WebSocket. You are seat a in every tab; the dummy is b.
 import { DurableObject } from "cloudflare:workers";
-import { newGame, hit, answer, endTurn, other, BLOCK_MS } from "./rules.js";
-import { step, dummyBlock } from "./dummy.js";
+import { newGame, attack, block, other, BLOCK_MS } from "./rules.js";
+import { dummyAttack, dummyBlocks } from "./dummy.js";
 import PAGE from "./page.html";
 
 export default {
@@ -53,10 +53,8 @@ export class Match extends DurableObject {
     let a;
     try { a = JSON.parse(msg); } catch { return; }
     const err =
-      a.do === "hit" ? hit(g, seat, a.i) :
-      a.do === "block" ? answer(g, seat, a.i) :
-      a.do === "take" ? answer(g, seat, null) :
-      a.do === "end" ? endTurn(g, seat) : "Unknown action.";
+      a.do === "attack" && Array.isArray(a.idxs) ? attack(g, seat, a.idxs) :
+      a.do === "block" && a.blocks && typeof a.blocks === "object" ? block(g, seat, a.blocks) : "Unknown action.";
     if (err) return ws.send(JSON.stringify({ error: err }));
     await this.save(g);
   }
@@ -64,32 +62,26 @@ export class Match extends DurableObject {
   // Save, run the dummy if it's its move, set the block timer, and send the board to everyone.
   async save(g) {
     this.dummy(g);
-    if (g.pending && !g.pending.until) g.pending.until = Date.now() + BLOCK_MS;
+    if (g.attack && !g.attack.until) g.attack.until = Date.now() + BLOCK_MS;
     await this.ctx.storage.put("g", g);
-    if (g.pending) await this.ctx.storage.setAlarm(g.pending.until);
+    if (g.attack) await this.ctx.storage.setAlarm(g.attack.until);
     for (const ws of this.ctx.getWebSockets()) ws.send(JSON.stringify({ g }));
   }
 
-  // The dummy is seat b. It answers your hits at once, and plays its turn by SCRIPT one hit at a time
-  // (each of its hits waits for your block before the next).
+  // The dummy is seat b: it blocks your attack at once, then (its turn) attacks by SCRIPT and waits for your blocks.
   dummy(g) {
-    if (g.winner) return;
-    if (g.pending && g.pending.by === "a") return void answer(g, "b", dummyBlock(g, "b"));
-    if (g.turn !== "b" || g.pending) return;
-    g.hitsDone = g.hitsDone ?? 0;
-    const plan = step(g);
-    const readyIdx = g.sides.b.buttons.findIndex((b) => !b.tapped);
-    if (g.hitsDone < plan.hits && readyIdx >= 0) { g.hitsDone++; return void hit(g, "b", readyIdx); }
-    g.hitsDone = 0;
-    g.dummyTurn++;
-    endTurn(g, "b");
+    for (let guard = 0; guard < 4 && !g.winner; guard++) {
+      if (g.attack && g.attack.by === "a") { block(g, "b", dummyBlocks(g)); continue; }
+      if (g.turn === "b" && !g.attack) { attack(g, "b", dummyAttack(g)); g.dummyTurn++; continue; }
+      return;
+    }
   }
 
-  // The block moment ran out: the hit lands.
+  // The block moment ran out: whatever wasn't blocked lands.
   async alarm() {
     const g = await this.ctx.storage.get("g");
-    if (!g?.pending || Date.now() < g.pending.until) return;
-    answer(g, other(g.pending.by), null);
+    if (!g?.attack || Date.now() < g.attack.until) return;
+    block(g, other(g.attack.by), {});
     await this.save(g);
   }
 }
