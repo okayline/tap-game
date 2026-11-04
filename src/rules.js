@@ -5,7 +5,7 @@
 // Your turn: your buttons untap; you pick up to MAX_ATTACKERS ready buttons to attack and press attack (they tap).
 // The other side then places each attacker's power on its own buttons, any way it likes (no time limit).
 // Each of its untapped buttons that takes damage hits back with its power, at the attacker that hit it; a button hit by both
-// attackers hits back only one of them, the one the defender picks (kura, Nov 3). Hit-back past an attacker's life is lost.
+// attackers hits back only one of them, picked by backAt(). Hit-back past an attacker's life is lost.
 // A button only untaps at the start of its own side's turn, so attacking with it means it can't hit back next turn.
 // (kura, Nov 2: "the buttons are the HP !!!")
 // Decks (kura, Nov 3): each side has DECK buttons, 3 on the field and the rest in its deck. Both decks hold the same types
@@ -173,10 +173,23 @@ export function attack(g, seat, idxs) {
   return null;
 }
 
+// Which attacker a button hits back when more than one hit it (kura, Nov 3: chosen automatically, no click): the one its hit-back
+// would knock out, if only one; else the one with the least life left; else the one that put the most damage on it; else the
+// first picked. by: [attackerIndex, attacker, damage it put on this button], in the order they were picked; power: its hit-back.
+// The page has the same function.
+export function backAt(power, by) {
+  const out = by.filter(([, a]) => power >= life(a));
+  const pool = out.length === 1 ? out : by;
+  const low = Math.min(...pool.map(([, a]) => life(a)));
+  const lows = pool.filter(([, a]) => life(a) === low);
+  const most = Math.max(...lows.map(([, , d]) => d));
+  return lows.find(([, , d]) => d === most)[0];
+}
+
 // The defender places the attack: split is { attackerIndex: { buttonIndex: damage } }, each attacker's part no more than its power,
-// adding up to toPlace(g), no button past its life. aim is { buttonIndex: attackerIndex }: which attacker a button hit by more than
-// one hits back (kura, Nov 3: "choose one"); a button hit by one attacker hits back that one.
-export function place(g, seat, split, aim = {}) {
+// adding up to toPlace(g), no button past its life. A button hits back the attacker that hit it; one hit by more than one hits
+// back the one backAt() picks.
+export function place(g, seat, split) {
   if (!g.attack || g.attack.by === seat) return "Nothing to take.";
   const by = g.attack.by, att = g.sides[by], def = g.sides[seat];
   if (!split || typeof split !== "object") return "Nothing placed.";
@@ -202,12 +215,7 @@ export function place(g, seat, split, aim = {}) {
   const backBy = (b) => (!b.tapped ? b.power : DAEMON.includes(b.type) ? 1 : 0);
   const hits = ([i, d]) => backBy(def.buttons[i]) > 0 && !(ping && d >= life(def.buttons[i]));
   const target = {};   // target[button]: the attacker it hits back
-  for (const p of parts) {
-    if (!hits(p)) continue;
-    const [i] = p, t = from[i].length === 1 ? from[i][0] : Number(aim?.[i]);
-    if (!from[i].includes(t)) return `Pick which ping ${def.buttons[i].name} hits back.`;
-    target[i] = t;
-  }
+  for (const p of parts) if (hits(p)) target[p[0]] = backAt(backBy(def.buttons[p[0]]), from[p[0]].map((a) => [a, att.buttons[a], split[a][p[0]]]));
   const back = {};   // back[attacker]: hit-back aimed at it
   for (const [i, d] of parts) {
     const b = def.buttons[i], t = target[i];

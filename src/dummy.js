@@ -20,8 +20,8 @@ const readyIdx = (side) => side.buttons.map((b, i) => (b.out || b.tapped || (b.s
 // Its attackers this turn.
 export const dummyAttack = (g) => readyIdx(g.sides.b).slice(0, Math.min(line(g.dummyTurn).attack, g.limit));
 
-// How it places your attack: [split, aim] for place(). It works out each button's damage by its plan, then takes it from the
-// attackers in order; a button hit by both hits back the first of them.
+// How it places your attack: { attackerIndex: { buttonIndex: damage } }. It works out each button's damage by its plan, then takes
+// it from the attackers in order.
 export function dummyPlace(g) {
   const plan = line(g.dummyTurn - 1), bs = g.sides.b.buttons;
   const alive = bs.map((b, i) => i).filter((i) => !bs[i].out);
@@ -35,15 +35,14 @@ export function dummyPlace(g) {
     while (left > 0) for (const i of order) if (left > 0 && room(i) > 0) { split[i] = (split[i] ?? 0) + 1; left--; }
   }
   const att = g.sides[g.attack.by].buttons, power = Object.fromEntries(g.attack.attackers.map((a) => [a, att[a].power]));   // left to place, per attacker
-  const byAtt = {}, aim = {};
+  const byAtt = {};
   for (const [k, d0] of Object.entries(split)) {
     let d = d0;
     for (const a of g.attack.attackers) {
       const n = Math.min(d, power[a]);
       if (!n) continue;
       (byAtt[a] ??= {})[k] = n; power[a] -= n; d -= n;
-      aim[k] ??= a;
     }
   }
-  return [byAtt, aim];
+  return byAtt;
 }

@@ -215,7 +215,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.97" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.98" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -338,9 +338,9 @@ const $ = (id) => document.getElementById(id);
       const d = document.createElement("div"); d.textContent = `C:\\> ${t}`; d.style.opacity = 1 - k * 0.125; return d;   // a DOS prompt before each line (kura, Nov 3)
     }));
   }
-  let picked = new Set(), split = {}, aim = {}, cur = null, seen = "";   // split[attacker][button]: damage; aim[button]: attacker it hits back; cur: the attacker being placed
+  let picked = new Set(), split = {}, cur = null, seen = "";   // split[attacker][button]: damage; cur: the attacker being placed
   $("attack").onclick = () => { lastPing = [...picked]; send({ do: "attack", idxs: lastPing }); };   // kept for the replay
-  $("take").onclick = () => send({ do: "take", split, aim });
+  $("take").onclick = () => send({ do: "take", split });
   $("start").onclick = () => send({ do: "start" });
   $("again").onclick = () => location.assign("/"); // the main page starts a new match
   // the big card (kura, Nov 3): press and hold a card or deck button still for HOLD_MS (or rest the mouse on it for HOVER_MS) to see it whole, with its
@@ -377,7 +377,7 @@ const $ = (id) => document.getElementById(id);
   function draw() {
     const me = "a", them = "b", mine = g.sides[me].buttons, theirs = g.sides[them].buttons;
     const key = `${g.turn}|${g.attack ? g.attack.by : ""}|${g.log.length}|${mine.map((b) => b.id).join()}`;
-    if (key !== seen) { seen = key; picked = new Set(); split = {}; aim = {}; cur = null; } // a new step: clear picks
+    if (key !== seen) { seen = key; picked = new Set(); split = {}; cur = null; } // a new step: clear picks
     const taking = !playing && g.attack && g.attack.by === them && !g.winner;   // while a replay plays, nothing can be clicked
     const life = (b) => (b.out ? 0 : b.toughness + (b.bonus ?? 0) - b.damage);   // rules.js life (bonus: Glow)
     const myTurn = !playing && g.turn === me && !g.attack && !g.winner;
@@ -387,13 +387,20 @@ const $ = (id) => document.getElementById(id);
     const sum = (o) => Object.values(o ?? {}).reduce((n, d) => n + d, 0);
     const placed = Object.values(split).reduce((n, part) => n + sum(part), 0);
     // placing their ping (kura, Nov 3): one attacker's power at a time (cur, picked by clicking their card; the next one with power
-    // left once it's all placed). A button hits back the attacker that hit it; one hit by both hits back the one shown by its arrow.
+    // left once it's all placed). A button hits back the attacker that hit it; one hit by both shows an arrow at the one it hits back.
     const attackers = taking ? g.attack.attackers : [];
     const leftOf = (a) => theirs[a].power - sum(split[a]);
     if (taking && (cur === null || leftOf(cur) <= 0)) cur = attackers.find((a) => leftOf(a) > 0) ?? null;
     const tot = (i) => attackers.reduce((n, a) => n + (split[a]?.[i] ?? 0), 0);
     const hitBy = (i) => attackers.filter((a) => split[a]?.[i]);
-    const backs = (b) => !b.tapped || DAEMON.includes(b.type);   // rules.js backBy
+    const backBy = (b) => (!b.tapped ? b.power : DAEMON.includes(b.type) ? 1 : 0);   // rules.js backBy
+    // rules.js backAt: the attacker its hit-back would knock out, if only one; else the least life left; else the most damage on it; else the first
+    const backAt = (power, by) => {
+      const out = by.filter(([, a]) => power >= life(a)), pool = out.length === 1 ? out : by;
+      const low = Math.min(...pool.map(([, a]) => life(a))), lows = pool.filter(([, a]) => life(a) === low);
+      const most = Math.max(...lows.map(([, , d]) => d));
+      return lows.find(([, , d]) => d === most)[0];
+    };
     const ARROW = ["↖", "↑", "↗"];   // toward the attacker's spot in their row
     // your row: on your turn click to pick up to g.limit attackers (1 on the match's first turn, then 2; they show tapped; no more can be picked); when they attack, each click puts 1 damage on
     // that button (up to its life left; one more click clears it)
@@ -402,15 +409,12 @@ const $ = (id) => document.getElementById(id);
     row($("me"), mine, att, (b, i) => {
       if (myTurn && ready(b) && (!b.sick || BROAD.includes(b.type)) && (picked.has(i) || picked.size < g.limit)) return { can: true, tapped: picked.has(i) && !ONLINE.includes(b.type), sel: picked.has(i) && ONLINE.includes(b.type), click: () => { picked.has(i) ? picked.delete(i) : picked.add(i); draw(); } };
       if (taking && !b.out) {
-        const d = tot(i), by = hitBy(i), both = by.length > 1 && backs(b);
-        const clear = () => { for (const a of attackers) if (split[a]) delete split[a][i]; delete aim[i]; };
-        return { can: true, sel: d > 0, note: d ? `-${d}${both ? ` ${ARROW[aim[i]] ?? ""}` : ""}` : "",
+        const d = tot(i), by = hitBy(i), power = backBy(b);
+        const at = by.length > 1 && power > 0 ? backAt(power, by.map((a) => [a, theirs[a], split[a][i]])) : null;
+        return { can: true, sel: d > 0, note: d ? `-${d}${at !== null ? ` ${ARROW[at] ?? ""}` : ""}` : "",
           click: () => {
-            if (d < life(b) && placed < need && cur !== null) {
-              (split[cur] ??= {})[i] = (split[cur][i] ?? 0) + 1;
-              if (hitBy(i).length > 1) aim[i] ??= hitBy(i)[0];
-            } else if (both && aim[i] === by[0]) aim[i] = by[1];   // a button hit by both: the next click turns its hit-back to the other one
-            else clear();
+            if (d < life(b) && placed < need && cur !== null) (split[cur] ??= {})[i] = (split[cur][i] ?? 0) + 1;
+            else for (const a of attackers) if (split[a]) delete split[a][i];
             draw();
           } };
       }

@@ -82,7 +82,7 @@ export class Match extends DurableObject {
     try { a = JSON.parse(msg); } catch { return; }
     const err =
       a.do === "attack" && Array.isArray(a.idxs) ? attack(g, seat, a.idxs) :
-      a.do === "take" && a.split && typeof a.split === "object" ? place(g, seat, a.split, a.aim) :
+      a.do === "take" && a.split && typeof a.split === "object" ? place(g, seat, a.split) :
       a.do === "swap" ? swap(g, seat, a.i, a.j) :
       a.do === "start" ? (g.locked || g.turn !== "b" ? "Nothing to start." : ((g.locked = true), null)) : "Unknown action.";
     if (err) return ws.send(JSON.stringify({ error: err }));
@@ -101,7 +101,7 @@ export class Match extends DurableObject {
   // your attack), then attacks by SCRIPT and waits for you to place it.
   dummy(g) {
     if (g.winner) return;
-    if (g.attack && g.attack.by === "a") place(g, "b", ...dummyPlace(g));
+    if (g.attack && g.attack.by === "a") place(g, "b", dummyPlace(g));
     if (g.winner || g.turn !== "b" || g.attack || g.locked === false) return; // false: waiting for start (older matches have no lock)
     if (!g.dummyAt) { g.dummyAt = Date.now() + PAUSE_MS; return; }
     if (Date.now() < g.dummyAt) return;

@@ -15,15 +15,13 @@ test("each attacker's ping is placed on the defender's buttons; a button hits ba
   assert.equal(place(g, "b", { 0: { 0: 2 }, 2: { 1: 2 } }), "Place exactly 5.");
   assert.equal(place(g, "b", { 0: { 0: 1 }, 2: { 1: 4 } }), "c only pings for 2.");
   assert.equal(place(g, "b", { 1: { 0: 5 } }), "That button isn't pinging.");
-  // webring puts 2 on construction and 1 on divider; counter puts 2 on divider (3: out). Divider was hit by both, so b picks.
-  const split = { 0: { 0: 2, 1: 1 }, 2: { 1: 2 } };
-  assert.equal(place(g, "b", split), "Pick which ping d hits back.");
-  assert.equal(place(g, "b", split, { 1: 1 }), "Pick which ping d hits back.");   // neon didn't hit it
-  assert.equal(place(g, "b", split, { 1: 2 }), null);   // divider hits back counter
+  // webring puts 2 on construction and 1 on divider; counter puts 2 on divider (3: out). Divider was hit by both: its 3 would knock
+  // out either (webring 2 life, counter 3), so it hits the one with the least life left, webring
+  assert.equal(place(g, "b", { 0: { 0: 2, 1: 1 }, 2: { 1: 2 } }), null);
   assert.deepEqual(g.sides.b.buttons.map((b) => b.out), [false, true, false]);
-  // construction hits back webring for 1 (1 left); divider's 3 all go to counter (out); neon takes nothing
-  assert.deepEqual(g.sides.a.buttons.map((b) => b.out), [false, false, true]);
-  assert.equal(g.sides.a.buttons[0].damage, 1);
+  // construction hits back webring for 1 and divider for 3: webring takes 2 (out, 2 lost); counter takes nothing; neon takes nothing
+  assert.deepEqual(g.sides.a.buttons.map((b) => b.out), [true, false, false]);
+  assert.equal(g.sides.a.buttons[2].damage, 0);
   assert.equal(g.winner, null);
   assert.equal(g.turn, "b");
   assert.equal(g.sides.b.buttons[0].damage, 2);      // damage stays
@@ -79,12 +77,20 @@ test("decks: same types on both sides; swaps until the first attack; out buttons
   assert.equal(swap(g, "b", 0, 0), "Only on your turn, before you ping.");
 });
 
-test("the dummy places each attacker's ping and picks a hit-back for a button hit by both", async () => {
+test("a button hit by both hits back: the one it can knock out, then the least life left, then the most damage on it", async () => {
+  const { backAt } = await import("../src/rules.js");
+  const a = (life) => ({ toughness: life, damage: 0, out: false });
+  assert.equal(backAt(2, [[0, a(3), 1], [2, a(2), 1]]), 2);   // knocks out only the second
+  assert.equal(backAt(1, [[0, a(2), 1], [2, a(3), 1]]), 0);   // knocks out neither: least life left
+  assert.equal(backAt(3, [[0, a(2), 1], [2, a(2), 2]]), 2);   // knocks out both, same life: the most damage on it
+  assert.equal(backAt(3, [[0, a(2), 1], [2, a(2), 1]]), 0);   // all the same: the first picked
+});
+
+test("the dummy places each attacker's ping", async () => {
   const { dummyPlace } = await import("../src/dummy.js");
   const g = newGame(A, B, "a");
   g.limit = 2; g.dummyTurn = 1;   // SCRIPT line 0: spread
   attack(g, "a", [0, 2]);
-  const [split, aim] = dummyPlace(g);
-  assert.equal(place(g, "b", split, aim), null);
+  assert.equal(place(g, "b", dummyPlace(g)), null);
   assert.equal(g.turn, "b");
 });
