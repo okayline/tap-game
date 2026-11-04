@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.114 "No Arrows" · Tue Nov 3, 7:40 PM
+- While you place a ping, a button hit by both attackers shows only its damage; it still hits back the one the rule picks. Removed: the arrow (↖ ↑ ↗) pointing at the attacker it would hit back.
+
 ## v0.113 "Top Of The Deck" · Tue Nov 3, 7:45 PM
 - Each side's deck is shuffled on its own, like a Magic library: both decks still hold the same kinds of buttons, in different orders, and the top 3 start on the field. A knocked-out spot is filled by the top card at the start of its side's next turn, with no choice (kura, Nov 3: "i don't really choose which button goes in anyways"). Your one swap a turn is now: drag your top card onto a field button; that button goes to the bottom of your deck. Your deck row shows your deck in order, top first; the guest's deck lies face down in the card back's stripes, and its knocked-out buttons stay face up.
 - Removed: choosing which deck button fills a knocked-out spot (and the "bring in a button" step before pinging), swapping in any deck button, free swaps before the first ping, both decks in the same order, and seeing the guest's deck.

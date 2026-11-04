@@ -234,7 +234,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.113" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.114" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -435,21 +435,11 @@ const $ = (id) => document.getElementById(id);
     const sum = (o) => Object.values(o ?? {}).reduce((n, d) => n + d, 0);
     const placed = Object.values(split).reduce((n, part) => n + sum(part), 0);
     // placing their ping (kura, Nov 3): one attacker's power at a time (cur, picked by clicking their card; the next one with power
-    // left once it's all placed). A button hits back the attacker that hit it; one hit by both shows an arrow at the one it hits back.
+    // left once it's all placed). A button hits back the attacker that hit it (rules.js backAt picks for one hit by both).
     const attackers = taking ? g.attack.attackers : [];
     const leftOf = (a) => theirs[a].power - sum(split[a]);
     if (taking && (cur === null || leftOf(cur) <= 0)) cur = attackers.find((a) => leftOf(a) > 0) ?? null;
     const tot = (i) => attackers.reduce((n, a) => n + (split[a]?.[i] ?? 0), 0);
-    const hitBy = (i) => attackers.filter((a) => split[a]?.[i]);
-    const backBy = (b) => (!b.tapped ? b.power : fxOf(b) === "daemon" ? 1 : 0);   // rules.js backBy
-    // rules.js backAt: the attacker its hit-back would knock out, if only one; else the least life left; else the most damage on it; else the first
-    const backAt = (power, by) => {
-      const out = by.filter(([, a]) => power >= life(a)), pool = out.length === 1 ? out : by;
-      const low = Math.min(...pool.map(([, a]) => life(a))), lows = pool.filter(([, a]) => life(a) === low);
-      const most = Math.max(...lows.map(([, , d]) => d));
-      return lows.find(([, , d]) => d === most)[0];
-    };
-    const ARROW = ["↖", "↑", "↗"];   // toward the attacker's spot in their row
     // your row: on your turn click to pick up to g.limit attackers (1 on the match's first turn, then 2; they show tapped; no more can be picked); when they attack, each click puts 1 damage on
     // that button (up to its life left; one more click clears it)
     // lit attackers: the replay's, or theirs while you place their ping
@@ -459,9 +449,8 @@ const $ = (id) => document.getElementById(id);
         // a click picks it; with Exert, a second click exerts it (×2); the next click puts it back
         click: () => { if (!picked.has(i)) picked.add(i); else if (b.extra === "exert" && !exerting.has(i)) exerting.add(i); else { picked.delete(i); exerting.delete(i); } draw(); } };
       if (taking && !b.out && !b.phased) {
-        const d = tot(i), by = hitBy(i), power = backBy(b);
-        const at = by.length > 1 && power > 0 ? backAt(power, by.map((a) => [a, theirs[a], split[a][i]])) : null;
-        return { can: true, sel: d > 0, note: d ? `-${d}${at !== null ? ` ${ARROW[at] ?? ""}` : ""}` : "",
+        const d = tot(i);
+        return { can: true, sel: d > 0, note: d ? `-${d}` : "",
           click: () => {
             if (d < life(b) && placed < need && cur !== null) (split[cur] ??= {})[i] = (split[cur][i] ?? 0) + 1;
             else for (const a of attackers) if (split[a]) delete split[a][i];

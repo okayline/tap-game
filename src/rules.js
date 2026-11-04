@@ -188,7 +188,6 @@ export function attack(g, seat, idxs, exert = []) {
 // Which attacker a button hits back when more than one hit it (kura, Nov 3: chosen automatically, no click): the one its hit-back
 // would knock out, if only one; else the one with the least life left; else the one that put the most damage on it; else the
 // first picked. by: [attackerIndex, attacker, damage it put on this button], in the order they were picked; power: its hit-back.
-// The page has the same function.
 export function backAt(power, by) {
   const out = by.filter(([, a]) => power >= life(a));
   const pool = out.length === 1 ? out : by;
