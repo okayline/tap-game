@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.133 "Own Kind" · Tue Nov 3, 11:58 PM
+- Glow and Webcounter count other buttons of their own type: a Webring with Glow gets +0/+1 for each other Webring on your field. Removed: Glow always counting Neons, and Webcounter always counting Guestbooks (itself included).
+
 ## v0.132 "Three More" · Tue Nov 3, 11:55 PM
 - Three new printed effects: Virus (any damage it deals knocks a button out), Read-Only (can't ping; takes 1 less from each ping) and Backup (the first time it's knocked out, it's back with 1 life). No button has them yet. Removed: nothing.
 

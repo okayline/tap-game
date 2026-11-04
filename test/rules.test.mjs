@@ -197,3 +197,12 @@ test("Virus knocks out what it damages; Read-Only can't ping and takes 1 less; B
   A_[2].damage += 1; settle(g);
   assert.equal(A_[2].out, true);                       // only once
 });
+
+test("Glow and Webcounter count the other buttons of their own type", () => {
+  const a = [{ name: "g", type: "webring", fx: "glow" }, { name: "w", type: "webring", fx: "none" }, { name: "n", type: "neon", fx: "none" }];
+  const b = [{ name: "c", type: "guestbook", fx: "webcounter" }, { name: "d", type: "guestbook", fx: "none" }, { name: "e", type: "neon", fx: "glow" }];
+  const g = newGame(a, b, "a");
+  assert.equal(g.sides.a.buttons[0].bonus, 1);   // one other Webring; the Neon doesn't count
+  assert.equal(g.sides.b.buttons[0].boost, 1);   // one other Guestbook, not itself
+  assert.equal(g.sides.b.buttons[2].bonus, 0);   // the only Neon on its side
+});

@@ -34,9 +34,10 @@ export const DECK = 9; // 3 on the field, 6 in the deck row (kura, Nov 3)
 // the type (kura, Nov 3: "it feels kind of stale having the same effects every game"; Magic prints an ability on each card).
 //   online:     Always Online (Magic's vigilance): pinging doesn't tap it, so it can still hit back on the other side's turn
 //   broadband:  Broadband (Magic's haste): it can ping the turn it comes in
-//   webcounter: Webcounter: +1/+0 for each Guestbook on its side's field (b.boost, kept by settle()); it names a type, as Magic's
-//               cards name creature types
-//   glow:       Glow: +0/+1 for each other Neon on its side's field (b.bonus, kept by settle())
+//   webcounter: Webcounter: +1/+0 for each other button of its own type on its side's field (b.boost, kept by settle())
+//   glow:       Glow: +0/+1 for each other button of its own type on its side's field (b.bonus, kept by settle())
+//               (kura, Nov 3: Glow "correspond to the card's own type", "change webcounter too"; before, Glow counted Neons and
+//               Webcounter every Guestbook, itself included)
 //   lagspike:   Lag Spike (Magic's first strike): when a ping has one, a button the ping knocks out doesn't hit back
 //   daemon:     Daemon: hits back for 1 even while tapped (an untapped one hits back with its power, like any)
 // Printed only (kura, Nov 3: "only 6 effects spread over 70 buttons is too thin"; not in FX, so rares and up don't roll them):
@@ -127,15 +128,15 @@ export function newGame(deckA, deckB, first = Math.random() < 0.5 ? "a" : "b") {
 }
 
 // Glow and Webcounter: give each field button its bonus toughness and power (deck buttons get none), then put out any field button
-// whose life is gone, again until nothing changes (a Neon going out lowers the others' bonus; a Guestbook going out lowers a Counter's power).
+// whose life is gone, again until nothing changes (a button going out lowers the bonus of the others of its type).
 export function settle(g) {
   for (let changed = true; changed;) {
     changed = false;
     for (const s of Object.values(g.sides)) {
       for (const b of s.deck ?? []) { b.bonus = 0; b.boost = 0; b.power = STATS[b.type]?.[0] ?? 1; }
-      const here = s.buttons.filter((b) => !b.out && !b.phased), books = here.filter((b) => b.type === "guestbook").length;
-      for (const b of s.buttons) { b.boost = !b.out && fxOf(b) === "webcounter" ? books : 0; b.power = (STATS[b.type]?.[0] ?? 1) + b.boost + (b.temp ?? 0); }
-      for (const b of s.buttons) b.bonus = !b.out && fxOf(b) === "glow" ? here.filter((x) => x !== b && x.type === "neon").length : 0;
+      const here = s.buttons.filter((b) => !b.out && !b.phased), kin = (b) => here.filter((x) => x !== b && x.type === b.type).length;
+      for (const b of s.buttons) { b.boost = !b.out && fxOf(b) === "webcounter" ? kin(b) : 0; b.power = (STATS[b.type]?.[0] ?? 1) + b.boost + (b.temp ?? 0); }
+      for (const b of s.buttons) b.bonus = !b.out && fxOf(b) === "glow" ? kin(b) : 0;
       for (const b of s.buttons) if (knock(g, b)) changed = true;
     }
   }
