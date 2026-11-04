@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.97 "Slower Hover" · Tue Nov 3, 6:17 PM
+- With a mouse, the big card opens after resting on a card for 1 second; holding on a phone is unchanged (about half a second). Removed: the 0.8-second mouse hover.
+
 ## v0.96 "Slow Hover" · Tue Nov 3, 6:12 PM
 - With a mouse, the big card opens after resting on a card for 0.8 seconds; holding on a phone still opens it after about half a second. The footer shows this version (v0.95 went out with the footer still saying v0.94). Removed: the half-second mouse hover, and the footer's old v0.94.
 
