@@ -229,7 +229,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.107" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.108" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -646,10 +646,10 @@ const $ = (id) => document.getElementById(id);
     el.innerHTML = "";
     for (const { b, j, gone } of rowOf(side)) {
       if (gone) {
-        const card = document.createElement("div"); card.className = "card gone"; card.title = `${b.name} (out)`;
+        const card = document.createElement("div"); card.className = "card gone";
         card.append(still(b, "")); zoomable(card, () => b); el.append(card); continue;
       }
-      const card = document.createElement("div"); card.className = "card"; card.title = `${b.name} ${b.power}/${b.toughness - b.damage}`;
+      const card = document.createElement("div"); card.className = "card";
       const img = document.createElement("img"); img.alt = ""; img.src = b.image;
       const pt = document.createElement("span"); pt.className = "dpt"; pt.append(...ptText(b));
       card.append(img, pt);
@@ -770,7 +770,6 @@ const $ = (id) => document.getElementById(id);
       btn.onclick = h.click ?? null;
       btn.querySelector(".dmg")?.remove();
       if (h.note) { const d = document.createElement("span"); d.className = "dmg"; d.textContent = h.note; btn.append(d); }
-      btn.title = b.sick ? `${b.name}: came in this turn, can't ping` : b.name;
       btn.dataset.i = i; btn.dataset.id = b.id;
     });
     while (el.children.length > buttons.length) el.lastChild.remove();
