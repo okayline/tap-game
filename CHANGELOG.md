@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.100 "Card Back" · Tue Nov 3, 6:33 PM
+- The open big card turns as you move: on a phone, slide the finger you're holding with sideways (120 px turns it over); with a mouse, move across the small card (its width is a whole turn). Past a quarter turn you see its back, 88x31 club's face-down card: navy stripes and a yellow "?". Sliding a finger on a field card or deck button no longer counts as a pan, so it doesn't cancel the hold (pinch zoom still works). Removed: the big card only ever facing front.
+
 ## v0.99 "Still Hover" · Tue Nov 3, 6:30 PM
 - With a mouse, the big card opens once the mouse has stayed still on a card for 0.8 seconds; any move over the card starts the wait again, so moving across it never opens it. Once open it stays until the mouse leaves the card. Holding on a phone is unchanged. Removed: the big card opening 1 second after the mouse entered a card, moving or not.
 

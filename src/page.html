@@ -185,7 +185,15 @@
   .zoom .gc-txt .flav { font-size: calc(5.8 * var(--t) * var(--u)); }   /* a little smaller than the effect (kura, Nov 3; was 6.8) */
   /* the big card: hold a card or deck button (hover with a mouse) to see it whole (kura, Nov 3); --u is set again here so the whole card scales */
   .zoom { position: fixed; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; background: rgba(20, 26, 48, .45); pointer-events: none; }
-  .zoom .zbox { --w: min(78vw, 300px); --u: calc(var(--w) / 108); width: var(--w); height: calc(var(--h) * var(--u)); position: relative; filter: drop-shadow(0 8px 24px rgba(0,0,0,.45)); }
+  .zoom .zbox { --w: min(78vw, 300px); --u: calc(var(--w) / 108); width: var(--w); height: calc(var(--h) * var(--u)); position: relative; filter: drop-shadow(0 8px 24px rgba(0,0,0,.45)); perspective: calc(600 * var(--u)); }
+  /* the big card turns with your finger or mouse (kura, Nov 3), and past a quarter turn shows its back: 88x31 club's face-down card
+     (okayline/88x31 public/style.css .card.back: navy stripes and a yellow "?"; kura, Nov 3: "the same back as 88x31 club") */
+  .zflip { position: absolute; inset: 0; transform-style: preserve-3d; }
+  /* a finger sliding sideways on a card turns the big card, so the browser mustn't take the slide as a pan (that would cancel the hold) */
+  .btn, .deck .card { touch-action: pinch-zoom; }
+  .zflip > .gc, .zflip > .zback { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  .zback { transform: rotateY(180deg); border-radius: calc(7 * var(--u)); border: 3px ridge #c0c0c0; display: flex; align-items: center; justify-content: center;
+           font: bold calc(24 * var(--u)) "Times New Roman", serif; color: #ffff00; background: repeating-linear-gradient(45deg, #000080 0 8px, #000060 8px 16px); }
   .ddfoot { margin: 1px 0 0 !important; padding: 0 12px !important; }
   /* on a phone the panels run to the screen's edges so the three cards are as wide as they can be (kura, Nov 3: "as big as they can reasonably get");
      24px = the panel's 4px sides and two 8px gaps (each just wide enough for a tappable card's dashed outline) */
@@ -215,7 +223,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.99" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.100" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -346,21 +354,29 @@ const $ = (id) => document.getElementById(id);
   // the big card (kura, Nov 3): press and hold a card or deck button still for HOLD_MS (or rest the mouse on it without moving for HOVER_MS) to see it whole, with its
   // flavour line; letting go (or moving off) closes it. A hold doesn't also tap, swap or drop: the click after it is swallowed.
   const HOLD_MS = 450, HOVER_MS = 800;   // kura, Nov 3: the mouse must be still for HOVER_MS (was 450, 800, then 1000 counted from entering the card)
-  let bigCard = null, held = false;
+  let bigCard = null, bigFlip = null, held = false;
   function showBig(b) {
     hideBig();
     const p = card(b), box = mk("div", "zbox");
     p.art.append(p.img); p.pt.replaceChildren(...ptText(b)); p.pt.hidden = !!b.out;
-    box.append(p.gc); bigCard = mk("div", "zoom"); bigCard.append(box); document.body.append(bigCard);
+    bigFlip = mk("div", "zflip"); bigFlip.append(p.gc, mk("div", "zback", "?"));
+    box.append(bigFlip); bigCard = mk("div", "zoom"); bigCard.append(box); document.body.append(bigCard);
     document.querySelectorAll(".ghost").forEach((x) => (x.style.visibility = "hidden"));
   }
-  function hideBig() { bigCard?.remove(); bigCard = null; }
+  function hideBig() { bigCard?.remove(); bigCard = null; bigFlip = null; }
+  // turning the open big card (kura, Nov 3: no separate grab): a finger turns it by how far it has moved sideways since
+  // the press; a mouse by how far it has moved across the small card since the big card opened (the card's width is a whole turn)
+  const FINGER_DEG_PX = 1.5;   // degrees per pixel a finger moves: 120px turns it to its back
+  const turnBig = (deg) => { if (bigFlip) bigFlip.style.transform = `rotateY(${deg}deg)`; };
   addEventListener("click", (e) => { if (held) { held = false; e.stopPropagation(); e.preventDefault(); } }, true);
   document.addEventListener("contextmenu", (e) => { if (e.target.closest(".row, .deck")) e.preventDefault(); });   // a long press opens no menu
   // one press at a time: a hold starts on a card (zoomable, below); moving the finger or letting go anywhere ends it
   let holdTimer = null, hx = 0, hy = 0;
   const endHold = () => { clearTimeout(holdTimer); holdTimer = null; if (bigCard && held) { hideBig(); setTimeout(() => (held = false), 400); } };
-  addEventListener("pointermove", (e) => { if (holdTimer && Math.hypot(e.clientX - hx, e.clientY - hy) > 8) { clearTimeout(holdTimer); holdTimer = null; } });
+  addEventListener("pointermove", (e) => {
+    if (holdTimer && Math.hypot(e.clientX - hx, e.clientY - hy) > 8) { clearTimeout(holdTimer); holdTimer = null; }
+    if (held && bigCard && e.pointerType !== "mouse") turnBig((e.clientX - hx) * FINGER_DEG_PX);
+  });
   addEventListener("pointerup", endHold); addEventListener("pointercancel", endHold);
   // el shows getB()'s card when held (touch or pen) or hovered (mouse)
   function zoomable(el, getB) {
@@ -370,8 +386,13 @@ const $ = (id) => document.getElementById(id);
       holdTimer = setTimeout(() => { holdTimer = null; held = true; showBig(getB()); }, HOLD_MS);
     });
     // a mouse: every move over the card starts the wait again, so it opens only once the mouse stops; once open it stays until the mouse leaves
-    let hover = null, open = false;
-    const wait = (e) => { if (e.pointerType !== "mouse" || open) return; clearTimeout(hover); hover = setTimeout(() => { if (el.isConnected) { open = true; showBig(getB()); } }, HOVER_MS); };
+    let hover = null, open = false, x0 = 0;
+    const wait = (e) => {
+      if (e.pointerType !== "mouse") return;
+      if (open) { turnBig((e.clientX - x0) / el.getBoundingClientRect().width * 360); return; }
+      x0 = e.clientX; clearTimeout(hover);
+      hover = setTimeout(() => { if (el.isConnected) { open = true; showBig(getB()); } }, HOVER_MS);
+    };
     el.addEventListener("pointerenter", wait); el.addEventListener("pointermove", wait);
     el.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") { clearTimeout(hover); open = false; hideBig(); } });
   }
