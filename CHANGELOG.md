@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.106 "Wider Turn" · Tue Nov 3, 6:49 PM
+- With a mouse, an open big card stays open (and keeps turning) until the mouse is more than 8 px past the small card's edge, about as far as the next card's pink dotted outline. Removed: the big card closing as soon as the mouse left the small card.
+
 ## v0.105 "Thick Card" · Tue Nov 3, 6:46 PM
 - The big card has a little thickness: turned, it shows an edge in a darker frame blue between front and back (2 units deep, made of 8 thin layers). Removed: the paper-thin turn, with front and back in the same plane.
 
