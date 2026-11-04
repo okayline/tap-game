@@ -27,54 +27,54 @@ test("each attacker's ping is placed on the defender's buttons; a button hits ba
   assert.equal(g.sides.b.buttons[0].damage, 2);      // damage stays
 });
 
-test("decks: same types on both sides; swaps until the first attack; out buttons are replaced from the deck", async () => {
+// the kind of each dealt button, in a fixed order, to compare two decks that hold the same kinds in different orders
+const kinds = (deck) => deck.map((x) => [x.type, x.rarity, x.fx, x.extra].join()).sort();
+
+test("decks: the same kinds on both sides in their own order; out spots fill from the top; one swap a turn with the top card", async () => {
   const { dealDecks, swap } = await import("../src/rules.js");
   const pool = [..."aaaa"].map((_, i) => ({ name: "n" + i, type: "neon" }))
     .concat([{ name: "d0", type: "divider" }, { name: "d1", type: "divider" }], [..."wwww"].map((_, i) => ({ name: "w" + i, type: "webring" })));
+  let differ = false;
   for (let k = 0; k < 20; k++) {
     const [a, b] = dealDecks(pool, 5);
-    assert.deepEqual(a.map((x) => x.type), b.map((x) => x.type));
+    assert.deepEqual(kinds(a), kinds(b));
+    if (a.map((x) => x.type).join() !== b.map((x) => x.type).join()) differ = true;
     assert.ok(a.filter((x) => x.type === "divider").length <= 1);
     assert.equal(new Set([...a, ...b]).size, a.length + b.length); // no button dealt twice
   }
-  // a booster-pack deck: 5 commons, 2 uncommons, 1 rare and a wildcard; same type and rarity in each slot on both sides; no ultras
-  const kinds = { common: 8, uncommon: 4, rare: 4, prototype: 4, ultra: 4 };
-  const pack = Object.entries(kinds).flatMap(([rarity, n]) => ["neon", "webring", "counter"].flatMap((type) => [...Array(n)].map((_, i) => ({ name: `${rarity}-${type}-${i}`, type, rarity }))));
+  assert.ok(differ);   // the two orders aren't always the same
+  // a booster-pack deck: 5 commons, 2 uncommons, 1 rare and a wildcard; the same kinds on both sides; no ultras
+  const counts = { common: 8, uncommon: 4, rare: 4, prototype: 4, ultra: 4 };
+  const pack = Object.entries(counts).flatMap(([rarity, n]) => ["neon", "webring", "counter"].flatMap((type) => [...Array(n)].map((_, i) => ({ name: `${rarity}-${type}-${i}`, type, rarity }))));
   for (let k = 0; k < 20; k++) {
     const [a, b] = dealDecks(pack);
     assert.equal(a.length, 9);
-    assert.deepEqual(a.map((x) => [x.type, x.rarity]), b.map((x) => [x.type, x.rarity]));
+    assert.deepEqual(kinds(a), kinds(b));
     const count = (r) => a.filter((x) => x.rarity === r).length;
     assert.equal(count("ultra"), 0);
     assert.ok(count("common") >= 5 && count("uncommon") >= 2 && count("rare") >= 1);
     assert.ok(count("prototype") <= 1 && count("common") + count("uncommon") + count("rare") + count("prototype") === 9);
     assert.equal(new Set([...a, ...b]).size, 18);
   }
-  // a: 3 guestbooks on the field, a divider in the deck; b: 3 webrings and one in the deck
-  const g = newGame([0, 1, 2].map((i) => ({ name: "n" + i, type: "guestbook" })).concat({ name: "d", type: "divider" }),
+  // a: 3 guestbooks on the field, then a divider and a neon in the deck (top first); b: 4 webrings
+  const g = newGame([0, 1, 2].map((i) => ({ name: "n" + i, type: "guestbook" })).concat({ name: "d", type: "divider" }, { name: "e", type: "neon" }),
     [0, 1, 2, 3].map((i) => ({ name: "w" + i, type: "webring" })), "a");
-  assert.equal(swap(g, "a", 0, 0), null);
-  assert.equal(g.sides.a.buttons[0].name, "d");
-  assert.equal(g.sides.a.deck[0].name, "n0");
-  swap(g, "a", 0, 0); // back
+  assert.equal(swap(g, "b", 0), "Only on your turn, before you ping.");
+  assert.equal(swap(g, "a", 1), null);               // n1 to the bottom, d (the top) comes in
+  assert.equal(g.sides.a.buttons[1].name, "d");
+  assert.deepEqual(g.sides.a.deck.map((b) => b.name), ["e", "n1"]);
+  assert.equal(swap(g, "a", 2), "One swap a turn.");
+  assert.equal(attack(g, "a", [1]), "A button that came in this turn can't ping.");
   assert.equal(attack(g, "a", [0]), null);
-  assert.equal(swap(g, "a", 0, 0), "Only on your turn, before you ping."); // a is mid-attack
+  assert.equal(swap(g, "a", 2), "Only on your turn, before you ping."); // a is mid-attack
   // b puts the guestbook's 1 power on webring 0 (2 toughness, survives); hit back 3 takes guestbook 0 out
   assert.equal(place(g, "b", { 0: { 0: 1 } }), null);
   assert.equal(g.sides.a.buttons[0].out, true);
-  g.limit = 2; attack(g, "b", []); // b passes; a's turn: the out button waits in its spot until a brings one in
-  assert.equal(g.sides.a.buttons[0].out, true);
-  assert.equal(attack(g, "a", [1]), "Bring in a button first.");
-  assert.equal(swap(g, "a", 0, 0), null);           // filling doesn't use the turn's swap
-  assert.equal(g.sides.a.buttons[0].name, "d");
+  g.limit = 2; attack(g, "b", []);                   // b passes; at the start of a's turn the top card fills the out spot
+  assert.equal(g.sides.a.buttons[0].name, "e");
+  assert.equal(g.sides.a.buttons[0].sick, true);
   assert.deepEqual(g.sides.a.gone.map((b) => b.name), ["n0"]);
   assert.equal(g.winner, null);
-  // one swap a turn, on your own turn: a has no deck left, so give it one to try
-  g.sides.a.deck.push({ name: "x", type: "neon", power: 1, toughness: 2, damage: 0, tapped: false, out: false });
-  assert.equal(swap(g, "a", 1, 0), null);
-  assert.equal(swap(g, "a", 2, 0), "One swap a turn.");
-  assert.equal(attack(g, "a", [1]), "A button that came in this turn can't ping.");
-  assert.equal(swap(g, "b", 0, 0), "Only on your turn, before you ping.");
 });
 
 test("a button hit by both hits back: the one it can knock out, then the least life left, then the most damage on it", async () => {
@@ -97,11 +97,11 @@ test("the dummy places each attacker's ping", async () => {
 
 test("rarity extras: rolled once per slot for both sides; Exalted, Exert and Phasing", async () => {
   const { dealDecks, EXTRA, settle } = await import("../src/rules.js");
-  const kinds = { common: 8, uncommon: 4, rare: 4, prototype: 4 };
-  const pack = Object.entries(kinds).flatMap(([rarity, n]) => ["neon", "webring", "counter"].flatMap((type) => [...Array(n)].map((_, i) => ({ name: `${rarity}-${type}-${i}`, type, rarity }))));
+  const counts = { common: 8, uncommon: 4, rare: 4, prototype: 4 };
+  const pack = Object.entries(counts).flatMap(([rarity, n]) => ["neon", "webring", "counter"].flatMap((type) => [...Array(n)].map((_, i) => ({ name: `${rarity}-${type}-${i}`, type, rarity }))));
   for (let k = 0; k < 20; k++) {
     const [a, b] = dealDecks(pack);
-    assert.deepEqual(a.map((x) => x.extra), b.map((x) => x.extra));
+    assert.deepEqual(kinds(a), kinds(b));
     for (const x of a) assert.ok(x.rarity === "common" ? x.extra === undefined : EXTRA[x.rarity].includes(x.extra));
   }
   // a: an exalted webring (3/2) alone; b: three guestbooks (1/3), untapped
@@ -142,7 +142,7 @@ test("main effects: rolled once per slot for both sides, and they follow the but
   const seen = new Set();
   for (let k = 0; k < 20; k++) {
     const [a, b] = dealDecks(pool);
-    assert.deepEqual(a.map((x) => x.fx), b.map((x) => x.fx));
+    assert.deepEqual(kinds(a), kinds(b));
     for (const x of a) { assert.ok(FX.includes(x.fx)); seen.add(`${x.type}:${x.fx}`); }
   }
   assert.ok(seen.size > 4);                                  // a type isn't stuck with one effect

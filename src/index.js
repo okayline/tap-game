@@ -3,7 +3,7 @@
 //   GET /m/<id>           the match page; GET /m/<id>/ws the match's WebSocket. You are seat a in every tab; the dummy is b.
 //   GET /img/<n>          88x31 button n's GIF, from this site (img(), below)
 import { DurableObject } from "cloudflare:workers";
-import { newGame, attack, place, swap, dealDecks, autoFill } from "./rules.js";
+import { newGame, attack, place, swap, dealDecks } from "./rules.js";
 
 const PAUSE_MS = 1000; // the dummy waits this long before it attacks
 import { dummyAttack, dummyPlace } from "./dummy.js";
@@ -61,7 +61,7 @@ async function img(n, req, ctx) {
 export class Match extends DurableObject {
   async setup(pool) {
     const g = newGame(...dealDecks(pool));
-    g.dummyTurn = 0; // if the dummy won the flip, it waits for you to press start (so you can swap first)
+    g.dummyTurn = 0; // if the dummy won the flip, it waits for you to press start (so it doesn't ping before you're there)
     await this.ctx.storage.put("g", g);
   }
 
@@ -83,7 +83,7 @@ export class Match extends DurableObject {
     const err =
       a.do === "attack" && Array.isArray(a.idxs) ? attack(g, seat, a.idxs, a.exert) :
       a.do === "take" && a.split && typeof a.split === "object" ? place(g, seat, a.split) :
-      a.do === "swap" ? swap(g, seat, a.i, a.j) :
+      a.do === "swap" ? swap(g, seat, a.i) :
       a.do === "start" ? (g.locked || g.turn !== "b" ? "Nothing to start." : ((g.locked = true), null)) : "Unknown action.";
     if (err) return ws.send(JSON.stringify({ error: err }));
     await this.save(g);
@@ -106,7 +106,6 @@ export class Match extends DurableObject {
     if (!g.dummyAt) { g.dummyAt = Date.now() + PAUSE_MS; return; }
     if (Date.now() < g.dummyAt) return;
     g.dummyAt = null;
-    autoFill(g, "b");
     const idxs = dummyAttack(g);
     attack(g, "b", idxs, idxs);   // the dummy exerts every attacker it can
     g.dummyTurn++;

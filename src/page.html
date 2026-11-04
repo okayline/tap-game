@@ -175,6 +175,8 @@
   .deck img, .deck canvas { display: block; width: var(--dw); height: calc(var(--dw) * 31 / 88); image-rendering: pixelated; }
   /* knocked-out ones stay greyed */
   .deck .card.gone canvas { filter: grayscale(1) opacity(.45); }
+  /* a guest's deck card, face down: the card back's stripes (.zback) */
+  .deck .facedown { width: var(--dw); height: calc(var(--dw) * 31 / 88); background: repeating-linear-gradient(45deg, var(--frame) 0 4px, color-mix(in srgb, var(--frame) 85%, #000) 4px 8px); }
   .deck .card.drag { cursor: grab; outline: 1px dashed var(--pink); outline-offset: 2px; touch-action: none; }
   /* power/life left in a small box over the bottom-right corner of the deck button's picture, like the field cards' */
   .deck .dpt { position: absolute; right: 4px; bottom: 4px; font: 800 10px/1 var(--title); color: var(--ink); background: #fff3c9; border: 1px solid #e2c56e;
@@ -232,7 +234,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.112" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.113" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -482,20 +484,16 @@ const $ = (id) => document.getElementById(id);
     const tough = (el, s) => { const all = [...s.buttons, ...(s.deck ?? []), ...(s.gone ?? [])];
       el.replaceChildren("firewall", mk("b", "", `${all.reduce((n, b) => n + life(b), 0)}/${all.reduce((n, b) => n + b.toughness + (b.bonus ?? 0), 0)}`)); };
     tough($("meTough"), g.sides[me]); tough($("themTough"), g.sides[them]);
-    // you can drag from your deck before the first attack, and on your turn to fill an out spot or make your one swap
-    const fill = (g.sides[me].deck ?? []).length > 0 && mine.some((b) => b.out);
-    // on your turn with a knocked-out spot, a plain tap on a deck button brings it into the first such spot
-    tapInto = myTurn && fill ? mine.findIndex((b) => b.out) : -1;
-    deckRow($("meDeck"), g.sides[me], !playing && ((g.locked === false && !g.winner) || (myTurn && (fill || !g.swapped))));
-    deckRow($("themDeck"), g.sides[them], false);
-    // the dummy won the flip: it waits for start, so you can swap first
+    // your one swap a turn: drag your top card onto a field button (rules.js swap); out spots fill from the top by themselves
+    deckRow($("meDeck"), g.sides[me], !playing && myTurn && !g.swapped);
+    deckRow($("themDeck"), g.sides[them], false, true);
+    // the dummy won the flip: it waits for start, so it doesn't ping before you're there
     const startNow = g.locked === false && g.turn === them && !g.winner;
     $("start").hidden = !startNow; $("start").disabled = playing;
     $("result").textContent = g.winner ? `${g.winner === "draw" ? "draw" : g.winner === me ? "you win" : "you lose"}` : "";
     // the attack button is always there unless take or new match takes its place; greyed out while it isn't your move
     $("attack").hidden = taking || !!g.winner || startNow;
-    $("attack").disabled = !myTurn || fill;
-    $("attack").textContent = myTurn && fill ? "bring in a button" : "ping";
+    $("attack").disabled = !myTurn;
     $("take").hidden = !taking;
     $("take").disabled = placed !== need;
     $("take").textContent = placed === need ? `accept ${need}` : `port ${need - placed} more`;   // (kura, Nov 3: "ACCEPT" for take, "PORT" for place)
@@ -641,7 +639,8 @@ const $ = (id) => document.getElementById(id);
     }
     return { run, fade };
   }
-  // a side's deck row: its deck (next on the left; power/life left), with its knocked-out buttons crossed out in the spots they took
+  // a side's deck row: its deck in order (the top card first; power/life left), with its knocked-out buttons crossed out in the spots
+  // they took. The guest's deck cards lie face down (kura, Nov 3: each side's deck has its own order); knocked-out ones are face up.
   // rules.js deckRow: the deck in order, with each knocked-out button in the spot of the deck button that replaced it (b.at)
   function rowOf(s) {
     const deck = s.deck ?? [], gone = s.gone ?? [], at = new Map(gone.filter((b) => b.at >= 0).map((b) => [b.at, b])), row = [];
@@ -649,7 +648,7 @@ const $ = (id) => document.getElementById(id);
     const shown = new Set(row.map((x) => x.b));
     return [...row, ...gone.filter((b) => !shown.has(b)).map((b) => ({ b, gone: true }))];
   }
-  function deckRow(el, side, can) {
+  function deckRow(el, side, can, down = false) {
     if (bigCard && !held && el.contains(document.querySelector(".deck .card:hover"))) hideBig();   // a mouse preview of a button being redrawn
     el.innerHTML = "";
     for (const { b, j, gone } of rowOf(side)) {
@@ -658,18 +657,17 @@ const $ = (id) => document.getElementById(id);
         card.append(still(b, "")); zoomable(card, () => b); el.append(card); continue;
       }
       const card = document.createElement("div"); card.className = "card";
+      if (down) { card.append(mk("div", "facedown")); el.append(card); continue; }
       const img = document.createElement("img"); img.alt = ""; img.src = b.image;
       const pt = document.createElement("span"); pt.className = "dpt"; pt.append(...ptText(b));
       card.append(img, pt);
-      if (can) { card.classList.add("drag"); card.onpointerdown = (e) => drag(e, j, img); }
+      if (can && j === 0) { card.classList.add("drag"); card.onpointerdown = (e) => drag(e, img); }   // only the top card
       zoomable(card, () => b);
       el.append(card);
     }
   }
-  // drag a deck picture (mouse or touch) and drop it on one of your field buttons to swap the two
-  let tapInto = -1;
-  function drag(e, j, img) {
-    const x0 = e.clientX, y0 = e.clientY;
+  // drag your top card (mouse or touch) and drop it on one of your field buttons to swap the two
+  function drag(e, img) {
     e.preventDefault();
     const ghost = img.cloneNode(); ghost.className = "ghost"; document.body.append(ghost);
     const at = (ev) => { ghost.style.left = ev.clientX + "px"; ghost.style.top = ev.clientY + "px"; };
@@ -678,8 +676,7 @@ const $ = (id) => document.getElementById(id);
       removeEventListener("pointermove", at); removeEventListener("pointerup", end); removeEventListener("pointercancel", end);
       if (held) return;   // the press was a hold for the big card, not a drag
       const t = ev.type === "pointerup" && document.elementFromPoint(ev.clientX, ev.clientY)?.closest("#me .btn");
-      if (t) send({ do: "swap", i: Number(t.dataset.i), j });
-      else if (ev.type === "pointerup" && tapInto >= 0 && Math.hypot(ev.clientX - x0, ev.clientY - y0) < 8) send({ do: "swap", i: tapInto, j });
+      if (t) send({ do: "swap", i: Number(t.dataset.i) });
     };
     at(e);
     addEventListener("pointermove", at); addEventListener("pointerup", end); addEventListener("pointercancel", end);

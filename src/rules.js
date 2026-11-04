@@ -8,14 +8,14 @@
 // attackers hits back only one of them, picked by backAt(). Hit-back past an attacker's life is lost.
 // A button only untaps at the start of its own side's turn, so attacking with it means it can't hit back next turn.
 // (kura, Nov 2: "the buttons are the HP !!!")
-// Decks (kura, Nov 3): each side has DECK buttons, 3 on the field and the rest in its deck. Both decks hold the same types
-// (dealDecks), so their stats match. A button that goes out stays in its spot, greyed, until its side brings in a deck button
-// on its own turn (swap onto it); then it moves to its side's `gone` list (shown crossed out, in the deck row spot of the button that
-// replaced it: `at`, see deckRow). Swaps (kura, Nov 3): before the
-// first attack, as many as you like; after that, one per turn, on your turn before you attack (filling an out spot doesn't
-// count). A swapped-out button keeps its damage. A button that comes in after the first attack (a swap, or onto an out spot)
-// can't attack that turn ("summoning sickness", kura, Nov 3), but it can still hit back. You can't attack while you have an out spot and a deck to fill it from.
-// A side loses when its field is all out and its deck is empty.
+// Decks (kura, Nov 3): each side has DECK buttons, 3 on the field and the rest in its deck. Both decks hold the same buttons' kinds
+// (dealDecks), so their stats match, but each side's is shuffled on its own, like a Magic library (kura, Nov 3: "the sides are equal
+// but the order will be mixed up"): the top 3 start on the field, and deck[0] is the top. A button that goes out stays in its spot,
+// greyed, until the start of its side's next turn, when the top card comes in (fill, in passTurn; kura, Nov 3: "no choice"); it then
+// moves to its side's `gone` list (shown crossed out, in the deck row spot of the card that replaced it: `at`, see deckRow).
+// Swaps: one per turn, on your turn before you ping: a field button goes to the bottom of the deck and the top card comes in. A
+// swapped-out button keeps its damage. A button that comes in (a swap, or onto an out spot) can't ping that turn ("summoning
+// sickness", kura, Nov 3), but it can still hit back. A side loses when its field is all out and its deck is empty.
 
 // power / toughness by type: the more buttons of a type exist, the weaker it is (kura, Nov 2: counts from the live
 // item table, all active 88x31 buttons: neon 32, guestbook 21, construction 19, counter 17, webring 13, divider 5).
@@ -92,7 +92,8 @@ export function dealDecks(pool, n = DECK, rand = Math.random) {
     const ex = EXTRA[r], extra = ex ? ex[Math.floor(rand() * ex.length)] : undefined, fx = FX[Math.floor(rand() * FX.length)];
     a.push({ ...take(left[r][t]), fx, extra }); b.push({ ...take(left[r][t]), fx, extra });
   }
-  return [a, b];
+  const shuffle = (l) => { for (let i = l.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [l[i], l[j]] = [l[j], l[i]]; } return l; };
+  return [shuffle(a), shuffle(b)];   // each side in its own order
 }
 
 const fresh = (b) => { const [power, toughness] = STATS[b.type] ?? [1, 1]; return { ...b, power, toughness, damage: 0, tapped: false, out: false }; };
@@ -121,22 +122,33 @@ export function settle(g) {
   }
 }
 
-// Before the first attack: swap field button i with deck button j. Returns an error string or null.
-// Swap field button i with deck button j: before the first attack, any number; after, on your turn before you attack.
-// Onto an out button it brings the deck button in (free); onto a live one it is your one swap this turn.
-export function swap(g, seat, i, j) {
+// Your one swap a turn: field button i goes to the bottom of your deck and the top card comes in. Returns an error string or null.
+export function swap(g, seat, i) {
   const s = g.sides[seat];
   s.deck ??= []; s.gone ??= [];
-  if (!Number.isInteger(i) || !Number.isInteger(j) || !s.buttons[i] || !s.deck[j]) return "No such button.";
-  if (g.locked && (g.winner || g.turn !== seat || g.attack)) return "Only on your turn, before you ping.";
-  const [n] = s.deck.splice(j, 1), b = s.buttons[i];
-  n.phased = false;   // a button comes in phased in
-  if (b.out) { b.at = deckRow(s).findIndex((x) => x.j === j); s.gone.push(b); s.buttons[i] = n; if (g.locked) n.sick = true; g.log.push(`${n.name} comes in`); settle(g); return null; }
-  if (g.locked && g.swapped) { s.deck.splice(j, 0, n); return "One swap a turn."; }
-  s.buttons[i] = n; s.deck.splice(j, 0, b);
-  if (g.locked) { g.swapped = true; n.sick = true; g.log.push(`${NAMES[seat]} swaps ${b.name} for ${n.name}`); }
+  if (g.winner || g.turn !== seat || g.attack) return "Only on your turn, before you ping.";
+  if (!Number.isInteger(i) || !s.buttons[i] || s.buttons[i].out || !s.deck.length) return "No such button.";
+  if (g.swapped) return "One swap a turn.";
+  const n = s.deck.shift(), b = s.buttons[i];
+  n.phased = false; n.sick = true;   // a button comes in phased in, and can't ping this turn
+  s.buttons[i] = n; s.deck.push(b); g.swapped = true;
+  g.log.push(`${NAMES[seat]} swaps ${b.name} for ${n.name}`);
   settle(g);
   return null;
+}
+
+// The start of seat's turn: the top card comes in onto each out spot, left first; the out button goes to `gone`.
+function fill(g, seat) {
+  const s = g.sides[seat];
+  s.deck ??= []; s.gone ??= [];
+  s.buttons.forEach((b, i) => {
+    if (!b.out || !s.deck.length) return;
+    b.at = deckRow(s).findIndex((x) => x.j === 0);
+    const n = s.deck.shift();
+    n.phased = false; n.sick = true;
+    s.gone.push(b); s.buttons[i] = n; g.log.push(`${n.name} comes in`);
+  });
+  settle(g);
 }
 
 // A side's deck row as shown: its deck buttons in order ({ b, j }: deck index j) and its gone buttons ({ b, gone: true }) each in the
@@ -150,15 +162,6 @@ export function deckRow(s) {
   return [...row, ...gone.filter((b) => !shown.has(b)).map((b) => ({ b, gone: true }))];
 }
 
-// A side with an out button and a deck left must bring one in before attacking.
-export const mustFill = (g, seat) => (g.sides[seat].deck ?? []).length > 0 && g.sides[seat].buttons.some((b) => b.out);
-
-// Bring in deck buttons, left first, for every out spot (the dummy does this at the start of its turn).
-export function autoFill(g, seat) {
-  const s = g.sides[seat];
-  s.buttons.forEach((b, i) => { if (b.out && (s.deck ?? []).length) swap(g, seat, i, 0); });
-}
-
 const ready = (side, i) => side.buttons[i] && !side.buttons[i].out && !side.buttons[i].tapped && !side.buttons[i].phased;
 
 // seat attacks with the buttons at idxs (may be empty, which just passes the turn), exerting those of them in exert that have Exert.
@@ -169,7 +172,6 @@ export function attack(g, seat, idxs, exert = []) {
   const list = [...new Set(idxs)];
   if (!list.every((i) => ready(g.sides[seat], i))) return "Only ready buttons can ping.";
   if (list.length > g.limit) return `At most ${g.limit} can ping this turn.`;
-  if (mustFill(g, seat)) return "Bring in a button first.";
   if (list.some((i) => g.sides[seat].buttons[i].sick && fxOf(g.sides[seat].buttons[i]) !== "broadband")) return "A button that came in this turn can't ping.";
   g.locked = true;
   if (!list.length) { g.log.push(`${NAMES[seat]} doesn't ping`); passTurn(g); return null; }
@@ -265,5 +267,6 @@ function passTurn(g) {
   // a knocked-out button stays as it went out, tapped or not (kura, Nov 3); an exerted one stays tapped this once
   for (const b of s.buttons) if (!b.out) { if (b.exerted) b.exerted = false; else b.tapped = false; }
   settle(g);   // a phased button stops or starts counting for Glow and Webcounter
+  fill(g, g.turn);
   g.log.push(`${NAMES[g.turn]}'s turn`);
 }
