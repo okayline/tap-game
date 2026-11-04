@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.125 "Coin Flip" · Tue Nov 3, 8:15 PM
+- A fresh match shows "flip to start" in the bar. Pressing it flips the button between ▲ (the guest, above the bar) and ▼ (you, below it), slowing down for about 1.5 s, and it lands on whoever goes first. If you won, it reads "▼ you go first" until you pick a card to ping with, then "ping". If the guest won, it reads "▲ guest goes first" and the guest pings. The winner is still decided when the match is made; the flip shows it. Removed: the "start" button (pressing flip to start now starts the guest's turn when it won) and its "start" text.
+
 ## v0.124 "Plain Title" · Tue Nov 3, 8:01 PM
 - The UN/TAP title is plain text again (kura, Nov 3: a stray click shouldn't end a match, and no pop-ups); "new match" at the end of a match starts the next one. Removed: v0.123's title link.
 

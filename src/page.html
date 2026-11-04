@@ -238,7 +238,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.124" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.125" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -369,7 +369,23 @@ const $ = (id) => document.getElementById(id);
   let picked = new Set(), exerting = new Set(), split = {}, cur = null, seen = "";   // exerting: picked buttons you exert (rules.js EXTRA)   // split[attacker][button]: damage; cur: the attacker being placed
   $("attack").onclick = () => { sent = true; if (bigBy) hideBig(); lastPing = [...picked]; send({ do: "attack", idxs: lastPing, exert: [...exerting] }); };   // kept for the replay
   $("take").onclick = () => { sent = true; if (bigBy) hideBig(); send({ do: "take", split }); };
-  $("start").onclick = () => send({ do: "start" });
+  // the coin flip in the bar (kura, Nov 3): a fresh match shows "flip to start"; pressing it flips ▲ (the guest, above the bar) and ▼
+  // (you, below it) in turn, slowing down like a spinning coin, and it lands on whoever goes first (decided when the match was made;
+  // the flip shows it). You won: "▼ you go first" until you pick a card to ping with, then "ping". The guest won: "▲ guest goes first",
+  // and the flip sends start, so the guest pings. flip: null (not yet), "flipping", "mine", "theirs", "done"
+  const FLIP_STEPS = [70, 70, 80, 90, 110, 130, 160, 200, 250, 310];   // ms each face shows: about 1.5 s
+  let flip = null, flipText = "";
+  async function coinFlip(mine) {
+    flip = "flipping";
+    for (let n = 0; n < FLIP_STEPS.length; n++) {
+      flipText = (n + (mine ? 1 : 0)) % 2 ? "▼" : "▲";   // ends on the winner's arrow
+      draw(); await sleep(FLIP_STEPS[n]);
+    }
+    flip = mine ? "mine" : "theirs";
+    if (!mine) send({ do: "start" });
+    draw();
+  }
+  $("start").onclick = () => { if (flip === null) coinFlip(g.turn === "a"); };
   $("again").onclick = () => location.assign("/"); // the main page starts a new match
   // the big card (kura, Nov 3): press and hold a card or deck button still for HOLD_MS (or rest the mouse on it without moving for HOVER_MS) to see it whole, with its
   // flavour line; letting go (or moving off) closes it. A hold doesn't also tap, swap or drop: the click after it is swallowed.
@@ -505,13 +521,19 @@ const $ = (id) => document.getElementById(id);
     // your one swap a turn: drag your top card onto a field button (rules.js swap); out spots fill from the top by themselves
     deckRow($("meDeck"), g.sides[me], !playing && myTurn && !g.swapped);
     deckRow($("themDeck"), g.sides[them], false, true);
-    // the dummy won the flip: it waits for start, so it doesn't ping before you're there
-    const startNow = g.locked === false && g.turn === them && !g.winner;
+    // the coin flip (coinFlip(), above; kura, Nov 3): "flip to start" until it's pressed, on a match nobody has pinged in yet
+    const fresh = g.locked === false && !g.winner;
+    if (flip === "mine" && picked.size) flip = "done";
+    if (flip === "theirs" && (g.attack || g.turn === me || g.winner)) flip = "done";   // their ping has come
+    const flipping = flip === "flipping";
+    const startNow = fresh && flip === null;
     $("start").hidden = !startNow; $("start").disabled = playing;
+    $("start").textContent = "flip to start";
     $("result").textContent = g.winner ? `${g.winner === "draw" ? "draw" : g.winner === me ? "you win" : "you lose"}` : "";
     // the attack button is always there unless take or new match takes its place; greyed out while it isn't your move
     $("attack").hidden = taking || !!g.winner || startNow;
-    $("attack").disabled = !myTurn;
+    $("attack").disabled = !myTurn || flipping || flip === "theirs" || (flip === "mine" && !picked.size);
+    $("attack").textContent = flipping ? flipText : flip === "mine" ? "▼ you go first" : flip === "theirs" ? "▲ guest goes first" : "ping";
     $("take").hidden = !taking;
     $("take").disabled = placed !== need;
     $("take").textContent = placed === need ? `accept ${need}` : `port ${need - placed} more`;   // (kura, Nov 3: "ACCEPT" for take, "PORT" for place)
