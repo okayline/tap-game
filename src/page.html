@@ -234,7 +234,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.115" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.116" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -628,15 +628,10 @@ const $ = (id) => document.getElementById(id);
     }
     return { run, fade };
   }
-  // a side's deck row: its deck in order (the top card first; power/life left), with its knocked-out buttons crossed out in the spots
-  // they took. The guest's deck cards lie face down (kura, Nov 3: each side's deck has its own order); knocked-out ones are face up.
-  // rules.js deckRow: the deck in order, with each knocked-out button in the spot of the deck button that replaced it (b.at)
-  function rowOf(s) {
-    const deck = s.deck ?? [], gone = s.gone ?? [], at = new Map(gone.filter((b) => b.at >= 0).map((b) => [b.at, b])), row = [];
-    for (let k = 0, j = 0; j < deck.length || at.has(k); k++) row.push(at.has(k) ? { b: at.get(k), gone: true } : { b: deck[j], j: j++ });
-    const shown = new Set(row.map((x) => x.b));
-    return [...row, ...gone.filter((b) => !shown.has(b)).map((b) => ({ b, gone: true }))];
-  }
+  // a side's deck row: its deck in order (the top card at the left; power/life left), then its knocked-out buttons crossed out at
+  // the right (kura, Nov 3: "always go on the right side ... and it pushes the remaining cards up towards the left"). The guest's
+  // deck cards lie face down (each side's deck has its own order); knocked-out ones are face up.
+  const rowOf = (s) => [...(s.deck ?? []).map((b, j) => ({ b, j })), ...(s.gone ?? []).map((b) => ({ b, gone: true }))];
   function deckRow(el, side, can, down = false) {
     if (bigCard && !held && el.contains(document.querySelector(".deck .card:hover"))) hideBig();   // a mouse preview of a button being redrawn
     el.innerHTML = "";

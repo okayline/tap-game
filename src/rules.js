@@ -12,7 +12,7 @@
 // (dealDecks), so their stats match, but each side's is shuffled on its own, like a Magic library (kura, Nov 3: "the sides are equal
 // but the order will be mixed up"): the top 3 start on the field, and deck[0] is the top. A button that goes out stays in its spot,
 // greyed, until the start of its side's next turn, when the top card comes in (fill, in passTurn; kura, Nov 3: "no choice"); it then
-// moves to its side's `gone` list (shown crossed out, in the deck row spot of the card that replaced it: `at`, see deckRow).
+// moves to its side's `gone` list (shown crossed out at the right of its deck row, after the deck: kura, Nov 3).
 // Swaps: one per turn, on your turn before you ping: a field button goes to the bottom of the deck and the top card comes in. A
 // swapped-out button keeps its damage. A button that comes in (a swap, or onto an out spot) can't ping that turn ("summoning
 // sickness", kura, Nov 3), but it can still hit back. A side loses when its field is all out and its deck is empty.
@@ -143,7 +143,6 @@ function fill(g, seat) {
   s.deck ??= []; s.gone ??= [];
   s.buttons.forEach((b, i) => {
     if (!b.out || !s.deck.length) return;
-    b.at = deckRow(s).findIndex((x) => x.j === 0);
     const n = s.deck.shift();
     n.phased = false; n.sick = true;
     s.gone.push(b); s.buttons[i] = n; g.log.push(`${n.name} comes in`);
@@ -151,16 +150,6 @@ function fill(g, seat) {
   settle(g);
 }
 
-// A side's deck row as shown: its deck buttons in order ({ b, j }: deck index j) and its gone buttons ({ b, gone: true }) each in the
-// spot of the deck button that replaced it (b.at, the row index then; kura, Nov 3: "could the knocked out card replace the card
-// that the player clicks on"). The row keeps its length when a deck button comes in, since a gone one takes its spot. A gone
-// button with no spot (an older match) goes at the end. The page has the same function.
-export function deckRow(s) {
-  const deck = s.deck ?? [], gone = s.gone ?? [], at = new Map(gone.filter((b) => b.at >= 0).map((b) => [b.at, b])), row = [];
-  for (let k = 0, j = 0; j < deck.length || at.has(k); k++) row.push(at.has(k) ? { b: at.get(k), gone: true } : { b: deck[j], j: j++ });
-  const shown = new Set(row.map((x) => x.b));
-  return [...row, ...gone.filter((b) => !shown.has(b)).map((b) => ({ b, gone: true }))];
-}
 
 const ready = (side, i) => side.buttons[i] && !side.buttons[i].out && !side.buttons[i].tapped && !side.buttons[i].phased;
 

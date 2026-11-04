@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.116 "Out To The Right" · Tue Nov 3, 7:43 PM
+- In a deck row, knocked-out buttons always sit at the right, after the deck, and the deck closes up toward the left, so the top card is always the leftmost. Removed: a knocked-out button taking the spot of the card that replaced it.
+
 ## v0.115 "Longer Hover" · Tue Nov 3, 7:41 PM
 - With a mouse, the big card opens once the mouse has stayed still on a card for 1.2 seconds. Holding on a phone is unchanged. Removed: the 1-second still wait.
 
