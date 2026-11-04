@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.128 "Lit Flip" · Tue Nov 3, 8:19 PM
+- The bar button stays lit pink while the coin flips (it still can't be pressed). Landing on "▼ you go first" keeps it pink until you pick a card and it becomes "ping"; landing on "▲ guest goes first" turns it grey. Removed: the flip and "▼ you go first" showing on a greyed-out button.
+
 ## v0.127 "Right Arrow" · Tue Nov 3, 8:17 PM
 - Fixed: the coin flip's last arrow pointed at the loser (with 10 faces, the alternation ended on the wrong one), so it could land on ▼ and then say "▲ guest goes first". The flip now counts back from its last face, which is always the winner's. Removed: the arrow parity counted from the first face.
 
