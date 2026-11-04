@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.127 "Right Arrow" · Tue Nov 3, 8:17 PM
+- Fixed: the coin flip's last arrow pointed at the loser (with 10 faces, the alternation ended on the wrong one), so it could land on ▼ and then say "▲ guest goes first". The flip now counts back from its last face, which is always the winner's. Removed: the arrow parity counted from the first face.
+
 ## v0.126 "Slower Flip" · Tue Nov 3, 8:15 PM
 - The coin flip is slower (about 2.3 s), and after "▲ guest goes first" there's a beat (1 s, then the guest's own 1 s pause) before the guest pings. Removed: the 1.5 s flip, and the guest starting the moment the flip landed.
 

@@ -238,7 +238,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.126" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.127" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -380,7 +380,8 @@ const $ = (id) => document.getElementById(id);
   async function coinFlip(mine) {
     flip = "flipping";
     for (let n = 0; n < FLIP_STEPS.length; n++) {
-      flipText = (n + (mine ? 1 : 0)) % 2 ? "▼" : "▲";   // ends on the winner's arrow
+      const last = (FLIP_STEPS.length - 1 - n) % 2 === 0;   // counted back from the last face, which is the winner's
+      flipText = last === mine ? "▼" : "▲";
       draw(); await sleep(FLIP_STEPS[n]);
     }
     flip = mine ? "mine" : "theirs";
