@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.126 "Slower Flip" · Tue Nov 3, 8:15 PM
+- The coin flip is slower (about 2.3 s), and after "▲ guest goes first" there's a beat (1 s, then the guest's own 1 s pause) before the guest pings. Removed: the 1.5 s flip, and the guest starting the moment the flip landed.
+
 ## v0.125 "Coin Flip" · Tue Nov 3, 8:15 PM
 - A fresh match shows "flip to start" in the bar. Pressing it flips the button between ▲ (the guest, above the bar) and ▼ (you, below it), slowing down for about 1.5 s, and it lands on whoever goes first. If you won, it reads "▼ you go first" until you pick a card to ping with, then "ping". If the guest won, it reads "▲ guest goes first" and the guest pings. The winner is still decided when the match is made; the flip shows it. Removed: the "start" button (pressing flip to start now starts the guest's turn when it won) and its "start" text.
 

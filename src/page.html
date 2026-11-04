@@ -238,7 +238,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.125" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.126" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -373,7 +373,9 @@ const $ = (id) => document.getElementById(id);
   // (you, below it) in turn, slowing down like a spinning coin, and it lands on whoever goes first (decided when the match was made;
   // the flip shows it). You won: "▼ you go first" until you pick a card to ping with, then "ping". The guest won: "▲ guest goes first",
   // and the flip sends start, so the guest pings. flip: null (not yet), "flipping", "mine", "theirs", "done"
-  const FLIP_STEPS = [70, 70, 80, 90, 110, 130, 160, 200, 250, 310];   // ms each face shows: about 1.5 s
+  // ms each face shows: about 2.3 s (kura, Nov 3: "slow down the flip a bit"; was about 1.5 s); THEIRS_BEAT: the wait after
+  // "▲ guest goes first" before the flip sends start (the guest then waits its own second, index.js PAUSE_MS, before it pings)
+  const FLIP_STEPS = [105, 105, 120, 135, 165, 195, 240, 300, 375, 465], THEIRS_BEAT = 1000;
   let flip = null, flipText = "";
   async function coinFlip(mine) {
     flip = "flipping";
@@ -382,8 +384,8 @@ const $ = (id) => document.getElementById(id);
       draw(); await sleep(FLIP_STEPS[n]);
     }
     flip = mine ? "mine" : "theirs";
-    if (!mine) send({ do: "start" });
     draw();
+    if (!mine) { await sleep(THEIRS_BEAT); send({ do: "start" }); }
   }
   $("start").onclick = () => { if (flip === null) coinFlip(g.turn === "a"); };
   $("again").onclick = () => location.assign("/"); // the main page starts a new match
