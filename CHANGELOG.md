@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.118 "Slower Slide" · Tue Nov 3, 7:46 PM
+- Cards slide between the field and the deck rows a little slower: 0.5 s. Removed: the 0.35 s slide.
+
 ## v0.117 "Slide" · Tue Nov 3, 7:48 PM
 - Cards slide when they move between the field and a deck row (0.35 s): the top card grows from the deck into its field spot, a knocked-out or swapped-out button shrinks into its place in the deck row, and the deck closes up toward the left. Removed: cards jumping straight to their new place.
 
