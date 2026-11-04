@@ -234,7 +234,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.118" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.119" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -306,7 +306,9 @@ const $ = (id) => document.getElementById(id);
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const otherSeat = (s) => (s === "a" ? "b" : "a");
   async function replay(prev, next) {
-    const ids = (s) => new Map(next.sides[s].buttons.map((b) => [b.id, b]));
+    // each button by id in the new board, field, deck or gone: since v0.113 a knocked-out button leaves the field in the same update
+    // (its spot fills from the top as the next turn starts), and without it the replay missed its hit and lost the ping's line
+    const ids = (s) => new Map([...next.sides[s].buttons, ...(next.sides[s].deck ?? []), ...(next.sides[s].gone ?? [])].map((b) => [b.id, b]));
     // each card that took damage: [side, id, "-N", class, its glitch] (the glitch is picked here, so the beat knows how long to hold)
     const hit = {};
     for (const s of ["a", "b"]) { const m = ids(s); hit[s] = prev.sides[s].buttons.flatMap((b) => { const n = m.get(b.id); return n && n.damage > b.damage ? [[s, b.id, `-${n.damage - b.damage}`, "", pickGlitch()]] : []; }); }
