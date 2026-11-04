@@ -37,8 +37,8 @@ const MYSTERY_IMG = "data:image/svg+xml," + encodeURIComponent(
   + '<text x="44" y="23" text-anchor="middle" font-family="monospace" font-size="20" font-weight="700" fill="#e98ab3">?</text></svg>');
 async function buttons(env) {
   return (await env.REGISTRY.dealPool("88x31", { uncommons: true })).map((it) => (it.hidden
-    ? { id: it.id, name: "a mystery button", type: it.type, rarity: it.rarity, series: it.series, image: MYSTERY_IMG, hidden: true }
-    : { id: it.id, name: it.name, type: it.type, rarity: it.rarity, series: it.series, image: local(it.image) }));
+    ? { id: it.id, name: "a mystery button", type: it.type, rarity: it.rarity, series: it.series, image: MYSTERY_IMG, hidden: true, effect: it.effect }
+    : { id: it.id, name: it.name, type: it.type, rarity: it.rarity, series: it.series, image: local(it.image), effect: it.effect }));   // effect: printed, when it has one
 }
 
 // a button's picture comes from this site instead of 88x31.app (kura, Nov 3: the GIFs were very slow on a phone): 88x31's /api/img?d=N

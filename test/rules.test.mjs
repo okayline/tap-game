@@ -102,7 +102,7 @@ test("rarity extras: rolled once per slot for both sides; Exalted, Exert and Pha
   for (let k = 0; k < 20; k++) {
     const [a, b] = dealDecks(pack);
     assert.deepEqual(kinds(a), kinds(b));
-    for (const x of a) assert.ok(x.rarity === "common" ? x.extra === undefined : EXTRA[x.rarity].includes(x.extra));
+    for (const x of a) assert.ok(EXTRA[x.rarity] ? EXTRA[x.rarity].includes(x.extra) : x.extra === undefined);   // commons and uncommons: none
   }
   // a: an exalted webring (3/2) alone; b: three guestbooks (1/3), untapped
   const W = [{ name: "w", type: "webring", extra: "exalted" }, { name: "n", type: "neon" }, { name: "c", type: "counter" }];
@@ -134,6 +134,19 @@ test("rarity extras: rolled once per slot for both sides; Exalted, Exert and Pha
   assert.equal(place(g, "b", { 0: { 0: 1 } }), "A button can't take that much.");
   assert.equal(place(g, "b", { 0: { 1: 1 } }), null);   // the turn passes to b: p phases back in
   assert.equal(g.sides.b.buttons[0].phased, false);
+});
+
+test("printed effects: a button keeps its own, so a slot's two buttons share the type, not the effect; printed Unicast is its only one", async () => {
+  const { dealDecks, fxOf } = await import("../src/rules.js");
+  const pool = [{ name: "a", type: "neon", effect: "glow" }, { name: "b", type: "neon", effect: "daemon" },
+    { name: "u", type: "counter", rarity: "uncommon", effect: "exalted" }, { name: "v", type: "counter", rarity: "uncommon", effect: "online" }];
+  const want = { a: ["glow", undefined], b: ["daemon", undefined], u: ["none", "exalted"], v: ["online", undefined] };
+  for (let k = 0; k < 20; k++) {
+    const [x, y] = dealDecks(pool);
+    assert.ok(x.length >= 1);
+    for (const d of [...x, ...y]) assert.deepEqual([fxOf(d), d.extra], want[d.name]);
+    assert.deepEqual(x.map((d) => d.type).sort(), y.map((d) => d.type).sort());
+  }
 });
 
 test("main effects: rolled once per slot for both sides, and they follow the button, not its type", async () => {

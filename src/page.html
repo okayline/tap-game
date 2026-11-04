@@ -239,7 +239,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.130" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.131" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -727,7 +727,8 @@ const $ = (id) => document.getElementById(id);
   }
   // a button drawn as a card: name (smaller when long, so it fits on one line, as Magic does), art, type line, an empty text box,
   // and power/life left in a box on the text box's bottom edge (none once it's out)
-  // card text by effect (rules.js FX: a button's main effect, rolled at the deal; fxOf falls back to the type's, for an older match)
+  // card text by effect (rules.js FX: a button's main effect, printed on it, else rolled at the deal; "none" for a printed Unicast, which
+  // shows only as its extra; fxOf falls back to the type's, for an older match)
   const TYPE_FX = { guestbook: "online", webring: "broadband", counter: "webcounter", neon: "glow", divider: "lagspike", construction: "daemon" };
   const fxOf = (b) => b.fx ?? TYPE_FX[b.type];   // rules.js fxOf
   // rarity extras' names on screen (kura, Nov 3; Magic's exalted, exert and phasing in rules.js EXTRA)

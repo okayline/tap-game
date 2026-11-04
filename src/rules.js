@@ -45,13 +45,14 @@ export const FX = ["online", "broadband", "webcounter", "glow", "lagspike", "dae
 const TYPE_FX = { guestbook: "online", webring: "broadband", counter: "webcounter", neon: "glow", divider: "lagspike", construction: "daemon" };
 export const fxOf = (b) => b.fx ?? TYPE_FX[b.type];
 // Extra effects by rarity (kura, Nov 3: "more rare = more interesting effects"; a button keeps its main effect too). A slot's extra is
-// rolled when the decks are dealt, once for both sides (dealDecks), so both decks stay matched. Commons get none.
+// rolled when the decks are dealt, once for both sides (dealDecks), so both decks stay matched. Commons and uncommons get none: their
+// effect is printed, and an uncommon's can be Unicast, as its only effect (kura, Nov 3: "not always 2 stacked").
 //   exalted: when it pings alone, +1/+1 for that ping (its +1 toughness: it takes 1 less hit-back, since damage stays)
 //   exert:   when it pings, its side may exert it: its power counts double, and it doesn't untap at its side's next turn
 //   phasing: at each of its side's turns it phases out or back in; phased out it can't ping, take damage, hit back or count for Glow
 //            or Webcounter (Magic's phasing: it starts in, and goes out at its side's next turn)
 // On screen (kura, Nov 3): exalted is Unicast, exert is Overclock, phasing is Dial-Up; the code keeps Magic's names.
-export const EXTRA = { uncommon: ["exalted"], rare: ["exert", "exalted"], prototype: ["phasing", "exert", "exalted"] };
+export const EXTRA = { rare: ["exert", "exalted"], prototype: ["phasing", "exert", "exalted"] };
 export const MAX_ATTACKERS = 2; // at most this many attack in a turn, so one button always stays home (kura, Nov 3)
 // A coin flip decides who goes first, and that side attacks with only 1 on the match's first turn (kura, Nov 3).
 // g.limit is how many may attack this turn.
@@ -71,6 +72,10 @@ export const toPlace = (g) => Math.min(
 // come from it). Each slot's rarity is the same for both sides; its type is picked weighted by how many buttons of that rarity are
 // left, among types with 2 left, and each side gets a different button of it, so both decks keep the same types. A slot whose
 // rarity has no pair left falls back to common. Ultras (and any other rarity) are never dealt. A button with no rarity is common.
+// A button with a printed effect (b.effect, from the item table, the same for every copy; kura, Nov 3: "printed per button", 88x31's
+// commons and uncommons) has that one effect and no extra, so the two sides' buttons in a slot share the type, not the effect (kura:
+// "keep type but let the effects differ"). Printed Unicast is its only effect (fx "none"). A button without one (rare and up) gets
+// the slot's rolled effect and extra, the same for both sides.
 export const SLOTS = ["common", "common", "common", "common", "common", "uncommon", "uncommon", "rare", "wild"];
 export const WILD = { common: 60, uncommon: 25, rare: 10, prototype: 5 };   // a wildcard's odds, out of 100
 export function dealDecks(pool, n = DECK, rand = Math.random) {
@@ -91,7 +96,8 @@ export function dealDecks(pool, n = DECK, rand = Math.random) {
     let x = rand() * ts.reduce((m, t) => m + left[r][t].length, 0), t = ts[0];
     for (const y of ts) { if (x < left[r][y].length) { t = y; break; } x -= left[r][y].length; }
     const ex = EXTRA[r], extra = ex ? ex[Math.floor(rand() * ex.length)] : undefined, fx = FX[Math.floor(rand() * FX.length)];
-    a.push({ ...take(left[r][t]), fx, extra }); b.push({ ...take(left[r][t]), fx, extra });
+    const printed = (x) => (!x.effect ? { ...x, fx, extra } : x.effect === "exalted" ? { ...x, fx: "none", extra: "exalted" } : { ...x, fx: x.effect, extra: undefined });
+    a.push(printed(take(left[r][t]))); b.push(printed(take(left[r][t])));
   }
   const shuffle = (l) => { for (let i = l.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [l[i], l[j]] = [l[j], l[i]]; } return l; };
   return [shuffle(a), shuffle(b)];   // each side in its own order

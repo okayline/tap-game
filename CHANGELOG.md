@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.131 "Printed" · Tue Nov 3, 11:25 PM
+- Every common and uncommon button now has its own effect, printed on it: the same every match, like a Magic card. The two buttons in a deck slot still share a type, but their effects can differ. An uncommon has one effect, and Unicast can be it. Rares and up roll theirs, as before. Removed: commons and uncommons rolling a new effect every match, and uncommons always getting Unicast on top.
+
 ## v0.130 "Landed First" · Tue Nov 3, 8:40 PM
 - Fixed (we think): a ping's line could start at the deck row. When your ping knocked out a guest card, its top card came in and started sliding up; if it had Broadband, the guest's ping with it could already be waiting, and its line was measured from the card mid-slide. The page now waits for every slide to land before it shows the next board. Removed: a new board being shown while cards were still sliding.
 
