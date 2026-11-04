@@ -239,7 +239,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.129" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.130" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -261,6 +261,9 @@ const $ = (id) => document.getElementById(id);
     if (pumping) return;
     pumping = true;
     while (queue.length) {
+      // a card still sliding in from the deck would give a ping's line the wrong start (kura, Nov 3: lines starting at the deck row):
+      // the next board waits until every slide has landed
+      await Promise.all(document.getAnimations().filter((a) => a.id === "slide").map((a) => a.finished.catch(() => {})));
       const next = queue.shift();
       if (g) await replay(g, next);
       // their ping just arrived (an attack that was not there before): a ping line from each of their attackers to all your cards, once
@@ -466,7 +469,7 @@ const $ = (id) => document.getElementById(id);
       const a = before.get(id), b = el.getBoundingClientRect();
       if (!a || !b.width || (Math.abs(a.left - b.left) < 1 && Math.abs(a.top - b.top) < 1)) continue;
       el.animate([{ transformOrigin: "top left", transform: `translate(${(a.left - b.left) / k}px, ${(a.top - b.top) / k}px) scale(${a.width / b.width}, ${a.height / b.height})` },
-        { transformOrigin: "top left", transform: "none" }], { duration: MOVE_MS, easing: "ease-out" });
+        { transformOrigin: "top left", transform: "none" }], { id: "slide", duration: MOVE_MS, easing: "ease-out" });
     }
   }
 

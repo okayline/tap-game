@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.130 "Landed First" · Tue Nov 3, 8:40 PM
+- Fixed (we think): a ping's line could start at the deck row. When your ping knocked out a guest card, its top card came in and started sliding up; if it had Broadband, the guest's ping with it could already be waiting, and its line was measured from the card mid-slide. The page now waits for every slide to land before it shows the next board. Removed: a new board being shown while cards were still sliding.
+
 ## v0.129 "Slow Slide" · Tue Nov 3, 8:20 PM
 - Cards slide between the field and the deck rows slower: 0.8 s. Removed: the 0.5 s slide.
 
