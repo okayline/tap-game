@@ -234,7 +234,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.114" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.115" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -364,11 +364,11 @@ const $ = (id) => document.getElementById(id);
   $("again").onclick = () => location.assign("/"); // the main page starts a new match
   // the big card (kura, Nov 3): press and hold a card or deck button still for HOLD_MS (or rest the mouse on it without moving for HOVER_MS) to see it whole, with its
   // flavour line; letting go (or moving off) closes it. A hold doesn't also tap, swap or drop: the click after it is swallowed.
-  // kura, Nov 3: the mouse must be still for HOVER_MS (was 450, 800, then 1000 counted from entering the card, then 800 still);
+  // kura, Nov 3: the mouse must be still for HOVER_MS (was 450, 800, then 1000 counted from entering the card, then 800 and 1000 still);
   // With its big card open, the mouse can go sideways until the card has turned a half turn (TURN_OFF, kura, Nov 3: "after a complete 180
   // it goes away"; was 8 then 16 px past the card), and up or down HOVER_PAD px past the card. That reaches into the neighbour cards:
   // resting still on one opens its big card instead, and then the first one no longer turns or closes it.
-  const HOLD_MS = 450, HOVER_MS = 1000, HOVER_PAD = 16, TURN_OFF = 180;
+  const HOLD_MS = 450, HOVER_MS = 1200, HOVER_PAD = 16, TURN_OFF = 180;
   let bigCard = null, bigFlip = null, bigBy = null, held = false;   // bigBy: the card a mouse opened the big card from
   const ZEDGE = 8;   // layers that make the big card's edge (its thickness, .zedge)
   function showBig(b) {

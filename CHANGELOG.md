@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.115 "Longer Hover" · Tue Nov 3, 7:41 PM
+- With a mouse, the big card opens once the mouse has stayed still on a card for 1.2 seconds. Holding on a phone is unchanged. Removed: the 1-second still wait.
+
 ## v0.114 "No Arrows" · Tue Nov 3, 7:40 PM
 - While you place a ping, a button hit by both attackers shows only its damage; it still hits back the one the rule picks. Removed: the arrow (↖ ↑ ↗) pointing at the attacker it would hit back.
 
