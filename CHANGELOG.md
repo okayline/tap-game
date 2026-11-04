@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.104 "Blue Back" · Tue Nov 3, 6:44 PM
+- The big card's back keeps club's diagonal stripes, now in the light blue of the card front's frame (that blue and a slightly darker one), so the front's edge seems to run round onto the back. Removed: the navy stripes, and the back's silver border (it broke the edge where front and back meet).
+
 ## v0.103 "Longer Still" · Tue Nov 3, 6:39 PM
 - With a mouse, the big card opens once the mouse has stayed still on a card for 1 second; any move still starts the wait again. Holding on a phone is unchanged. Removed: the 0.8-second still wait.
 

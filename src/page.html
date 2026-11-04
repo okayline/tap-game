@@ -187,12 +187,13 @@
   .zoom { position: fixed; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; background: rgba(20, 26, 48, .45); pointer-events: none; }
   .zoom .zbox { --w: min(78vw, 300px); --u: calc(var(--w) / 108); width: var(--w); height: calc(var(--h) * var(--u)); position: relative; filter: drop-shadow(0 8px 24px rgba(0,0,0,.45)); perspective: calc(600 * var(--u)); }
   /* the big card turns with your finger or mouse (kura, Nov 3), and past a quarter turn shows its back: 88x31 club's face-down card
-     (okayline/88x31 public/style.css .card.back: navy stripes; kura, Nov 3: "the same back as 88x31 club", then without its "?") */
+     (okayline/88x31 public/style.css .card.back: its diagonal stripes; kura, Nov 3: "the same back as 88x31 club", then without its "?", then
+     in the front's light blue frame colour so the edge runs round onto the back: --frame, and --frame darkened as club's second stripe is) */
   .zflip { position: absolute; inset: 0; transform-style: preserve-3d; }
   /* a finger sliding sideways on a card turns the big card, so the browser mustn't take the slide as a pan (that would cancel the hold) */
   .btn, .deck .card { touch-action: pinch-zoom; }
   .zflip > .gc, .zflip > .zback { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
-  .zback { transform: rotateY(180deg); border-radius: calc(7 * var(--u)); border: 3px ridge #c0c0c0; background: repeating-linear-gradient(45deg, #000080 0 8px, #000060 8px 16px); }
+  .zback { transform: rotateY(180deg); border-radius: calc(7 * var(--u)); background: repeating-linear-gradient(45deg, var(--frame) 0 8px, color-mix(in srgb, var(--frame) 85%, #000) 8px 16px); }
   .ddfoot { margin: 1px 0 0 !important; padding: 0 12px !important; }
   /* on a phone the panels run to the screen's edges so the three cards are as wide as they can be (kura, Nov 3: "as big as they can reasonably get");
      24px = the panel's 4px sides and two 8px gaps (each just wide enough for a tappable card's dashed outline) */
@@ -222,7 +223,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.103" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.104" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
