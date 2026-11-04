@@ -232,7 +232,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.111" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.112" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -439,7 +439,7 @@ const $ = (id) => document.getElementById(id);
     if (taking && (cur === null || leftOf(cur) <= 0)) cur = attackers.find((a) => leftOf(a) > 0) ?? null;
     const tot = (i) => attackers.reduce((n, a) => n + (split[a]?.[i] ?? 0), 0);
     const hitBy = (i) => attackers.filter((a) => split[a]?.[i]);
-    const backBy = (b) => (!b.tapped ? b.power : DAEMON.includes(b.type) ? 1 : 0);   // rules.js backBy
+    const backBy = (b) => (!b.tapped ? b.power : fxOf(b) === "daemon" ? 1 : 0);   // rules.js backBy
     // rules.js backAt: the attacker its hit-back would knock out, if only one; else the least life left; else the most damage on it; else the first
     const backAt = (power, by) => {
       const out = by.filter(([, a]) => power >= life(a)), pool = out.length === 1 ? out : by;
@@ -453,7 +453,7 @@ const $ = (id) => document.getElementById(id);
     // lit attackers: the replay's, or theirs while you place their ping
     const att = new Set(fx.att ?? (taking ? g.attack.attackers.map((i) => theirs[i].id) : []));
     row($("me"), mine, att, (b, i) => {
-      if (myTurn && ready(b) && (!b.sick || BROAD.includes(b.type)) && (picked.has(i) || picked.size < g.limit)) return { can: true, tapped: picked.has(i) && !ONLINE.includes(b.type), sel: picked.has(i) && ONLINE.includes(b.type), note: exerting.has(i) ? "×2" : "",
+      if (myTurn && ready(b) && (!b.sick || fxOf(b) === "broadband") && (picked.has(i) || picked.size < g.limit)) return { can: true, tapped: picked.has(i) && fxOf(b) !== "online", sel: picked.has(i) && fxOf(b) === "online", note: exerting.has(i) ? "×2" : "",
         // a click picks it; with Exert, a second click exerts it (×2); the next click puts it back
         click: () => { if (!picked.has(i)) picked.add(i); else if (b.extra === "exert" && !exerting.has(i)) exerting.add(i); else { picked.delete(i); exerting.delete(i); } draw(); } };
       if (taking && !b.out && !b.phased) {
@@ -474,7 +474,7 @@ const $ = (id) => document.getElementById(id);
     const up = (b, i) => !b.out && (b.tapped || picked.has(i));
     const solo = picked.size === 1;   // rules.js attack: Exalted when it pings alone, Exert doubles
     const atk = mine.reduce((n, b, i) => n + (!up(b, i) ? 0 : b.power * (exerting.has(i) ? 2 : 1) + (solo && picked.has(i) && b.extra === "exalted" ? 1 : 0)), 0);
-    const def = mine.reduce((n, b, i) => n + (!b.out && !b.tapped && !(picked.has(i) && !ONLINE.includes(b.type)) ? life(b) : 0), 0);   // an Always Online one picked to attack still defends
+    const def = mine.reduce((n, b, i) => n + (!b.out && !b.tapped && !(picked.has(i) && fxOf(b) !== "online") ? life(b) : 0), 0);   // an Always Online one picked to attack still defends
     $("meHp").textContent = `player · this turn: ${atk}/${def}`;
     $("themHp").textContent = "guest #1337";   // rules.js NAMES
     // the side's firewall, at the right of its top line (kura, Nov 3: "instead of TOUGHNESS can we call it FIREWALL"): life left on all
@@ -686,13 +686,14 @@ const $ = (id) => document.getElementById(id);
   }
   // a button drawn as a card: name (smaller when long, so it fits on one line, as Magic does), art, type line, an empty text box,
   // and power/life left in a box on the text box's bottom edge (none once it's out)
-  // card text by type: only the effects the rules have (rules.js ALWAYS_ONLINE, BROADBAND, WEBCOUNTER, GLOW, LAG_SPIKE, DAEMON)
-  const ONLINE = ["guestbook"], BROAD = ["webring"], DAEMON = ["construction"];   // rules.js ALWAYS_ONLINE, BROADBAND and DAEMON
+  // card text by effect (rules.js FX: a button's main effect, rolled at the deal; fxOf falls back to the type's, for an older match)
+  const TYPE_FX = { guestbook: "online", webring: "broadband", counter: "webcounter", neon: "glow", divider: "lagspike", construction: "daemon" };
+  const fxOf = (b) => b.fx ?? TYPE_FX[b.type];   // rules.js fxOf
   const EXTRA_TEXT = { exalted: ["Exalted", "+1/+1 when it pings alone."], exert: ["Exert", "ping ×2, then skip an untap."],
     phasing: ["Phasing", "gone every other turn."] };
-  const TEXT = { guestbook: ["Always Online", "pinging doesn't tap it."], webring: ["Broadband", "can ping the turn it comes in."],
-    counter: ["Webcounter", "+1/+0 for each Guestbook on your field."], neon: ["Glow", "+0/+1 for each other Neon on your field."],
-    divider: ["Lag Spike", "a button its ping knocks out doesn't hit back."], construction: ["Daemon", "even tapped, it hits back for 1."] };
+  const TEXT = { online: ["Always Online", "pinging doesn't tap it."], broadband: ["Broadband", "can ping the turn it comes in."],
+    webcounter: ["Webcounter", "+1/+0 for each Guestbook on your field."], glow: ["Glow", "+0/+1 for each other Neon on your field."],
+    lagspike: ["Lag Spike", "a button its ping knocks out doesn't hit back."], daemon: ["Daemon", "even tapped, it hits back for 1."] };
   // a button's picture only moves while it's tapped (kura, Nov 3): ready or knocked out, it's drawn once onto a canvas, kept per button so
   // it doesn't change frame on every redraw
   // made-up flavour lines by type (kura, Nov 3); each card shows one, picked by its button and this match, so it stays put during a match
@@ -745,7 +746,7 @@ const $ = (id) => document.getElementById(id);
   function card(b) {
     const gc = mk("div", "gc"), inn = mk("div", "gc-in"), name = mk("div", b.name.length >= LONG_NAME ? "gc-name long" : "gc-name", b.name), art = mk("div", "gc-art"), img = mk("img");
     img.alt = ""; img.src = b.image;
-    const txt = mk("div", "gc-txt"), t = TEXT[b.type], fx = mk("div", "");
+    const txt = mk("div", "gc-txt"), t = TEXT[fxOf(b)], fx = mk("div", "");
     if (t) txt.append(fx);
     if (t) fx.append(mk("b", "", t[0]), ` · ${t[1]}`);
     const e = EXTRA_TEXT[b.extra];   // a non-common's extra effect, by rarity (rules.js EXTRA)

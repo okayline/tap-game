@@ -5,7 +5,7 @@
 //           "spread" = one point at a time across its buttons, untapped ones first (so they hit back),
 //           "focus"  = fills one button before the next, tapped ones first (sacrifices a button that can't hit back).
 // Before its first turn it places by the last line.
-import { life, toPlace, BROADBAND } from "./rules.js";
+import { life, toPlace, fxOf } from "./rules.js";
 
 export const SCRIPT = [
   { attack: 1, take: "spread" },
@@ -15,7 +15,7 @@ export const SCRIPT = [
 ];
 
 const line = (n) => SCRIPT[((n % SCRIPT.length) + SCRIPT.length) % SCRIPT.length];
-const readyIdx = (side) => side.buttons.map((b, i) => (b.out || b.tapped || b.phased || (b.sick && !BROADBAND.includes(b.type)) ? -1 : i)).filter((i) => i >= 0);
+const readyIdx = (side) => side.buttons.map((b, i) => (b.out || b.tapped || b.phased || (b.sick && fxOf(b) !== "broadband") ? -1 : i)).filter((i) => i >= 0);
 
 // Its attackers this turn (it exerts every one that has Exert: index.js).
 export const dummyAttack = (g) => readyIdx(g.sides.b).slice(0, Math.min(line(g.dummyTurn).attack, g.limit));

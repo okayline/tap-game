@@ -30,23 +30,21 @@ export const STATS = {
 };
 
 export const DECK = 9; // 3 on the field, 6 in the deck row (kura, Nov 3)
-// Always Online (kura, Nov 3; Magic's "vigilance"): attacking doesn't tap a button of these types, so it can still hit back on the other side's turn.
-export const ALWAYS_ONLINE = ["guestbook"];
-// Broadband (kura, Nov 3; Magic's "haste"): a button of these types can attack the turn it comes in (no summoning sickness).
-export const BROADBAND = ["webring"];
-// Webcounter (kura, Nov 3): a field button of these types gets +1/+0 for each Guestbook on its side's field (b.boost, kept by settle()).
-// A card that names another type, as Magic's cards name creature types (kura, Nov 3: visitors signing the guestbook raise the count).
-export const WEBCOUNTER = ["counter"];
-export const WEBCOUNTER_COUNTS = "guestbook";
-// Glow (kura, Nov 3): a button of these types gets +0/+1 for each other one of them on its side's field (b.bonus, kept by settle()).
-export const GLOW = ["neon"];
-// Lag Spike (kura, Nov 3; Magic's "first strike"): when an attack has one of these, a button the attack knocks out doesn't hit back.
+// A button's main effect (b.fx), rolled when the decks are dealt, once per deck slot for both sides (dealDecks), so it isn't tied to
+// the type (kura, Nov 3: "it feels kind of stale having the same effects every game"; Magic prints an ability on each card).
+//   online:     Always Online (Magic's vigilance): pinging doesn't tap it, so it can still hit back on the other side's turn
+//   broadband:  Broadband (Magic's haste): it can ping the turn it comes in
+//   webcounter: Webcounter: +1/+0 for each Guestbook on its side's field (b.boost, kept by settle()); it names a type, as Magic's
+//               cards name creature types
+//   glow:       Glow: +0/+1 for each other Neon on its side's field (b.bonus, kept by settle())
+//   lagspike:   Lag Spike (Magic's first strike): when a ping has one, a button the ping knocks out doesn't hit back
+//   daemon:     Daemon: hits back for 1 even while tapped (an untapped one hits back with its power, like any)
 // (kura, Nov 3: attacking is called "ping" on screen; the code still says attack.)
-export const LAG_SPIKE = ["divider"];
-// Daemon (kura, Nov 3; was Firewall, a name now taken by the side's total): a button of these types hits back for 1 even while
-// tapped (an untapped one hits back with its power, like any).
-export const DAEMON = ["construction"];
-// Extra effects by rarity (kura, Nov 3: "more rare = more interesting effects"; a button keeps its type's effect too). A slot's extra is
+export const FX = ["online", "broadband", "webcounter", "glow", "lagspike", "daemon"];
+// each type's effect before v0.112, for a match dealt before then (its buttons have no fx)
+const TYPE_FX = { guestbook: "online", webring: "broadband", counter: "webcounter", neon: "glow", divider: "lagspike", construction: "daemon" };
+export const fxOf = (b) => b.fx ?? TYPE_FX[b.type];
+// Extra effects by rarity (kura, Nov 3: "more rare = more interesting effects"; a button keeps its main effect too). A slot's extra is
 // rolled when the decks are dealt, once for both sides (dealDecks), so both decks stay matched. Commons get none.
 //   exalted: when it pings alone, +1/+1 for that ping (its +1 toughness: it takes 1 less hit-back, since damage stays)
 //   exert:   when it pings, its side may exert it: its power counts double, and it doesn't untap at its side's next turn
@@ -91,8 +89,8 @@ export function dealDecks(pool, n = DECK, rand = Math.random) {
     if (!ts.length) break;
     let x = rand() * ts.reduce((m, t) => m + left[r][t].length, 0), t = ts[0];
     for (const y of ts) { if (x < left[r][y].length) { t = y; break; } x -= left[r][y].length; }
-    const ex = EXTRA[r], extra = ex ? ex[Math.floor(rand() * ex.length)] : undefined;
-    a.push({ ...take(left[r][t]), extra }); b.push({ ...take(left[r][t]), extra });
+    const ex = EXTRA[r], extra = ex ? ex[Math.floor(rand() * ex.length)] : undefined, fx = FX[Math.floor(rand() * FX.length)];
+    a.push({ ...take(left[r][t]), fx, extra }); b.push({ ...take(left[r][t]), fx, extra });
   }
   return [a, b];
 }
@@ -115,10 +113,9 @@ export function settle(g) {
     changed = false;
     for (const s of Object.values(g.sides)) {
       for (const b of s.deck ?? []) { b.bonus = 0; b.boost = 0; b.power = STATS[b.type]?.[0] ?? 1; }
-      const books = s.buttons.filter((b) => !b.out && !b.phased && b.type === WEBCOUNTER_COUNTS).length;
-      for (const b of s.buttons) { b.boost = !b.out && WEBCOUNTER.includes(b.type) ? books : 0; b.power = (STATS[b.type]?.[0] ?? 1) + b.boost + (b.temp ?? 0); }
-      const glow = s.buttons.filter((b) => !b.out && !b.phased && GLOW.includes(b.type)).length;
-      for (const b of s.buttons) b.bonus = !b.out && GLOW.includes(b.type) ? glow - 1 : 0;
+      const here = s.buttons.filter((b) => !b.out && !b.phased), books = here.filter((b) => b.type === "guestbook").length;
+      for (const b of s.buttons) { b.boost = !b.out && fxOf(b) === "webcounter" ? books : 0; b.power = (STATS[b.type]?.[0] ?? 1) + b.boost + (b.temp ?? 0); }
+      for (const b of s.buttons) b.bonus = !b.out && fxOf(b) === "glow" ? here.filter((x) => x !== b && x.type === "neon").length : 0;
       for (const b of s.buttons) if (!b.out && life(b) <= 0) { b.out = true; g.log.push(`${b.name} is out`); changed = true; }
     }
   }
@@ -173,10 +170,10 @@ export function attack(g, seat, idxs, exert = []) {
   if (!list.every((i) => ready(g.sides[seat], i))) return "Only ready buttons can ping.";
   if (list.length > g.limit) return `At most ${g.limit} can ping this turn.`;
   if (mustFill(g, seat)) return "Bring in a button first.";
-  if (list.some((i) => g.sides[seat].buttons[i].sick && !BROADBAND.includes(g.sides[seat].buttons[i].type))) return "A button that came in this turn can't ping.";
+  if (list.some((i) => g.sides[seat].buttons[i].sick && fxOf(g.sides[seat].buttons[i]) !== "broadband")) return "A button that came in this turn can't ping.";
   g.locked = true;
   if (!list.length) { g.log.push(`${NAMES[seat]} doesn't ping`); passTurn(g); return null; }
-  for (const i of list) if (!ALWAYS_ONLINE.includes(g.sides[seat].buttons[i].type)) g.sides[seat].buttons[i].tapped = true;
+  for (const i of list) if (fxOf(g.sides[seat].buttons[i]) !== "online") g.sides[seat].buttons[i].tapped = true;
   g.attack = { by: seat, attackers: list };
   const att = g.sides[seat].buttons, how = {};
   if (list.length === 1 && att[list[0]].extra === "exalted") { att[list[0]].temp = 1; att[list[0]].shield = 1; how[list[0]] = " (exalted)"; }
@@ -224,8 +221,8 @@ export function place(g, seat, split) {
   if (parts.reduce((n, [, d]) => n + d, 0) !== toPlace(g)) return `Place exactly ${toPlace(g)}.`;
   // hitting back: untapped buttons that take damage (and tapped Daemons, for 1), counted before anything goes out (it all happens at
   // once), except with Lag Spike in the attack, where a button this attack knocks out doesn't hit back
-  const ping = g.attack.attackers.some((i) => LAG_SPIKE.includes(att.buttons[i].type));
-  const backBy = (b) => (!b.tapped ? b.power : DAEMON.includes(b.type) ? 1 : 0);
+  const ping = g.attack.attackers.some((i) => fxOf(att.buttons[i]) === "lagspike");
+  const backBy = (b) => (!b.tapped ? b.power : fxOf(b) === "daemon" ? 1 : 0);
   const hits = ([i, d]) => backBy(def.buttons[i]) > 0 && !(ping && d >= life(def.buttons[i]));
   const target = {};   // target[button]: the attacker it hits back
   for (const p of parts) if (hits(p)) target[p[0]] = backAt(backBy(def.buttons[p[0]]), from[p[0]].map((a) => [a, att.buttons[a], split[a][p[0]]]));

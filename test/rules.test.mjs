@@ -135,3 +135,27 @@ test("rarity extras: rolled once per slot for both sides; Exalted, Exert and Pha
   assert.equal(place(g, "b", { 0: { 1: 1 } }), null);   // the turn passes to b: p phases back in
   assert.equal(g.sides.b.buttons[0].phased, false);
 });
+
+test("main effects: rolled once per slot for both sides, and they follow the button, not its type", async () => {
+  const { dealDecks, FX, fxOf } = await import("../src/rules.js");
+  const pool = ["neon", "webring", "counter", "divider"].flatMap((type) => [...Array(6)].map((_, i) => ({ name: `${type}-${i}`, type })));
+  const seen = new Set();
+  for (let k = 0; k < 20; k++) {
+    const [a, b] = dealDecks(pool);
+    assert.deepEqual(a.map((x) => x.fx), b.map((x) => x.fx));
+    for (const x of a) { assert.ok(FX.includes(x.fx)); seen.add(`${x.type}:${x.fx}`); }
+  }
+  assert.ok(seen.size > 4);                                  // a type isn't stuck with one effect
+  assert.equal(fxOf({ type: "neon" }), "glow");              // a match from before v0.112 keeps the type's effect
+  // a Neon with Daemon hits back for 1 while tapped; a Divider with Always Online doesn't tap when it pings
+  const a = [{ name: "d", type: "divider", fx: "online" }, { name: "n", type: "neon" }, { name: "m", type: "neon" }];
+  const b = [{ name: "k", type: "neon", fx: "daemon" }, { name: "x", type: "neon" }, { name: "y", type: "neon" }];
+  const g = newGame(a, b, "b");
+  g.locked = true; g.limit = 2;
+  assert.equal(attack(g, "b", [0]), null);                   // k pings and taps
+  assert.equal(place(g, "a", { 0: { 1: 1 } }), null);
+  assert.equal(attack(g, "a", [0]), null);
+  assert.equal(g.sides.a.buttons[0].tapped, false);           // Always Online
+  assert.equal(place(g, "b", { 0: { 0: 1, 1: 2 } }), null);  // k (1 life left, tapped) and x (untapped)
+  assert.equal(g.sides.a.buttons[0].damage, 2);               // tapped k hit back for 1 (Daemon), x for its 1
+});

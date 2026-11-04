@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.112 "Own Effects" · Tue Nov 3, 7:35 PM
+- A button's main effect is its own, not its type's (kura, Nov 3: "it feels kind of stale having the same effects every game"; Magic prints an ability on each card): each deck slot rolls one of Always Online, Broadband, Webcounter, Glow, Lag Spike or Daemon when the decks are dealt, and both sides' buttons in that slot get it. Power and toughness still come from the type, and rarity extras still go on top. Glow counts the other Neons on your field and Webcounter the Guestbooks, whatever buttons have them. A match dealt before this keeps each type's old effect. Removed: each type always having the same effect.
+
 ## v0.111 "Rarity Effects" · Tue Nov 3, 7:30 PM
 - Rarer buttons get an extra effect on top of their type's (kura, Nov 3: "more rare = more interesting effects"): uncommons get Exalted; rares get Exert or Exalted; prototypes get Phasing, Exert or Exalted. It's rolled when the decks are dealt, once per deck slot, so both sides' buttons in a slot get the same one. Commons are unchanged.
 - Exalted: +1/+1 when it pings alone (its +1 toughness means it takes 1 less hit-back). Exert: click a picked button a second time to exert it (it shows ×2); it pings for double its power and stays tapped through your next turn. Phasing: at each of its side's turns it phases out or back in; phased out it's faded, and can't ping, take damage, hit back or count for Glow and Webcounter. The dummy exerts every attacker it can.
