@@ -173,7 +173,7 @@ test("main effects: rolled once per slot for both sides, and they follow the but
   assert.equal(g.sides.a.buttons[0].damage, 2);               // tapped k hit back for 1 (Daemon), x for its 1
 });
 
-test("Virus knocks out what it damages; Read-Only can't ping and takes 1 less; Backup comes back once with 1 life", async () => {
+test("Virus knocks out what it damages; Read-Only can't ping and takes 1 less, never 0; Backup comes back once with 1 life", async () => {
   const { life, settle } = await import("../src/rules.js");
   // a: neon 1/2 Virus, guestbook 1/3 Read-Only, neon 1/2 Backup. b: three guestbooks 1/3 with no effect.
   const a = [{ name: "v", type: "neon", fx: "virus" }, { name: "r", type: "guestbook", fx: "readonly" }, { name: "k", type: "neon", fx: "backup" }];
@@ -186,9 +186,13 @@ test("Virus knocks out what it damages; Read-Only can't ping and takes 1 less; B
   assert.equal(place(g, "b", { 0: { 0: 1 } }), null);
   assert.equal(B_[0].out, true);                       // 1 from the Virus: out (it had 3 life)
   assert.equal(A_[0].damage, 1);                       // x still hit back, for its 1
-  assert.equal(attack(g, "b", [1]), null);             // y pings r for 1
+  assert.equal(attack(g, "b", [1, 2]), null);          // y and z ping r for 1 each
+  assert.equal(place(g, "a", { 1: { 1: 1 }, 2: { 1: 1 } }), null);
+  assert.equal(A_[1].damage, 1);                       // Read-Only: 2 less 1
+  assert.equal(attack(g, "a", []), null);
+  assert.equal(attack(g, "b", [1]), null);             // y pings r for 1 again
   assert.equal(place(g, "a", { 1: { 1: 1 } }), null);
-  assert.deepEqual([A_[1].damage, B_[1].damage], [0, 0]);   // Read-Only took 0, so it didn't hit back
+  assert.equal(A_[1].damage, 2);                       // never less than 1
   assert.equal(attack(g, "a", []), null);
   A_[2].damage = 1;                                    // k at 1 life
   assert.equal(attack(g, "b", [2]), null);

@@ -43,7 +43,7 @@ export const DECK = 9; // 3 on the field, 6 in the deck row (kura, Nov 3)
 // Printed only (kura, Nov 3: "only 6 effects spread over 70 buttons is too thin"; not in FX, so rares and up don't roll them):
 //   virus:      Virus (Magic's deathtouch): a button it deals any damage to, pinging or hitting back, is knocked out
 //   readonly:   Read-Only (Magic's defender): it can't ping, and it takes 1 less from each ping (all of that ping's damage on it,
-//               minus 1); a button that ends up taking 0 took no damage, so it doesn't hit back
+//               minus 1), but never less than 1 (kura, Nov 3, after a stalemate: a lone Read-Only took 0 from every 1-power ping)
 //   backup:     Backup (Magic's undying): the first time it would go out, it comes back instead with 1 life left
 // (kura, Nov 3: attacking is called "ping" on screen; the code still says attack.)
 export const FX = ["online", "broadband", "webcounter", "glow", "lagspike", "daemon"];
@@ -232,10 +232,10 @@ export function place(g, seat, split) {
   if (parts.reduce((n, [, d]) => n + d, 0) !== toPlace(g)) return `Place exactly ${toPlace(g)}.`;
   // hitting back: untapped buttons that take damage (and tapped Daemons, for 1), counted before anything goes out (it all happens at
   // once), except with Lag Spike in the attack, where a button this attack knocks out doesn't hit back
-  // what a button really takes: Read-Only takes 1 less; any of it from a Virus knocks it out
+  // what a button really takes: Read-Only takes 1 less, but at least 1; any of it from a Virus knocks it out
   const ping = g.attack.attackers.some((i) => fxOf(att.buttons[i]) === "lagspike");
   const backBy = (b) => (!b.tapped ? b.power : fxOf(b) === "daemon" ? 1 : 0);
-  const dealt = (i, d) => { const b = def.buttons[i], e = fxOf(b) === "readonly" ? Math.max(0, d - 1) : d;
+  const dealt = (i, d) => { const b = def.buttons[i], e = fxOf(b) === "readonly" ? Math.max(1, d - 1) : d;   // d > 0: a part of 0 isn't placed
     return e > 0 && from[i].some((a) => fxOf(att.buttons[a]) === "virus") ? life(b) : e; };
   const hits = ([i, d]) => backBy(def.buttons[i]) > 0 && dealt(i, d) > 0 && !(ping && dealt(i, d) >= life(def.buttons[i]));
   const target = {};   // target[button]: the attacker it hits back

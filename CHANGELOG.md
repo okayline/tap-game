@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.134 "Never Zero" · Wed Nov 4, 12:05 AM
+- Read-Only still takes 1 less from a ping, but never less than 1, so a ping that lands on it always does something. Removed: Read-Only taking nothing from a 1-damage ping, which could leave a match stuck forever.
+
 ## v0.133 "Own Kind" · Tue Nov 3, 11:58 PM
 - Glow and Webcounter count other buttons of their own type: a Webring with Glow gets +0/+1 for each other Webring on your field. Removed: Glow always counting Neons, and Webcounter always counting Guestbooks (itself included).
 
