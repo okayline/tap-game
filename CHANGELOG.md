@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.124 "Plain Title" · Tue Nov 3, 8:01 PM
+- The UN/TAP title is plain text again (kura, Nov 3: a stray click shouldn't end a match, and no pop-ups); "new match" at the end of a match starts the next one. Removed: v0.123's title link.
+
 ## v0.123 "Title Link" · Tue Nov 3, 8:01 PM
 - The UN/TAP title at the top left is a link to the main page, which starts a new match. It looks the same as before. Removed: nothing.
 
