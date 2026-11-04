@@ -222,7 +222,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.102" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.103" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -352,7 +352,7 @@ const $ = (id) => document.getElementById(id);
   $("again").onclick = () => location.assign("/"); // the main page starts a new match
   // the big card (kura, Nov 3): press and hold a card or deck button still for HOLD_MS (or rest the mouse on it without moving for HOVER_MS) to see it whole, with its
   // flavour line; letting go (or moving off) closes it. A hold doesn't also tap, swap or drop: the click after it is swallowed.
-  const HOLD_MS = 450, HOVER_MS = 800;   // kura, Nov 3: the mouse must be still for HOVER_MS (was 450, 800, then 1000 counted from entering the card)
+  const HOLD_MS = 450, HOVER_MS = 1000;   // kura, Nov 3: the mouse must be still for HOVER_MS (was 450, 800, then 1000 counted from entering the card, then 800 still)
   let bigCard = null, bigFlip = null, held = false;
   function showBig(b) {
     hideBig();

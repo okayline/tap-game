@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.103 "Longer Still" · Tue Nov 3, 6:39 PM
+- With a mouse, the big card opens once the mouse has stayed still on a card for 1 second; any move still starts the wait again. Holding on a phone is unchanged. Removed: the 0.8-second still wait.
+
 ## v0.102 "Slow Turn" · Tue Nov 3, 6:39 PM
 - The big card turns at half the speed: on a phone a 240 px slide turns it to its back; with a mouse the small card's width is half a turn, so it never goes all the way round. Removed: the 120 px phone turn to the back, and a whole turn across the small card's width.
 
