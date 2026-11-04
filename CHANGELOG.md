@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.120 "No Peek Mid-Fight" · Tue Nov 3, 7:55 PM
+- With a mouse, the big card doesn't open from pressing ping or accept until the fight has played out, and one already open closes when you press them. Holding a card on a phone is unchanged, and you can still hover cards while you place the guest's ping. Removed: the big card popping up during a fight.
+
 ## v0.119 "Line Back" · Tue Nov 3, 7:52 PM
 - Fixed: a ping that knocked out every button it hit drew no line and no glow (only the damage showed). Since v0.113 a knocked-out button's spot is filled from the top in the same update that ends the ping, and the replay looked for hit buttons on the field only, so it lost them; it now also looks in the deck and among the knocked-out buttons, and the knocked-out button shows its hit and goes out before the top card slides in. Removed: the replay looking only at the field.
 

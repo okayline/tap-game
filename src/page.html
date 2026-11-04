@@ -234,7 +234,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.119" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.120" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -244,9 +244,12 @@ const $ = (id) => document.getElementById(id);
   // boards wait their turn: a fight in a new board is replayed (replay(), below) before the next board is shown
   const queue = [];
   let pumping = false, playing = false, fx = {}, lastPing = [];
+  // fighting: from pressing ping or accept until the fight has played out; a mouse doesn't open the big card then (kura, Nov 3)
+  let sent = false;
+  const fighting = () => sent || pumping || playing;
   ws.onmessage = (e) => {
     const d = JSON.parse(e.data);
-    if (d.error) { $("err").textContent = d.error; return; }
+    if (d.error) { $("err").textContent = d.error; sent = false; return; }
     queue.push(d.g); pump();
   };
   async function pump() {
@@ -260,7 +263,7 @@ const $ = (id) => document.getElementById(id);
       const pinged = next.attack && !g?.attack && !next.winner ? next.attack.attackers.map((i) => [next.attack.by, next.sides[next.attack.by].buttons[i].id, open, false]) : null;   // the line only: its glow waits for your take
       g = next; fx = pinged ? { pings: pinged } : {}; $("err").textContent = ""; draw(); fx = {};
     }
-    pumping = false;
+    pumping = false; sent = false;
   }
   // THE FIGHT REPLAY (kura, Nov 3: "too instant and hard to follow"): the server sends only the board after a fight, so the page
   // compares it with the board before and shows the fight in beats, BEAT_MS apart, with the log keeping pace:
@@ -360,8 +363,8 @@ const $ = (id) => document.getElementById(id);
     }));
   }
   let picked = new Set(), exerting = new Set(), split = {}, cur = null, seen = "";   // exerting: picked buttons you exert (rules.js EXTRA)   // split[attacker][button]: damage; cur: the attacker being placed
-  $("attack").onclick = () => { lastPing = [...picked]; send({ do: "attack", idxs: lastPing, exert: [...exerting] }); };   // kept for the replay
-  $("take").onclick = () => send({ do: "take", split });
+  $("attack").onclick = () => { sent = true; if (bigBy) hideBig(); lastPing = [...picked]; send({ do: "attack", idxs: lastPing, exert: [...exerting] }); };   // kept for the replay
+  $("take").onclick = () => { sent = true; if (bigBy) hideBig(); send({ do: "take", split }); };
   $("start").onclick = () => send({ do: "start" });
   $("again").onclick = () => location.assign("/"); // the main page starts a new match
   // the big card (kura, Nov 3): press and hold a card or deck button still for HOLD_MS (or rest the mouse on it without moving for HOVER_MS) to see it whole, with its
@@ -418,7 +421,8 @@ const $ = (id) => document.getElementById(id);
       if (e.pointerType !== "mouse") return;
       if (open) { turn(e); return; }
       x0 = e.clientX; clearTimeout(hover);
-      hover = setTimeout(() => { if (el.isConnected) { open = true; showBig(getB()); bigBy = el; } }, HOVER_MS);
+      if (fighting()) return;   // no big card from a mouse during a fight; the next move once it's over starts the wait again
+      hover = setTimeout(() => { if (el.isConnected && !fighting()) { open = true; showBig(getB()); bigBy = el; } }, HOVER_MS);
     };
     el.addEventListener("pointerenter", wait); el.addEventListener("pointermove", wait);
     el.addEventListener("pointerleave", (e) => { if (e.pointerType !== "mouse") return; clearTimeout(hover); if (open) addEventListener("pointermove", away); });
