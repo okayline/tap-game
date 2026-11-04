@@ -6,22 +6,27 @@ import { newGame, attack, place } from "../src/rules.js";
 const A = [{ name: "w", type: "webring" }, { name: "n", type: "neon" }, { name: "c", type: "counter" }];
 const B = [{ name: "k", type: "construction" }, { name: "d", type: "divider" }, { name: "m", type: "neon" }];
 
-test("an attack is placed on the defender's buttons; untapped ones that take damage hit back; damage stays", () => {
+test("each attacker's ping is placed on the defender's buttons; a button hits back the attacker that hit it; damage stays", () => {
   const g = newGame(A, B, "a");
   assert.equal(attack(g, "a", [0, 2]), "At most 1 can ping this turn."); // a won the flip: 1 on the first turn
   g.limit = 2; // as from the second turn on
   assert.equal(attack(g, "a", [0, 1, 2]), "At most 2 can ping this turn.");
   assert.equal(attack(g, "a", [0, 2]), null);      // webring 3 + counter 2 = 5
-  assert.equal(place(g, "b", { 0: 2, 1: 2 }), "Place exactly 5.");
-  // b puts 3 on construction (out) and 2 on divider (1 left); neon takes nothing
-  assert.equal(place(g, "b", { 0: 3, 1: 2 }), null);
-  assert.deepEqual(g.sides.b.buttons.map((b) => b.out), [true, false, false]);
-  // hit back: construction 1 + divider 3 = 4 over the attackers in order: webring takes 2 (out), counter takes 2 (1 left)
-  assert.deepEqual(g.sides.a.buttons.map((b) => b.out), [true, false, false]);
-  assert.equal(g.sides.a.buttons[2].damage, 2);
+  assert.equal(place(g, "b", { 0: { 0: 2 }, 2: { 1: 2 } }), "Place exactly 5.");
+  assert.equal(place(g, "b", { 0: { 0: 1 }, 2: { 1: 4 } }), "c only pings for 2.");
+  assert.equal(place(g, "b", { 1: { 0: 5 } }), "That button isn't pinging.");
+  // webring puts 2 on construction and 1 on divider; counter puts 2 on divider (3: out). Divider was hit by both, so b picks.
+  const split = { 0: { 0: 2, 1: 1 }, 2: { 1: 2 } };
+  assert.equal(place(g, "b", split), "Pick which ping d hits back.");
+  assert.equal(place(g, "b", split, { 1: 1 }), "Pick which ping d hits back.");   // neon didn't hit it
+  assert.equal(place(g, "b", split, { 1: 2 }), null);   // divider hits back counter
+  assert.deepEqual(g.sides.b.buttons.map((b) => b.out), [false, true, false]);
+  // construction hits back webring for 1 (1 left); divider's 3 all go to counter (out); neon takes nothing
+  assert.deepEqual(g.sides.a.buttons.map((b) => b.out), [false, false, true]);
+  assert.equal(g.sides.a.buttons[0].damage, 1);
   assert.equal(g.winner, null);
   assert.equal(g.turn, "b");
-  assert.equal(g.sides.b.buttons[1].damage, 2);      // damage stays
+  assert.equal(g.sides.b.buttons[0].damage, 2);      // damage stays
 });
 
 test("decks: same types on both sides; swaps until the first attack; out buttons are replaced from the deck", async () => {
@@ -57,7 +62,7 @@ test("decks: same types on both sides; swaps until the first attack; out buttons
   assert.equal(attack(g, "a", [0]), null);
   assert.equal(swap(g, "a", 0, 0), "Only on your turn, before you ping."); // a is mid-attack
   // b puts the guestbook's 1 power on webring 0 (2 toughness, survives); hit back 3 takes guestbook 0 out
-  assert.equal(place(g, "b", { 0: 1 }), null);
+  assert.equal(place(g, "b", { 0: { 0: 1 } }), null);
   assert.equal(g.sides.a.buttons[0].out, true);
   g.limit = 2; attack(g, "b", []); // b passes; a's turn: the out button waits in its spot until a brings one in
   assert.equal(g.sides.a.buttons[0].out, true);
@@ -72,4 +77,14 @@ test("decks: same types on both sides; swaps until the first attack; out buttons
   assert.equal(swap(g, "a", 2, 0), "One swap a turn.");
   assert.equal(attack(g, "a", [1]), "A button that came in this turn can't ping.");
   assert.equal(swap(g, "b", 0, 0), "Only on your turn, before you ping.");
+});
+
+test("the dummy places each attacker's ping and picks a hit-back for a button hit by both", async () => {
+  const { dummyPlace } = await import("../src/dummy.js");
+  const g = newGame(A, B, "a");
+  g.limit = 2; g.dummyTurn = 1;   // SCRIPT line 0: spread
+  attack(g, "a", [0, 2]);
+  const [split, aim] = dummyPlace(g);
+  assert.equal(place(g, "b", split, aim), null);
+  assert.equal(g.turn, "b");
 });

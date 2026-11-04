@@ -338,9 +338,9 @@ const $ = (id) => document.getElementById(id);
       const d = document.createElement("div"); d.textContent = `C:\\> ${t}`; d.style.opacity = 1 - k * 0.125; return d;   // a DOS prompt before each line (kura, Nov 3)
     }));
   }
-  let picked = new Set(), split = {}, seen = "";
+  let picked = new Set(), split = {}, aim = {}, cur = null, seen = "";   // split[attacker][button]: damage; aim[button]: attacker it hits back; cur: the attacker being placed
   $("attack").onclick = () => { lastPing = [...picked]; send({ do: "attack", idxs: lastPing }); };   // kept for the replay
-  $("take").onclick = () => send({ do: "take", split });
+  $("take").onclick = () => send({ do: "take", split, aim });
   $("start").onclick = () => send({ do: "start" });
   $("again").onclick = () => location.assign("/"); // the main page starts a new match
   // the big card (kura, Nov 3): press and hold a card or deck button still for HOLD_MS (or rest the mouse on it) to see it whole, with its
@@ -377,14 +377,24 @@ const $ = (id) => document.getElementById(id);
   function draw() {
     const me = "a", them = "b", mine = g.sides[me].buttons, theirs = g.sides[them].buttons;
     const key = `${g.turn}|${g.attack ? g.attack.by : ""}|${g.log.length}|${mine.map((b) => b.id).join()}`;
-    if (key !== seen) { seen = key; picked = new Set(); split = {}; } // a new step: clear picks
+    if (key !== seen) { seen = key; picked = new Set(); split = {}; aim = {}; cur = null; } // a new step: clear picks
     const taking = !playing && g.attack && g.attack.by === them && !g.winner;   // while a replay plays, nothing can be clicked
     const life = (b) => (b.out ? 0 : b.toughness + (b.bonus ?? 0) - b.damage);   // rules.js life (bonus: Glow)
     const myTurn = !playing && g.turn === me && !g.attack && !g.winner;
     const ready = (b) => !b.out && !b.tapped;
     // what you must place when they attack: their attack's total, or all your buttons' life left if that's less
     const need = taking ? Math.min(g.attack.attackers.reduce((n, i) => n + theirs[i].power, 0), mine.reduce((n, b) => n + life(b), 0)) : 0;
-    const placed = Object.values(split).reduce((n, d) => n + d, 0);
+    const sum = (o) => Object.values(o ?? {}).reduce((n, d) => n + d, 0);
+    const placed = Object.values(split).reduce((n, part) => n + sum(part), 0);
+    // placing their ping (kura, Nov 3): one attacker's power at a time (cur, picked by clicking their card; the next one with power
+    // left once it's all placed). A button hits back the attacker that hit it; one hit by both hits back the one shown by its arrow.
+    const attackers = taking ? g.attack.attackers : [];
+    const leftOf = (a) => theirs[a].power - sum(split[a]);
+    if (taking && (cur === null || leftOf(cur) <= 0)) cur = attackers.find((a) => leftOf(a) > 0) ?? null;
+    const tot = (i) => attackers.reduce((n, a) => n + (split[a]?.[i] ?? 0), 0);
+    const hitBy = (i) => attackers.filter((a) => split[a]?.[i]);
+    const backs = (b) => !b.tapped || DAEMON.includes(b.type);   // rules.js backBy
+    const ARROW = ["↖", "↑", "↗"];   // toward the attacker's spot in their row
     // your row: on your turn click to pick up to g.limit attackers (1 on the match's first turn, then 2; they show tapped; no more can be picked); when they attack, each click puts 1 damage on
     // that button (up to its life left; one more click clears it)
     // lit attackers: the replay's, or theirs while you place their ping
@@ -392,13 +402,22 @@ const $ = (id) => document.getElementById(id);
     row($("me"), mine, att, (b, i) => {
       if (myTurn && ready(b) && (!b.sick || BROAD.includes(b.type)) && (picked.has(i) || picked.size < g.limit)) return { can: true, tapped: picked.has(i) && !ONLINE.includes(b.type), sel: picked.has(i) && ONLINE.includes(b.type), click: () => { picked.has(i) ? picked.delete(i) : picked.add(i); draw(); } };
       if (taking && !b.out) {
-        const d = split[i] ?? 0;
-        return { can: true, sel: d > 0, note: d ? `-${d}` : "",
-          click: () => { if (d < life(b) && placed < need) split[i] = d + 1; else delete split[i]; draw(); } };
+        const d = tot(i), by = hitBy(i), both = by.length > 1 && backs(b);
+        const clear = () => { for (const a of attackers) if (split[a]) delete split[a][i]; delete aim[i]; };
+        return { can: true, sel: d > 0, note: d ? `-${d}${both ? ` ${ARROW[aim[i]] ?? ""}` : ""}` : "",
+          click: () => {
+            if (d < life(b) && placed < need && cur !== null) {
+              (split[cur] ??= {})[i] = (split[cur][i] ?? 0) + 1;
+              if (hitBy(i).length > 1) aim[i] ??= hitBy(i)[0];
+            } else if (both && aim[i] === by[0]) aim[i] = by[1];   // a button hit by both: the next click turns its hit-back to the other one
+            else clear();
+            draw();
+          } };
       }
       return {};
     });
-    row($("them"), theirs, att, () => ({}));
+    row($("them"), theirs, att, (b, i) => (taking && attackers.includes(i) && leftOf(i) > 0
+      ? { can: true, sel: cur === i, click: () => { cur = i; draw(); } } : {}));
     // THIS TURN: attack = power of your buttons tapped or picked to attack; defense = life left on your ready buttons (the ones that hit back)
     const up = (b, i) => !b.out && (b.tapped || picked.has(i));
     const atk = mine.reduce((n, b, i) => n + (up(b, i) ? b.power : 0), 0);
@@ -615,7 +634,7 @@ const $ = (id) => document.getElementById(id);
   // a button drawn as a card: name (smaller when long, so it fits on one line, as Magic does), art, type line, an empty text box,
   // and power/life left in a box on the text box's bottom edge (none once it's out)
   // card text by type: only the effects the rules have (rules.js ALWAYS_ONLINE, BROADBAND, WEBCOUNTER, GLOW, LAG_SPIKE, DAEMON)
-  const ONLINE = ["guestbook"], BROAD = ["webring"];   // rules.js ALWAYS_ONLINE and BROADBAND
+  const ONLINE = ["guestbook"], BROAD = ["webring"], DAEMON = ["construction"];   // rules.js ALWAYS_ONLINE, BROADBAND and DAEMON
   const TEXT = { guestbook: ["Always Online", "pinging doesn't tap it."], webring: ["Broadband", "can ping the turn it comes in."],
     counter: ["Webcounter", "+1/+0 for each Guestbook on your field."], neon: ["Glow", "+0/+1 for each other Neon on your field."],
     divider: ["Lag Spike", "a button its ping knocks out doesn't hit back."], construction: ["Daemon", "even tapped, it hits back for 1."] };

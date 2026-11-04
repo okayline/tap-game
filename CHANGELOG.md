@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.95 "Paired Hit-Back" · Tue Nov 3, 6:03 PM
+- You place each attacker's ping on your buttons separately: click one of their attacking cards to pick whose ping you're placing (it moves on to the next one when it's all placed), then click your buttons as before. A button hits back the attacker that hit it. A button hit by both hits back only one of them, at its full power: an arrow on it points at that one, and clicking it once everything is placed turns it to the other (a second click clears it). Hit-back past an attacker's life is lost. The dummy places the same way, and a button of its hit by both hits back the first attacker. The log says whom each button hits back. Removed: one total to place for the whole ping, and hit-back pooled and spread over the attackers in order.
+
 ## v0.94 "Small Flavour" · Tue Nov 3, 10:15 AM
 - The flavour line on the big card is a little smaller: 5.8 units instead of 6.8. Removed: the 6.8-unit flavour on the big card.
 

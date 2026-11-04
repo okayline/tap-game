@@ -3,8 +3,9 @@
 // A button has power and toughness, takes damage that stays for the whole match, and goes out when its damage
 // reaches its toughness. It is untapped (ready) or tapped.
 // Your turn: your buttons untap; you pick up to MAX_ATTACKERS ready buttons to attack and press attack (they tap).
-// The other side then splits the attack's total power over its own buttons, any way it likes (no time limit).
-// Each of its untapped buttons that takes damage hits back with its power, spread over the attackers in order.
+// The other side then places each attacker's power on its own buttons, any way it likes (no time limit).
+// Each of its untapped buttons that takes damage hits back with its power, at the attacker that hit it; a button hit by both
+// attackers hits back only one of them, the one the defender picks (kura, Nov 3). Hit-back past an attacker's life is lost.
 // A button only untaps at the start of its own side's turn, so attacking with it means it can't hit back next turn.
 // (kura, Nov 2: "the buttons are the HP !!!")
 // Decks (kura, Nov 3): each side has DECK buttons, 3 on the field and the rest in its deck. Both decks hold the same types
@@ -172,29 +173,52 @@ export function attack(g, seat, idxs) {
   return null;
 }
 
-// The defender places the attack: split is { buttonIndex: damage }, adding up to toPlace(g), no button past its life.
-export function place(g, seat, split) {
+// The defender places the attack: split is { attackerIndex: { buttonIndex: damage } }, each attacker's part no more than its power,
+// adding up to toPlace(g), no button past its life. aim is { buttonIndex: attackerIndex }: which attacker a button hit by more than
+// one hits back (kura, Nov 3: "choose one"); a button hit by one attacker hits back that one.
+export function place(g, seat, split, aim = {}) {
   if (!g.attack || g.attack.by === seat) return "Nothing to take.";
   const by = g.attack.by, att = g.sides[by], def = g.sides[seat];
-  const parts = Object.entries(split).map(([k, v]) => [Number(k), Number(v)]).filter(([, d]) => d > 0);
-  if (!parts.every(([i, d]) => Number.isInteger(d) && def.buttons[i] && d <= life(def.buttons[i]))) return "A button can't take that much.";
+  if (!split || typeof split !== "object") return "Nothing placed.";
+  const from = {}, total = {};   // from[button]: the attackers that hit it; total[button]: its damage
+  for (const [ka, part] of Object.entries(split)) {
+    const a = Number(ka);
+    if (!g.attack.attackers.includes(a) || !part || typeof part !== "object") return "That button isn't pinging.";
+    let sum = 0;
+    for (const [kb, v] of Object.entries(part)) {
+      const i = Number(kb), d = Number(v);
+      if (!Number.isInteger(d) || d < 0 || !def.buttons[i]) return "A button can't take that much.";
+      if (!d) continue;
+      sum += d; total[i] = (total[i] ?? 0) + d; (from[i] ??= []).push(a);
+    }
+    if (sum > att.buttons[a].power) return `${att.buttons[a].name} only pings for ${att.buttons[a].power}.`;
+  }
+  const parts = Object.entries(total).map(([k, d]) => [Number(k), d]);
+  if (!parts.every(([i, d]) => d <= life(def.buttons[i]))) return "A button can't take that much.";
   if (parts.reduce((n, [, d]) => n + d, 0) !== toPlace(g)) return `Place exactly ${toPlace(g)}.`;
   // hitting back: untapped buttons that take damage (and tapped Daemons, for 1), counted before anything goes out (it all happens at
   // once), except with Lag Spike in the attack, where a button this attack knocks out doesn't hit back
   const ping = g.attack.attackers.some((i) => LAG_SPIKE.includes(att.buttons[i].type));
   const backBy = (b) => (!b.tapped ? b.power : DAEMON.includes(b.type) ? 1 : 0);
   const hits = ([i, d]) => backBy(def.buttons[i]) > 0 && !(ping && d >= life(def.buttons[i]));
-  let back = parts.filter(hits).reduce((n, [i]) => n + backBy(def.buttons[i]), 0);
+  const target = {};   // target[button]: the attacker it hits back
+  for (const p of parts) {
+    if (!hits(p)) continue;
+    const [i] = p, t = from[i].length === 1 ? from[i][0] : Number(aim?.[i]);
+    if (!from[i].includes(t)) return `Pick which ping ${def.buttons[i].name} hits back.`;
+    target[i] = t;
+  }
+  const back = {};   // back[attacker]: hit-back aimed at it
   for (const [i, d] of parts) {
-    const b = def.buttons[i], hit = hits([i, d]);
+    const b = def.buttons[i], t = target[i];
+    if (t !== undefined) back[t] = (back[t] ?? 0) + backBy(b);
     b.damage += d;
-    g.log.push(`${b.name} takes ${d}${hit ? `, hits back for ${backBy(b)}` : ""}`);
+    g.log.push(`${b.name} takes ${d}${t !== undefined ? `, hits back ${att.buttons[t].name} for ${backBy(b)}` : ""}`);
     if (life(b) <= 0) { b.out = true; g.log.push(`${b.name} is out`); }
   }
   for (const i of g.attack.attackers) {
-    const a = att.buttons[i], d = Math.min(back, life(a));
+    const a = att.buttons[i], d = Math.min(back[i] ?? 0, life(a));
     if (!d) continue;
-    back -= d;
     a.damage += d;
     g.log.push(`${a.name} takes ${d}`);
     if (life(a) <= 0) { a.out = true; g.log.push(`${a.name} is out`); }
