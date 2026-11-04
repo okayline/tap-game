@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.123 "Title Link" · Tue Nov 3, 8:01 PM
+- The UN/TAP title at the top left is a link to the main page, which starts a new match. It looks the same as before. Removed: nothing.
+
 ## v0.122 "Unicast, Overclock, Dial-Up" · Tue Nov 3, 7:58 PM
 - The rarity extras have old-web names (kura, Nov 3): Exalted is now Unicast, Exert is Overclock, Phasing is Dial-Up. The log says "(unicast)" and "(overclocked)" on a ping, and a Dial-Up button "disconnects" and "reconnects". The rules are unchanged. Removed: the names Exalted, Exert and Phasing on screen, and "phases out" / "phases in" in the log.
 
