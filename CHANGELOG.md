@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.132 "Three More" · Tue Nov 3, 11:55 PM
+- Three new printed effects: Virus (any damage it deals knocks a button out), Read-Only (can't ping; takes 1 less from each ping) and Backup (the first time it's knocked out, it's back with 1 life). No button has them yet. Removed: nothing.
+
 ## v0.131 "Printed" · Tue Nov 3, 11:25 PM
 - Every common and uncommon button now has its own effect, printed on it: the same every match, like a Magic card. The two buttons in a deck slot still share a type, but their effects can differ. An uncommon has one effect, and Unicast can be it. Rares and up roll theirs, as before. Removed: commons and uncommons rolling a new effect every match, and uncommons always getting Unicast on top.
 

@@ -239,7 +239,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.131" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.132" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -497,7 +497,7 @@ const $ = (id) => document.getElementById(id);
     // lit attackers: the replay's, or theirs while you place their ping
     const att = new Set(fx.att ?? (taking ? g.attack.attackers.map((i) => theirs[i].id) : []));
     row($("me"), mine, att, (b, i) => {
-      if (myTurn && ready(b) && (!b.sick || fxOf(b) === "broadband") && (picked.has(i) || picked.size < g.limit)) return { can: true, tapped: picked.has(i) && fxOf(b) !== "online", sel: picked.has(i) && fxOf(b) === "online", note: exerting.has(i) ? "×2" : "",
+      if (myTurn && ready(b) && fxOf(b) !== "readonly" && (!b.sick || fxOf(b) === "broadband") && (picked.has(i) || picked.size < g.limit)) return { can: true, tapped: picked.has(i) && fxOf(b) !== "online", sel: picked.has(i) && fxOf(b) === "online", note: exerting.has(i) ? "×2" : "",
         // a click picks it; with Exert, a second click exerts it (×2); the next click puts it back
         click: () => { if (!picked.has(i)) picked.add(i); else if (b.extra === "exert" && !exerting.has(i)) exerting.add(i); else { picked.delete(i); exerting.delete(i); } draw(); } };
       if (taking && !b.out && !b.phased) {
@@ -736,7 +736,9 @@ const $ = (id) => document.getElementById(id);
     phasing: ["Dial-Up", "gone every other turn."] };
   const TEXT = { online: ["Always Online", "pinging doesn't tap it."], broadband: ["Broadband", "can ping the turn it comes in."],
     webcounter: ["Webcounter", "+1/+0 for each Guestbook on your field."], glow: ["Glow", "+0/+1 for each other Neon on your field."],
-    lagspike: ["Lag Spike", "a button its ping knocks out doesn't hit back."], daemon: ["Daemon", "even tapped, it hits back for 1."] };
+    lagspike: ["Lag Spike", "a button its ping knocks out doesn't hit back."], daemon: ["Daemon", "even tapped, it hits back for 1."],
+    virus: ["Virus", "any damage it deals knocks a button out."], readonly: ["Read-Only", "can't ping; takes 1 less from each ping."],
+    backup: ["Backup", "the first time it's knocked out, it's back with 1 life."] };
   // a button's picture only moves while it's tapped (kura, Nov 3): ready or knocked out, it's drawn once onto a canvas, kept per button so
   // it doesn't change frame on every redraw
   // made-up flavour lines by type (kura, Nov 3); each card shows one, picked by its button and this match, so it stays put during a match

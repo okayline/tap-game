@@ -39,6 +39,11 @@ export const DECK = 9; // 3 on the field, 6 in the deck row (kura, Nov 3)
 //   glow:       Glow: +0/+1 for each other Neon on its side's field (b.bonus, kept by settle())
 //   lagspike:   Lag Spike (Magic's first strike): when a ping has one, a button the ping knocks out doesn't hit back
 //   daemon:     Daemon: hits back for 1 even while tapped (an untapped one hits back with its power, like any)
+// Printed only (kura, Nov 3: "only 6 effects spread over 70 buttons is too thin"; not in FX, so rares and up don't roll them):
+//   virus:      Virus (Magic's deathtouch): a button it deals any damage to, pinging or hitting back, is knocked out
+//   readonly:   Read-Only (Magic's defender): it can't ping, and it takes 1 less from each ping (all of that ping's damage on it,
+//               minus 1); a button that ends up taking 0 took no damage, so it doesn't hit back
+//   backup:     Backup (Magic's undying): the first time it would go out, it comes back instead with 1 life left
 // (kura, Nov 3: attacking is called "ping" on screen; the code still says attack.)
 export const FX = ["online", "broadband", "webcounter", "glow", "lagspike", "daemon"];
 // each type's effect before v0.112, for a match dealt before then (its buttons have no fx)
@@ -62,6 +67,13 @@ export const NAMES = { a: "Player", b: "Guest #1337" };
 export const other = (seat) => (seat === "a" ? "b" : "a");
 export const life = (b) => (b.out ? 0 : b.toughness + (b.bonus ?? 0) - b.damage);
 // how much of an attack the defender must place: all of it, or as much as its buttons can still take
+// a button whose life is gone goes out, unless it has Backup it hasn't used: then it's back with 1 life. Returns true if it went out.
+function knock(g, b) {
+  if (b.out || life(b) > 0) return false;
+  if (fxOf(b) === "backup" && !b.restored) { b.restored = true; b.damage = b.toughness + (b.bonus ?? 0) - 1; g.log.push(`${b.name} restores from backup`); return false; }
+  b.out = true; g.log.push(`${b.name} is out`);
+  return true;
+}
 export const toPlace = (g) => Math.min(
   g.attack.attackers.reduce((n, i) => n + g.sides[g.attack.by].buttons[i].power, 0),
   g.sides[other(g.attack.by)].buttons.reduce((n, b) => n + (b.phased ? 0 : life(b)), 0),
@@ -124,7 +136,7 @@ export function settle(g) {
       const here = s.buttons.filter((b) => !b.out && !b.phased), books = here.filter((b) => b.type === "guestbook").length;
       for (const b of s.buttons) { b.boost = !b.out && fxOf(b) === "webcounter" ? books : 0; b.power = (STATS[b.type]?.[0] ?? 1) + b.boost + (b.temp ?? 0); }
       for (const b of s.buttons) b.bonus = !b.out && fxOf(b) === "glow" ? here.filter((x) => x !== b && x.type === "neon").length : 0;
-      for (const b of s.buttons) if (!b.out && life(b) <= 0) { b.out = true; g.log.push(`${b.name} is out`); changed = true; }
+      for (const b of s.buttons) if (knock(g, b)) changed = true;
     }
   }
 }
@@ -169,6 +181,7 @@ export function attack(g, seat, idxs, exert = []) {
   if (!list.every((i) => ready(g.sides[seat], i))) return "Only ready buttons can ping.";
   if (list.length > g.limit) return `At most ${g.limit} can ping this turn.`;
   if (list.some((i) => g.sides[seat].buttons[i].sick && fxOf(g.sides[seat].buttons[i]) !== "broadband")) return "A button that came in this turn can't ping.";
+  if (list.some((i) => fxOf(g.sides[seat].buttons[i]) === "readonly")) return "A Read-Only button can't ping.";
   g.locked = true;
   if (!list.length) { g.log.push(`${NAMES[seat]} doesn't ping`); passTurn(g); return null; }
   for (const i of list) if (fxOf(g.sides[seat].buttons[i]) !== "online") g.sides[seat].buttons[i].tapped = true;
@@ -218,25 +231,32 @@ export function place(g, seat, split) {
   if (parts.reduce((n, [, d]) => n + d, 0) !== toPlace(g)) return `Place exactly ${toPlace(g)}.`;
   // hitting back: untapped buttons that take damage (and tapped Daemons, for 1), counted before anything goes out (it all happens at
   // once), except with Lag Spike in the attack, where a button this attack knocks out doesn't hit back
+  // what a button really takes: Read-Only takes 1 less; any of it from a Virus knocks it out
   const ping = g.attack.attackers.some((i) => fxOf(att.buttons[i]) === "lagspike");
   const backBy = (b) => (!b.tapped ? b.power : fxOf(b) === "daemon" ? 1 : 0);
-  const hits = ([i, d]) => backBy(def.buttons[i]) > 0 && !(ping && d >= life(def.buttons[i]));
+  const dealt = (i, d) => { const b = def.buttons[i], e = fxOf(b) === "readonly" ? Math.max(0, d - 1) : d;
+    return e > 0 && from[i].some((a) => fxOf(att.buttons[a]) === "virus") ? life(b) : e; };
+  const hits = ([i, d]) => backBy(def.buttons[i]) > 0 && dealt(i, d) > 0 && !(ping && dealt(i, d) >= life(def.buttons[i]));
   const target = {};   // target[button]: the attacker it hits back
   for (const p of parts) if (hits(p)) target[p[0]] = backAt(backBy(def.buttons[p[0]]), from[p[0]].map((a) => [a, att.buttons[a], split[a][p[0]]]));
   const back = {};   // back[attacker]: hit-back aimed at it
-  for (const [i, d] of parts) {
+  const viral = {};   // viral[attacker]: a Virus hits it back
+  const hurt = parts.map(([i, d]) => [i, dealt(i, d)]);   // worked out before any damage lands (it all happens at once)
+  for (const [i, d] of hurt) {
     const b = def.buttons[i], t = target[i];
-    if (t !== undefined) back[t] = (back[t] ?? 0) + backBy(b);
+    if (t !== undefined) { back[t] = (back[t] ?? 0) + backBy(b); if (fxOf(b) === "virus") viral[t] = true; }
     b.damage += d;
     g.log.push(`${b.name} takes ${d}${t !== undefined ? `, hits back ${att.buttons[t].name} for ${backBy(b)}` : ""}`);
-    if (life(b) <= 0) { b.out = true; g.log.push(`${b.name} is out`); }
+    knock(g, b);
   }
   for (const i of g.attack.attackers) {
-    const a = att.buttons[i], d = Math.min(Math.max(0, (back[i] ?? 0) - (a.shield ?? 0)), life(a));   // shield: Exalted's +1 toughness
+    const a = att.buttons[i];
+    let d = Math.min(Math.max(0, (back[i] ?? 0) - (a.shield ?? 0)), life(a));   // shield: Exalted's +1 toughness
     if (!d) continue;
+    if (viral[i]) d = life(a);
     a.damage += d;
     g.log.push(`${a.name} takes ${d}`);
-    if (life(a) <= 0) { a.out = true; g.log.push(`${a.name} is out`); }
+    knock(g, a);
   }
   for (const i of g.attack.attackers) { delete att.buttons[i].temp; delete att.buttons[i].shield; }   // Exalted and Exert last one ping
   g.attack = null;
