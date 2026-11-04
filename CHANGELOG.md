@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.129 "Slow Slide" · Tue Nov 3, 8:20 PM
+- Cards slide between the field and the deck rows slower: 0.8 s. Removed: the 0.5 s slide.
+
 ## v0.128 "Lit Flip" · Tue Nov 3, 8:19 PM
 - The bar button stays lit pink while the coin flips (it still can't be pressed). Landing on "▼ you go first" keeps it pink until you pick a card and it becomes "ping"; landing on "▲ guest goes first" turns it grey. Removed: the flip and "▼ you go first" showing on a greyed-out button.
 

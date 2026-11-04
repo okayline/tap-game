@@ -239,7 +239,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.128" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.129" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -455,7 +455,7 @@ const $ = (id) => document.getElementById(id);
   // cards moving between the field and a deck row (kura, Nov 3: "a small, simple animation"): the top card coming in, a knocked-out
   // or swapped-out button going to the deck, and the deck closing up. Before a draw, each card's place is noted by its button id; after
   // it, a card that moved slides from its old place to its new one, growing or shrinking to its new size (a "FLIP" animation).
-  const MOVE_MS = 500;   // kura, Nov 3: "slow down the animation a little bit" (was 350)
+  const MOVE_MS = 800;   // kura, Nov 3: "slow down the animation" (was 350, then 500)
   const moving = () => [...document.querySelectorAll("#me .btn, #them .btn")].map((x) => [x.dataset.id, x.parentElement])
     .concat([...document.querySelectorAll("#meDeck .card, #themDeck .card")].map((x) => [x.dataset.id, x]));
   const places = () => new Map(moving().map(([id, el]) => [id, el.getBoundingClientRect()]));
