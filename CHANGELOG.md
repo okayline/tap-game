@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.117 "Slide" · Tue Nov 3, 7:48 PM
+- Cards slide when they move between the field and a deck row (0.35 s): the top card grows from the deck into its field spot, a knocked-out or swapped-out button shrinks into its place in the deck row, and the deck closes up toward the left. Removed: cards jumping straight to their new place.
+
 ## v0.116 "Out To The Right" · Tue Nov 3, 7:43 PM
 - In a deck row, knocked-out buttons always sit at the right, after the deck, and the deck closes up toward the left, so the top card is always the leftmost. Removed: a knocked-out button taking the spot of the card that replaced it.
 

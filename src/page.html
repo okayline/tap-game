@@ -234,7 +234,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.116" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.117" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -422,7 +422,26 @@ const $ = (id) => document.getElementById(id);
     el.addEventListener("pointerleave", (e) => { if (e.pointerType !== "mouse") return; clearTimeout(hover); if (open) addEventListener("pointermove", away); });
   }
 
+  // cards moving between the field and a deck row (kura, Nov 3: "a small, simple animation"): the top card coming in, a knocked-out
+  // or swapped-out button going to the deck, and the deck closing up. Before a draw, each card's place is noted by its button id; after
+  // it, a card that moved slides from its old place to its new one, growing or shrinking to its new size (a "FLIP" animation).
+  const MOVE_MS = 350;
+  const moving = () => [...document.querySelectorAll("#me .btn, #them .btn")].map((x) => [x.dataset.id, x.parentElement])
+    .concat([...document.querySelectorAll("#meDeck .card, #themDeck .card")].map((x) => [x.dataset.id, x]));
+  const places = () => new Map(moving().map(([id, el]) => [id, el.getBoundingClientRect()]));
+  function slide(before) {
+    if (!before.size) return;
+    const k = $("game").getBoundingClientRect().width / $("game").offsetWidth || 1;   // fit()'s scale: a move is in unscaled pixels
+    for (const [id, el] of moving()) {
+      const a = before.get(id), b = el.getBoundingClientRect();
+      if (!a || !b.width || (Math.abs(a.left - b.left) < 1 && Math.abs(a.top - b.top) < 1)) continue;
+      el.animate([{ transformOrigin: "top left", transform: `translate(${(a.left - b.left) / k}px, ${(a.top - b.top) / k}px) scale(${a.width / b.width}, ${a.height / b.height})` },
+        { transformOrigin: "top left", transform: "none" }], { duration: MOVE_MS, easing: "ease-out" });
+    }
+  }
+
   function draw() {
+    const before = places();
     const me = "a", them = "b", mine = g.sides[me].buttons, theirs = g.sides[them].buttons;
     const key = `${g.turn}|${g.attack ? g.attack.by : ""}|${g.log.length}|${mine.map((b) => b.id).join()}`;
     if (key !== seen) { seen = key; picked = new Set(); exerting = new Set(); split = {}; cur = null; } // a new step: clear picks
@@ -526,6 +545,7 @@ const $ = (id) => document.getElementById(id);
       }
     }
     fit();
+    slide(before);
   }
   // a ping: makePing() draws a line from the card to each target card at right angles, around the button (below), into the card's
   // near edge; it forks when there are several; in PING_DRAW ms. Its run(targets, delay) sends a glow along the
@@ -637,10 +657,10 @@ const $ = (id) => document.getElementById(id);
     el.innerHTML = "";
     for (const { b, j, gone } of rowOf(side)) {
       if (gone) {
-        const card = document.createElement("div"); card.className = "card gone";
+        const card = document.createElement("div"); card.className = "card gone"; card.dataset.id = b.id;
         card.append(still(b, "")); zoomable(card, () => b); el.append(card); continue;
       }
-      const card = document.createElement("div"); card.className = "card";
+      const card = document.createElement("div"); card.className = "card"; card.dataset.id = b.id;   // (slide)
       if (down) { card.append(mk("div", "facedown")); el.append(card); continue; }
       const img = document.createElement("img"); img.alt = ""; img.src = b.image;
       const pt = document.createElement("span"); pt.className = "dpt"; pt.append(...ptText(b));
