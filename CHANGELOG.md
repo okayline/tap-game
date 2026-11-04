@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.109 "Half Turn Off" · Tue Nov 3, 6:53 PM
+- With a mouse, an open big card now closes when it has turned a half turn (moving one small card's width sideways from where it opened), or when the mouse goes more than 16 px above or below the small card. Holding on a phone is unchanged. Removed: closing 16 px to the left or right of the small card.
+
 ## v0.108 "No Tooltips" · Tue Nov 3, 6:51 PM
 - Resting the mouse on a card or deck button no longer brings up the browser's little name box (kura, Nov 3: the big card shows the card). Removed: the tooltips on field cards (name, or "came in this turn, can't ping"), deck buttons (name and power/life) and knocked-out deck buttons (name and "(out)").
 

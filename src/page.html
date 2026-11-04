@@ -229,7 +229,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.108" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.109" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -360,9 +360,10 @@ const $ = (id) => document.getElementById(id);
   // the big card (kura, Nov 3): press and hold a card or deck button still for HOLD_MS (or rest the mouse on it without moving for HOVER_MS) to see it whole, with its
   // flavour line; letting go (or moving off) closes it. A hold doesn't also tap, swap or drop: the click after it is swallowed.
   // kura, Nov 3: the mouse must be still for HOVER_MS (was 450, 800, then 1000 counted from entering the card, then 800 still);
-  // HOVER_PAD: how far past a card's edge (px) the mouse can go with its big card open (kura, Nov 3: 8, then 16, which reaches a little
-  // into the neighbour card; resting still on the neighbour opens its big card instead, and then the first one no longer turns or closes it)
-  const HOLD_MS = 450, HOVER_MS = 1000, HOVER_PAD = 16;
+  // With its big card open, the mouse can go sideways until the card has turned a half turn (TURN_OFF, kura, Nov 3: "after a complete 180
+  // it goes away"; was 8 then 16 px past the card), and up or down HOVER_PAD px past the card. That reaches into the neighbour cards:
+  // resting still on one opens its big card instead, and then the first one no longer turns or closes it.
+  const HOLD_MS = 450, HOVER_MS = 1000, HOVER_PAD = 16, TURN_OFF = 180;
   let bigCard = null, bigFlip = null, bigBy = null, held = false;   // bigBy: the card a mouse opened the big card from
   const ZEDGE = 8;   // layers that make the big card's edge (its thickness, .zedge)
   function showBig(b) {
@@ -397,12 +398,13 @@ const $ = (id) => document.getElementById(id);
       holdTimer = setTimeout(() => { holdTimer = null; held = true; showBig(getB()); }, HOLD_MS);
     });
     // a mouse: every move over the card starts the wait again, so it opens only once the mouse stops; once open it stays (and turns)
-    // until the mouse is more than HOVER_PAD outside the card
+    // until it has turned TURN_OFF or the mouse is more than HOVER_PAD above or below the card
     let hover = null, open = false, x0 = 0;
-    const turn = (e) => { if (bigBy === el) turnBig((e.clientX - x0) / el.getBoundingClientRect().width * 180); };
+    const deg = (e) => (e.clientX - x0) / el.getBoundingClientRect().width * 180;
+    const turn = (e) => { if (bigBy === el) turnBig(deg(e)); };
     const away = (e) => {
-      const r = el.getBoundingClientRect(), x = e.clientX, y = e.clientY;
-      if (el.isConnected && x >= r.left - HOVER_PAD && x <= r.right + HOVER_PAD && y >= r.top - HOVER_PAD && y <= r.bottom + HOVER_PAD) { turn(e); return; }
+      const r = el.getBoundingClientRect(), y = e.clientY;
+      if (el.isConnected && Math.abs(deg(e)) < TURN_OFF && y >= r.top - HOVER_PAD && y <= r.bottom + HOVER_PAD) { turn(e); return; }
       removeEventListener("pointermove", away); open = false; if (bigBy === el) hideBig();
     };
     const wait = (e) => {
