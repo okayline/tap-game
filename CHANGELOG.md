@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.101 "Plain Back" · Tue Nov 3, 6:37 PM
+- The big card's back is just club's navy stripes and silver border. Removed: the yellow "?" on it.
+
 ## v0.100 "Card Back" · Tue Nov 3, 6:33 PM
 - The open big card turns as you move: on a phone, slide the finger you're holding with sideways (120 px turns it over); with a mouse, move across the small card (its width is a whole turn). Past a quarter turn you see its back, 88x31 club's face-down card: navy stripes and a yellow "?". Sliding a finger on a field card or deck button no longer counts as a pan, so it doesn't cancel the hold (pinch zoom still works). Removed: the big card only ever facing front.
 
