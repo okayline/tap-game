@@ -229,7 +229,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.106" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.107" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -360,9 +360,10 @@ const $ = (id) => document.getElementById(id);
   // the big card (kura, Nov 3): press and hold a card or deck button still for HOLD_MS (or rest the mouse on it without moving for HOVER_MS) to see it whole, with its
   // flavour line; letting go (or moving off) closes it. A hold doesn't also tap, swap or drop: the click after it is swallowed.
   // kura, Nov 3: the mouse must be still for HOVER_MS (was 450, 800, then 1000 counted from entering the card, then 800 still);
-  // HOVER_PAD: how far past a card's edge (px) the mouse can go with its big card open, about to the neighbour card's dotted outline
-  const HOLD_MS = 450, HOVER_MS = 1000, HOVER_PAD = 8;
-  let bigCard = null, bigFlip = null, held = false;
+  // HOVER_PAD: how far past a card's edge (px) the mouse can go with its big card open (kura, Nov 3: 8, then 16, which reaches a little
+  // into the neighbour card; resting still on the neighbour opens its big card instead, and then the first one no longer turns or closes it)
+  const HOLD_MS = 450, HOVER_MS = 1000, HOVER_PAD = 16;
+  let bigCard = null, bigFlip = null, bigBy = null, held = false;   // bigBy: the card a mouse opened the big card from
   const ZEDGE = 8;   // layers that make the big card's edge (its thickness, .zedge)
   function showBig(b) {
     hideBig();
@@ -373,7 +374,7 @@ const $ = (id) => document.getElementById(id);
     box.append(bigFlip); bigCard = mk("div", "zoom"); bigCard.append(box); document.body.append(bigCard);
     document.querySelectorAll(".ghost").forEach((x) => (x.style.visibility = "hidden"));
   }
-  function hideBig() { bigCard?.remove(); bigCard = null; bigFlip = null; }
+  function hideBig() { bigCard?.remove(); bigCard = null; bigFlip = null; bigBy = null; }
   // turning the open big card (kura, Nov 3: no separate grab): a finger turns it by how far it has moved sideways since
   // the press; a mouse by how far it has moved across the small card since the big card opened (the card's width is a half turn; kura, Nov 3: half the first speed, so it never goes all the way round)
   const FINGER_DEG_PX = 0.75;   // degrees per pixel a finger moves: 240px turns it to its back
@@ -396,19 +397,19 @@ const $ = (id) => document.getElementById(id);
       holdTimer = setTimeout(() => { holdTimer = null; held = true; showBig(getB()); }, HOLD_MS);
     });
     // a mouse: every move over the card starts the wait again, so it opens only once the mouse stops; once open it stays (and turns)
-    // until the mouse is more than HOVER_PAD outside the card (kura, Nov 3: "up to the neighbor card's pink dotted line")
+    // until the mouse is more than HOVER_PAD outside the card
     let hover = null, open = false, x0 = 0;
-    const turn = (e) => turnBig((e.clientX - x0) / el.getBoundingClientRect().width * 180);
+    const turn = (e) => { if (bigBy === el) turnBig((e.clientX - x0) / el.getBoundingClientRect().width * 180); };
     const away = (e) => {
       const r = el.getBoundingClientRect(), x = e.clientX, y = e.clientY;
       if (el.isConnected && x >= r.left - HOVER_PAD && x <= r.right + HOVER_PAD && y >= r.top - HOVER_PAD && y <= r.bottom + HOVER_PAD) { turn(e); return; }
-      removeEventListener("pointermove", away); open = false; hideBig();
+      removeEventListener("pointermove", away); open = false; if (bigBy === el) hideBig();
     };
     const wait = (e) => {
       if (e.pointerType !== "mouse") return;
       if (open) { turn(e); return; }
       x0 = e.clientX; clearTimeout(hover);
-      hover = setTimeout(() => { if (el.isConnected) { open = true; showBig(getB()); } }, HOVER_MS);
+      hover = setTimeout(() => { if (el.isConnected) { open = true; showBig(getB()); bigBy = el; } }, HOVER_MS);
     };
     el.addEventListener("pointerenter", wait); el.addEventListener("pointermove", wait);
     el.addEventListener("pointerleave", (e) => { if (e.pointerType !== "mouse") return; clearTimeout(hover); if (open) addEventListener("pointermove", away); });

@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.107 "Wider Still" · Tue Nov 3, 6:50 PM
+- With a mouse, an open big card stays open until the mouse is more than 16 px past the small card, which reaches a little into the next card. Resting still on that next card opens its own big card, and from then on the first card no longer turns or closes it. Removed: the 8 px range.
+
 ## v0.106 "Wider Turn" · Tue Nov 3, 6:49 PM
 - With a mouse, an open big card stays open (and keeps turning) until the mouse is more than 8 px past the small card's edge, about as far as the next card's pink dotted outline. Removed: the big card closing as soon as the mouse left the small card.
 
