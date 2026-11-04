@@ -193,7 +193,13 @@
   /* a finger sliding sideways on a card turns the big card, so the browser mustn't take the slide as a pan (that would cancel the hold) */
   .btn, .deck .card { touch-action: pinch-zoom; }
   .zflip > .gc, .zflip > .zback { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
-  .zback { transform: rotateY(180deg); border-radius: calc(7 * var(--u)); background: repeating-linear-gradient(45deg, var(--frame) 0 8px, color-mix(in srgb, var(--frame) 85%, #000) 8px 16px); }
+  /* thickness (kura, Nov 3: "so it doesn't look so thin when you rotate it"): the front sits --zd/2 in front, the back --zd/2 behind,
+     and ZEDGE layers of a darker frame blue fill the gap, so a turned card shows an edge */
+  .zflip { --zd: calc(2 * var(--u)); }
+  .zflip > .gc { transform: translateZ(calc(var(--zd) / 2)); }
+  .zedge { position: absolute; inset: 0; border-radius: calc(7 * var(--u)); background: color-mix(in srgb, var(--frame) 75%, #000);
+           transform: translateZ(calc((var(--k) - .5) * var(--zd))); }
+  .zback { transform: rotateY(180deg) translateZ(calc(var(--zd) / 2)); border-radius: calc(7 * var(--u)); background: repeating-linear-gradient(45deg, var(--frame) 0 8px, color-mix(in srgb, var(--frame) 85%, #000) 8px 16px); }
   .ddfoot { margin: 1px 0 0 !important; padding: 0 12px !important; }
   /* on a phone the panels run to the screen's edges so the three cards are as wide as they can be (kura, Nov 3: "as big as they can reasonably get");
      24px = the panel's 4px sides and two 8px gaps (each just wide enough for a tappable card's dashed outline) */
@@ -223,7 +229,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.104" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.105" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -355,11 +361,13 @@ const $ = (id) => document.getElementById(id);
   // flavour line; letting go (or moving off) closes it. A hold doesn't also tap, swap or drop: the click after it is swallowed.
   const HOLD_MS = 450, HOVER_MS = 1000;   // kura, Nov 3: the mouse must be still for HOVER_MS (was 450, 800, then 1000 counted from entering the card, then 800 still)
   let bigCard = null, bigFlip = null, held = false;
+  const ZEDGE = 8;   // layers that make the big card's edge (its thickness, .zedge)
   function showBig(b) {
     hideBig();
     const p = card(b), box = mk("div", "zbox");
     p.art.append(p.img); p.pt.replaceChildren(...ptText(b)); p.pt.hidden = !!b.out;
     bigFlip = mk("div", "zflip"); bigFlip.append(p.gc, mk("div", "zback"));
+    for (let k = 0; k < ZEDGE; k++) { const e = mk("div", "zedge"); e.style.setProperty("--k", (k + 0.5) / ZEDGE); bigFlip.append(e); }
     box.append(bigFlip); bigCard = mk("div", "zoom"); bigCard.append(box); document.body.append(bigCard);
     document.querySelectorAll(".ghost").forEach((x) => (x.style.visibility = "hidden"));
   }

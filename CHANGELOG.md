@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.105 "Thick Card" · Tue Nov 3, 6:46 PM
+- The big card has a little thickness: turned, it shows an edge in a darker frame blue between front and back (2 units deep, made of 8 thin layers). Removed: the paper-thin turn, with front and back in the same plane.
+
 ## v0.104 "Blue Back" · Tue Nov 3, 6:44 PM
 - The big card's back keeps club's diagonal stripes, now in the light blue of the card front's frame (that blue and a slightly darker one), so the front's edge seems to run round onto the back. Removed: the navy stripes, and the back's silver border (it broke the edge where front and back meet).
 
