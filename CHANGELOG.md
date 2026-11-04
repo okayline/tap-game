@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.102 "Slow Turn" · Tue Nov 3, 6:39 PM
+- The big card turns at half the speed: on a phone a 240 px slide turns it to its back; with a mouse the small card's width is half a turn, so it never goes all the way round. Removed: the 120 px phone turn to the back, and a whole turn across the small card's width.
+
 ## v0.101 "Plain Back" · Tue Nov 3, 6:37 PM
 - The big card's back is just club's navy stripes and silver border. Removed: the yellow "?" on it.
 
