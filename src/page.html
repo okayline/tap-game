@@ -195,7 +195,7 @@
   .zflip > .gc, .zflip > .zback { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
   /* thickness (kura, Nov 3: "so it doesn't look so thin when you rotate it"): the front sits --zd/2 in front, the back --zd/2 behind,
      and ZEDGE layers of a darker frame blue fill the gap, so a turned card shows an edge */
-  .zflip { --zd: calc(2 * var(--u)); }
+  .zflip { --zd: calc(1 * var(--u)); }   /* kura, Nov 3: "a little thinner", then "thinner please" (was 2, then 1.5) */
   .zflip > .gc { transform: translateZ(calc(var(--zd) / 2)); }
   .zedge { position: absolute; inset: 0; border-radius: calc(7 * var(--u)); background: color-mix(in srgb, var(--frame) 75%, #000);
            transform: translateZ(calc((var(--k) - .5) * var(--zd))); }
@@ -229,7 +229,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.109" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.110" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
