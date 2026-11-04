@@ -94,3 +94,44 @@ test("the dummy places each attacker's ping", async () => {
   assert.equal(place(g, "b", dummyPlace(g)), null);
   assert.equal(g.turn, "b");
 });
+
+test("rarity extras: rolled once per slot for both sides; Exalted, Exert and Phasing", async () => {
+  const { dealDecks, EXTRA, settle } = await import("../src/rules.js");
+  const kinds = { common: 8, uncommon: 4, rare: 4, prototype: 4 };
+  const pack = Object.entries(kinds).flatMap(([rarity, n]) => ["neon", "webring", "counter"].flatMap((type) => [...Array(n)].map((_, i) => ({ name: `${rarity}-${type}-${i}`, type, rarity }))));
+  for (let k = 0; k < 20; k++) {
+    const [a, b] = dealDecks(pack);
+    assert.deepEqual(a.map((x) => x.extra), b.map((x) => x.extra));
+    for (const x of a) assert.ok(x.rarity === "common" ? x.extra === undefined : EXTRA[x.rarity].includes(x.extra));
+  }
+  // a: an exalted webring (3/2) alone; b: three guestbooks (1/3), untapped
+  const W = [{ name: "w", type: "webring", extra: "exalted" }, { name: "n", type: "neon" }, { name: "c", type: "counter" }];
+  const G = [0, 1, 2].map((i) => ({ name: "g" + i, type: "guestbook" }));
+  let g = newGame(W, G, "a");
+  assert.equal(attack(g, "a", [0]), null);
+  assert.equal(g.sides.a.buttons[0].power, 4);              // +1/+0 for the ping
+  assert.equal(place(g, "b", { 0: { 0: 3, 1: 1 } }), null);
+  assert.equal(g.sides.a.buttons[0].damage, 1);             // 2 hit back, 1 stopped by its +1 toughness
+  assert.equal(g.sides.a.buttons[0].power, 3);              // back to normal after the ping
+  // Exert: counter (2/3) pings for 4 and stays tapped through a's next turn
+  const X = [{ name: "x", type: "counter", extra: "exert" }, { name: "n", type: "neon" }, { name: "m", type: "neon" }];
+  g = newGame(X, G, "a");
+  assert.equal(attack(g, "a", [0], [0]), null);
+  assert.match(g.log.at(-1), /pings for 4 with x \(exerted\)/);
+  assert.equal(place(g, "b", { 0: { 0: 3, 1: 1 } }), null);
+  g.limit = 2; attack(g, "b", []);                          // b passes: a's turn, x stays tapped
+  assert.equal(g.sides.a.buttons[0].tapped, true);
+  attack(g, "a", []); attack(g, "b", []);                   // the turn after, it untaps
+  assert.equal(g.sides.a.buttons[0].tapped, false);
+  // Phasing: phased out at its side's next turn: it can't ping or take damage
+  const P = [{ name: "p", type: "neon", extra: "phasing" }, { name: "n", type: "neon" }, { name: "m", type: "neon" }];
+  g = newGame(G, P, "a");
+  attack(g, "a", []);                                       // b's turn: p phases out
+  assert.equal(g.sides.b.buttons[0].phased, true);
+  assert.equal(attack(g, "b", [0]), "Only ready buttons can ping.");
+  attack(g, "b", []);
+  assert.equal(attack(g, "a", [0]), null);
+  assert.equal(place(g, "b", { 0: { 0: 1 } }), "A button can't take that much.");
+  assert.equal(place(g, "b", { 0: { 1: 1 } }), null);   // the turn passes to b: p phases back in
+  assert.equal(g.sides.b.buttons[0].phased, false);
+});

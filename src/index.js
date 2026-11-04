@@ -29,8 +29,8 @@ export default {
 // 88x31's buttons of every rarity, from the shared item table's deal pool (dungeon-items' Registry entrypoint, through the REGISTRY
 // service binding; kura, Nov 3: "all rarities show up", as mystery cards). The table keeps 88x31's non-commons secret: they come
 // with their type, rarity and series but no name or picture, so here they get the name "a mystery button" (dungeon-items' own
-// words for them) and a "?" picture. Uncommons come in full (kura, Nov 3: shown in UN/TAP only). Rarity changes nothing in a
-// match: power and toughness come from the type.
+// words for them) and a "?" picture. Uncommons come in full (kura, Nov 3: shown in UN/TAP only). Power and toughness come
+// from the type; rarity only decides a button's extra effect (rules.js EXTRA).
 const MYSTERY_IMG = "data:image/svg+xml," + encodeURIComponent(
   '<svg xmlns="http://www.w3.org/2000/svg" width="88" height="31" viewBox="0 0 88 31"><rect width="88" height="31" fill="#2b3350"/>'
   + '<rect x="1.5" y="1.5" width="85" height="28" fill="none" stroke="#8fb6de" stroke-dasharray="3 2"/>'
@@ -81,7 +81,7 @@ export class Match extends DurableObject {
     let a;
     try { a = JSON.parse(msg); } catch { return; }
     const err =
-      a.do === "attack" && Array.isArray(a.idxs) ? attack(g, seat, a.idxs) :
+      a.do === "attack" && Array.isArray(a.idxs) ? attack(g, seat, a.idxs, a.exert) :
       a.do === "take" && a.split && typeof a.split === "object" ? place(g, seat, a.split) :
       a.do === "swap" ? swap(g, seat, a.i, a.j) :
       a.do === "start" ? (g.locked || g.turn !== "b" ? "Nothing to start." : ((g.locked = true), null)) : "Unknown action.";
@@ -107,7 +107,8 @@ export class Match extends DurableObject {
     if (Date.now() < g.dummyAt) return;
     g.dummyAt = null;
     autoFill(g, "b");
-    attack(g, "b", dummyAttack(g));
+    const idxs = dummyAttack(g);
+    attack(g, "b", idxs, idxs);   // the dummy exerts every attacker it can
     g.dummyTurn++;
   }
 

@@ -15,16 +15,16 @@ export const SCRIPT = [
 ];
 
 const line = (n) => SCRIPT[((n % SCRIPT.length) + SCRIPT.length) % SCRIPT.length];
-const readyIdx = (side) => side.buttons.map((b, i) => (b.out || b.tapped || (b.sick && !BROADBAND.includes(b.type)) ? -1 : i)).filter((i) => i >= 0);
+const readyIdx = (side) => side.buttons.map((b, i) => (b.out || b.tapped || b.phased || (b.sick && !BROADBAND.includes(b.type)) ? -1 : i)).filter((i) => i >= 0);
 
-// Its attackers this turn.
+// Its attackers this turn (it exerts every one that has Exert: index.js).
 export const dummyAttack = (g) => readyIdx(g.sides.b).slice(0, Math.min(line(g.dummyTurn).attack, g.limit));
 
 // How it places your attack: { attackerIndex: { buttonIndex: damage } }. It works out each button's damage by its plan, then takes
 // it from the attackers in order.
 export function dummyPlace(g) {
   const plan = line(g.dummyTurn - 1), bs = g.sides.b.buttons;
-  const alive = bs.map((b, i) => i).filter((i) => !bs[i].out);
+  const alive = bs.map((b, i) => i).filter((i) => !bs[i].out && !bs[i].phased);
   const order = alive.sort((x, y) => (bs[x].tapped - bs[y].tapped) * (plan.take === "focus" ? -1 : 1));
   const split = {};
   let left = toPlace(g);

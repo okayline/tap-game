@@ -4,6 +4,12 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.111 "Rarity Effects" · Tue Nov 3, 7:30 PM
+- Rarer buttons get an extra effect on top of their type's (kura, Nov 3: "more rare = more interesting effects"): uncommons get Exalted; rares get Exert or Exalted; prototypes get Phasing, Exert or Exalted. It's rolled when the decks are dealt, once per deck slot, so both sides' buttons in a slot get the same one. Commons are unchanged.
+- Exalted: +1/+1 when it pings alone (its +1 toughness means it takes 1 less hit-back). Exert: click a picked button a second time to exert it (it shows ×2); it pings for double its power and stays tapped through your next turn. Phasing: at each of its side's turns it phases out or back in; phased out it's faded, and can't ping, take damage, hit back or count for Glow and Webcounter. The dummy exerts every attacker it can.
+- The card's text box shows the second effect under the type's; on the big card a card with two effects has slightly smaller text so the flavour line still fits. The log says when a ping is exerted or exalted and when a button phases.
+- Removed: rarity changing nothing in a match.
+
 ## v0.110 "Thinner Edge" · Tue Nov 3, 6:55 PM
 - The big card's edge is thinner: 1 unit deep (1.5 was tried first, not released). Removed: the 2-unit edge.
 

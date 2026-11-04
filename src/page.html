@@ -83,6 +83,7 @@
   .btn.att { outline: 2px solid var(--blue); box-shadow: 0 0 12px rgba(109,143,208,.7); }
   /* a knocked-out button: faded grey, crossed out in pink, no numbers (on the field until replaced, then in the deck row) */
   .btn.out .gc { filter: grayscale(1) opacity(.5); }
+  .btn.phased .gc { opacity: .3; }   /* Phasing (rules.js EXTRA): phased out, it's not really there */
   .btn.out::before, .btn.out::after, .card.gone::before, .card.gone::after { content: ""; position: absolute; left: 50%; top: 50%; width: 45%; height: calc(7 * var(--u));
                border-radius: 4px; background: #e57fa6; transform: translate(-50%, -50%) rotate(45deg); pointer-events: none; z-index: 1; }
   .card.gone::before, .card.gone::after { width: 50%; height: 3px; border-radius: 2px; }
@@ -183,6 +184,8 @@
   .gc-txt .rule, .gc-txt .flav { display: none; }
   .zoom .gc-txt .rule, .zoom .gc-txt .flav { display: block; }
   .zoom .gc-txt .flav { font-size: calc(5.8 * var(--t) * var(--u)); }   /* a little smaller than the effect (kura, Nov 3; was 6.8) */
+  /* two effects (the type's and a rarity extra) on the big card: a little smaller, so the flavour line still clears the P/T box */
+  .zoom .gc-txt.two { font-size: calc(6.6 * var(--t) * var(--u)); }
   /* the big card: hold a card or deck button (hover with a mouse) to see it whole (kura, Nov 3); --u is set again here so the whole card scales */
   .zoom { position: fixed; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; background: rgba(20, 26, 48, .45); pointer-events: none; }
   .zoom .zbox { --w: min(78vw, 300px); --u: calc(var(--w) / 108); width: var(--w); height: calc(var(--h) * var(--u)); position: relative; filter: drop-shadow(0 8px 24px rgba(0,0,0,.45)); perspective: calc(600 * var(--u)); }
@@ -229,7 +232,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.110" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.111" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -352,8 +355,8 @@ const $ = (id) => document.getElementById(id);
       const d = document.createElement("div"); d.textContent = `C:\\> ${t}`; d.style.opacity = 1 - k * 0.125; return d;   // a DOS prompt before each line (kura, Nov 3)
     }));
   }
-  let picked = new Set(), split = {}, cur = null, seen = "";   // split[attacker][button]: damage; cur: the attacker being placed
-  $("attack").onclick = () => { lastPing = [...picked]; send({ do: "attack", idxs: lastPing }); };   // kept for the replay
+  let picked = new Set(), exerting = new Set(), split = {}, cur = null, seen = "";   // exerting: picked buttons you exert (rules.js EXTRA)   // split[attacker][button]: damage; cur: the attacker being placed
+  $("attack").onclick = () => { lastPing = [...picked]; send({ do: "attack", idxs: lastPing, exert: [...exerting] }); };   // kept for the replay
   $("take").onclick = () => send({ do: "take", split });
   $("start").onclick = () => send({ do: "start" });
   $("again").onclick = () => location.assign("/"); // the main page starts a new match
@@ -420,13 +423,13 @@ const $ = (id) => document.getElementById(id);
   function draw() {
     const me = "a", them = "b", mine = g.sides[me].buttons, theirs = g.sides[them].buttons;
     const key = `${g.turn}|${g.attack ? g.attack.by : ""}|${g.log.length}|${mine.map((b) => b.id).join()}`;
-    if (key !== seen) { seen = key; picked = new Set(); split = {}; cur = null; } // a new step: clear picks
+    if (key !== seen) { seen = key; picked = new Set(); exerting = new Set(); split = {}; cur = null; } // a new step: clear picks
     const taking = !playing && g.attack && g.attack.by === them && !g.winner;   // while a replay plays, nothing can be clicked
     const life = (b) => (b.out ? 0 : b.toughness + (b.bonus ?? 0) - b.damage);   // rules.js life (bonus: Glow)
     const myTurn = !playing && g.turn === me && !g.attack && !g.winner;
-    const ready = (b) => !b.out && !b.tapped;
+    const ready = (b) => !b.out && !b.tapped && !b.phased;
     // what you must place when they attack: their attack's total, or all your buttons' life left if that's less
-    const need = taking ? Math.min(g.attack.attackers.reduce((n, i) => n + theirs[i].power, 0), mine.reduce((n, b) => n + life(b), 0)) : 0;
+    const need = taking ? Math.min(g.attack.attackers.reduce((n, i) => n + theirs[i].power, 0), mine.reduce((n, b) => n + (b.phased ? 0 : life(b)), 0)) : 0;
     const sum = (o) => Object.values(o ?? {}).reduce((n, d) => n + d, 0);
     const placed = Object.values(split).reduce((n, part) => n + sum(part), 0);
     // placing their ping (kura, Nov 3): one attacker's power at a time (cur, picked by clicking their card; the next one with power
@@ -450,8 +453,10 @@ const $ = (id) => document.getElementById(id);
     // lit attackers: the replay's, or theirs while you place their ping
     const att = new Set(fx.att ?? (taking ? g.attack.attackers.map((i) => theirs[i].id) : []));
     row($("me"), mine, att, (b, i) => {
-      if (myTurn && ready(b) && (!b.sick || BROAD.includes(b.type)) && (picked.has(i) || picked.size < g.limit)) return { can: true, tapped: picked.has(i) && !ONLINE.includes(b.type), sel: picked.has(i) && ONLINE.includes(b.type), click: () => { picked.has(i) ? picked.delete(i) : picked.add(i); draw(); } };
-      if (taking && !b.out) {
+      if (myTurn && ready(b) && (!b.sick || BROAD.includes(b.type)) && (picked.has(i) || picked.size < g.limit)) return { can: true, tapped: picked.has(i) && !ONLINE.includes(b.type), sel: picked.has(i) && ONLINE.includes(b.type), note: exerting.has(i) ? "×2" : "",
+        // a click picks it; with Exert, a second click exerts it (×2); the next click puts it back
+        click: () => { if (!picked.has(i)) picked.add(i); else if (b.extra === "exert" && !exerting.has(i)) exerting.add(i); else { picked.delete(i); exerting.delete(i); } draw(); } };
+      if (taking && !b.out && !b.phased) {
         const d = tot(i), by = hitBy(i), power = backBy(b);
         const at = by.length > 1 && power > 0 ? backAt(power, by.map((a) => [a, theirs[a], split[a][i]])) : null;
         return { can: true, sel: d > 0, note: d ? `-${d}${at !== null ? ` ${ARROW[at] ?? ""}` : ""}` : "",
@@ -467,7 +472,8 @@ const $ = (id) => document.getElementById(id);
       ? { can: true, sel: cur === i, click: () => { cur = i; draw(); } } : {}));
     // THIS TURN: attack = power of your buttons tapped or picked to attack; defense = life left on your ready buttons (the ones that hit back)
     const up = (b, i) => !b.out && (b.tapped || picked.has(i));
-    const atk = mine.reduce((n, b, i) => n + (up(b, i) ? b.power : 0), 0);
+    const solo = picked.size === 1;   // rules.js attack: Exalted when it pings alone, Exert doubles
+    const atk = mine.reduce((n, b, i) => n + (!up(b, i) ? 0 : b.power * (exerting.has(i) ? 2 : 1) + (solo && picked.has(i) && b.extra === "exalted" ? 1 : 0)), 0);
     const def = mine.reduce((n, b, i) => n + (!b.out && !b.tapped && !(picked.has(i) && !ONLINE.includes(b.type)) ? life(b) : 0), 0);   // an Always Online one picked to attack still defends
     $("meHp").textContent = `player · this turn: ${atk}/${def}`;
     $("themHp").textContent = "guest #1337";   // rules.js NAMES
@@ -682,6 +688,8 @@ const $ = (id) => document.getElementById(id);
   // and power/life left in a box on the text box's bottom edge (none once it's out)
   // card text by type: only the effects the rules have (rules.js ALWAYS_ONLINE, BROADBAND, WEBCOUNTER, GLOW, LAG_SPIKE, DAEMON)
   const ONLINE = ["guestbook"], BROAD = ["webring"], DAEMON = ["construction"];   // rules.js ALWAYS_ONLINE, BROADBAND and DAEMON
+  const EXTRA_TEXT = { exalted: ["Exalted", "+1/+1 when it pings alone."], exert: ["Exert", "ping ×2, then skip an untap."],
+    phasing: ["Phasing", "gone every other turn."] };
   const TEXT = { guestbook: ["Always Online", "pinging doesn't tap it."], webring: ["Broadband", "can ping the turn it comes in."],
     counter: ["Webcounter", "+1/+0 for each Guestbook on your field."], neon: ["Glow", "+0/+1 for each other Neon on your field."],
     divider: ["Lag Spike", "a button its ping knocks out doesn't hit back."], construction: ["Daemon", "even tapped, it hits back for 1."] };
@@ -738,7 +746,11 @@ const $ = (id) => document.getElementById(id);
     const gc = mk("div", "gc"), inn = mk("div", "gc-in"), name = mk("div", b.name.length >= LONG_NAME ? "gc-name long" : "gc-name", b.name), art = mk("div", "gc-art"), img = mk("img");
     img.alt = ""; img.src = b.image;
     const txt = mk("div", "gc-txt"), t = TEXT[b.type], fx = mk("div", "");
-    if (t) { fx.append(mk("b", "", t[0]), ` · ${t[1]}`); txt.append(fx, mk("div", "rule")); }
+    if (t) txt.append(fx);
+    if (t) fx.append(mk("b", "", t[0]), ` · ${t[1]}`);
+    const e = EXTRA_TEXT[b.extra];   // a non-common's extra effect, by rarity (rules.js EXTRA)
+    if (e) { const x = mk("div", ""); x.append(mk("b", "", e[0]), ` · ${e[1]}`); txt.append(x); if (t) txt.classList.add("two"); }
+    if (t || e) txt.append(mk("div", "rule"));
     const q = QUOTES[b.type];
     if (b.hidden) txt.append(mk("div", "flav", "“???”"));   // a mystery button (an 88x31 non-common, kept secret): no flavour to give away
     else if (q) txt.append(mk("div", "flav", `“${q[pickQuote(b, q.length)]}”`));
@@ -765,7 +777,7 @@ const $ = (id) => document.getElementById(id);
       }
       s.b = b;
       const { btn, parts } = s, tapped = b.tapped || h.tapped;
-      btn.className = "btn" + (b.out ? " out" : "") + (tapped ? " tapped" : "") + (h.can ? " can" : "") + (h.sel ? " sel" : "") + (att.has(b.id) ? " att" : "");
+      btn.className = "btn" + (b.out ? " out" : "") + (b.phased ? " phased" : "") + (tapped ? " tapped" : "") + (h.can ? " can" : "") + (h.sel ? " sel" : "") + (att.has(b.id) ? " att" : "");
       const moving = !b.out && !!tapped;   // the picture only moves while tapped
       if (s.moving !== moving) { parts.art.replaceChildren(moving ? parts.img : still(b, "")); s.moving = moving; }
       parts.pt.replaceChildren(...ptText(b)); parts.pt.hidden = !!b.out;
