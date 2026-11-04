@@ -238,7 +238,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.121" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.122" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -700,8 +700,9 @@ const $ = (id) => document.getElementById(id);
   // card text by effect (rules.js FX: a button's main effect, rolled at the deal; fxOf falls back to the type's, for an older match)
   const TYPE_FX = { guestbook: "online", webring: "broadband", counter: "webcounter", neon: "glow", divider: "lagspike", construction: "daemon" };
   const fxOf = (b) => b.fx ?? TYPE_FX[b.type];   // rules.js fxOf
-  const EXTRA_TEXT = { exalted: ["Exalted", "+1/+1 when it pings alone."], exert: ["Exert", "ping ×2, then skip an untap."],
-    phasing: ["Phasing", "gone every other turn."] };
+  // rarity extras' names on screen (kura, Nov 3; Magic's exalted, exert and phasing in rules.js EXTRA)
+  const EXTRA_TEXT = { exalted: ["Unicast", "+1/+1 when it pings alone."], exert: ["Overclock", "ping ×2, then skip an untap."],
+    phasing: ["Dial-Up", "gone every other turn."] };
   const TEXT = { online: ["Always Online", "pinging doesn't tap it."], broadband: ["Broadband", "can ping the turn it comes in."],
     webcounter: ["Webcounter", "+1/+0 for each Guestbook on your field."], glow: ["Glow", "+0/+1 for each other Neon on your field."],
     lagspike: ["Lag Spike", "a button its ping knocks out doesn't hit back."], daemon: ["Daemon", "even tapped, it hits back for 1."] };

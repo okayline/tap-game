@@ -50,6 +50,7 @@ export const fxOf = (b) => b.fx ?? TYPE_FX[b.type];
 //   exert:   when it pings, its side may exert it: its power counts double, and it doesn't untap at its side's next turn
 //   phasing: at each of its side's turns it phases out or back in; phased out it can't ping, take damage, hit back or count for Glow
 //            or Webcounter (Magic's phasing: it starts in, and goes out at its side's next turn)
+// On screen (kura, Nov 3): exalted is Unicast, exert is Overclock, phasing is Dial-Up; the code keeps Magic's names.
 export const EXTRA = { uncommon: ["exalted"], rare: ["exert", "exalted"], prototype: ["phasing", "exert", "exalted"] };
 export const MAX_ATTACKERS = 2; // at most this many attack in a turn, so one button always stays home (kura, Nov 3)
 // A coin flip decides who goes first, and that side attacks with only 1 on the match's first turn (kura, Nov 3).
@@ -167,8 +168,8 @@ export function attack(g, seat, idxs, exert = []) {
   for (const i of list) if (fxOf(g.sides[seat].buttons[i]) !== "online") g.sides[seat].buttons[i].tapped = true;
   g.attack = { by: seat, attackers: list };
   const att = g.sides[seat].buttons, how = {};
-  if (list.length === 1 && att[list[0]].extra === "exalted") { att[list[0]].temp = 1; att[list[0]].shield = 1; how[list[0]] = " (exalted)"; }
-  for (const i of list) if (att[i].extra === "exert" && (Array.isArray(exert) ? exert : []).includes(i)) { att[i].temp = att[i].power; att[i].exerted = true; how[i] = " (exerted)"; }
+  if (list.length === 1 && att[list[0]].extra === "exalted") { att[list[0]].temp = 1; att[list[0]].shield = 1; how[list[0]] = " (unicast)"; }
+  for (const i of list) if (att[i].extra === "exert" && (Array.isArray(exert) ? exert : []).includes(i)) { att[i].temp = att[i].power; att[i].exerted = true; how[i] = " (overclocked)"; }
   settle(g);
   g.log.push(`${NAMES[seat]} pings for ${list.reduce((n, i) => n + att[i].power, 0)} with ${list.map((i) => att[i].name + (how[i] ?? "")).join(", ")}`);
   return null;
@@ -251,7 +252,7 @@ function passTurn(g) {
   s.deck ??= []; // a match started before decks (v0.35 or older) has none
   g.swapped = false;
   for (const b of s.buttons) b.sick = false;
-  for (const b of s.buttons) if (!b.out && b.extra === "phasing") { b.phased = !b.phased; g.log.push(`${b.name} phases ${b.phased ? "out" : "in"}`); }
+  for (const b of s.buttons) if (!b.out && b.extra === "phasing") { b.phased = !b.phased; g.log.push(`${b.name} ${b.phased ? "disconnects" : "reconnects"}`); }
   // a knocked-out button stays as it went out, tapped or not (kura, Nov 3); an exerted one stays tapped this once
   for (const b of s.buttons) if (!b.out) { if (b.exerted) b.exerted = false; else b.tapped = false; }
   settle(g);   // a phased button stops or starts counting for Glow and Webcounter

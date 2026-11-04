@@ -117,7 +117,7 @@ test("rarity extras: rolled once per slot for both sides; Exalted, Exert and Pha
   const X = [{ name: "x", type: "counter", extra: "exert" }, { name: "n", type: "neon" }, { name: "m", type: "neon" }];
   g = newGame(X, G, "a");
   assert.equal(attack(g, "a", [0], [0]), null);
-  assert.match(g.log.at(-1), /pings for 4 with x \(exerted\)/);
+  assert.match(g.log.at(-1), /pings for 4 with x \(overclocked\)/);
   assert.equal(place(g, "b", { 0: { 0: 3, 1: 1 } }), null);
   g.limit = 2; attack(g, "b", []);                          // b passes: a's turn, x stays tapped
   assert.equal(g.sides.a.buttons[0].tapped, true);

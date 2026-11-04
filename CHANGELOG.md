@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.122 "Unicast, Overclock, Dial-Up" · Tue Nov 3, 7:58 PM
+- The rarity extras have old-web names (kura, Nov 3): Exalted is now Unicast, Exert is Overclock, Phasing is Dial-Up. The log says "(unicast)" and "(overclocked)" on a ping, and a Dial-Up button "disconnects" and "reconnects". The rules are unchanged. Removed: the names Exalted, Exert and Phasing on screen, and "phases out" / "phases in" in the log.
+
 ## v0.121 "Tip" · Tue Nov 3, 7:57 PM
 - A small line under your deck row says how to see a card up close: "Hold a card to see it up close." on a touch screen, "Hover over a card to see it up close." with a mouse. Removed: nothing.
 
