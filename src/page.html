@@ -215,7 +215,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.98" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.99" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -343,9 +343,9 @@ const $ = (id) => document.getElementById(id);
   $("take").onclick = () => send({ do: "take", split });
   $("start").onclick = () => send({ do: "start" });
   $("again").onclick = () => location.assign("/"); // the main page starts a new match
-  // the big card (kura, Nov 3): press and hold a card or deck button still for HOLD_MS (or rest the mouse on it for HOVER_MS) to see it whole, with its
+  // the big card (kura, Nov 3): press and hold a card or deck button still for HOLD_MS (or rest the mouse on it without moving for HOVER_MS) to see it whole, with its
   // flavour line; letting go (or moving off) closes it. A hold doesn't also tap, swap or drop: the click after it is swallowed.
-  const HOLD_MS = 450, HOVER_MS = 1000;   // kura, Nov 3: on a PC the big card came up too quickly at 450, then 800
+  const HOLD_MS = 450, HOVER_MS = 800;   // kura, Nov 3: the mouse must be still for HOVER_MS (was 450, 800, then 1000 counted from entering the card)
   let bigCard = null, held = false;
   function showBig(b) {
     hideBig();
@@ -369,9 +369,11 @@ const $ = (id) => document.getElementById(id);
       hx = e.clientX; hy = e.clientY; held = false; clearTimeout(holdTimer);
       holdTimer = setTimeout(() => { holdTimer = null; held = true; showBig(getB()); }, HOLD_MS);
     });
-    let hover = null;
-    el.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") hover = setTimeout(() => { if (el.isConnected) showBig(getB()); }, HOVER_MS); });
-    el.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") { clearTimeout(hover); hideBig(); } });
+    // a mouse: every move over the card starts the wait again, so it opens only once the mouse stops; once open it stays until the mouse leaves
+    let hover = null, open = false;
+    const wait = (e) => { if (e.pointerType !== "mouse" || open) return; clearTimeout(hover); hover = setTimeout(() => { if (el.isConnected) { open = true; showBig(getB()); } }, HOVER_MS); };
+    el.addEventListener("pointerenter", wait); el.addEventListener("pointermove", wait);
+    el.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") { clearTimeout(hover); open = false; hideBig(); } });
   }
 
   function draw() {

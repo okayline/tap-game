@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.99 "Still Hover" · Tue Nov 3, 6:30 PM
+- With a mouse, the big card opens once the mouse has stayed still on a card for 0.8 seconds; any move over the card starts the wait again, so moving across it never opens it. Once open it stays until the mouse leaves the card. Holding on a phone is unchanged. Removed: the big card opening 1 second after the mouse entered a card, moving or not.
+
 ## v0.98 "Auto Hit-Back" · Tue Nov 3, 6:26 PM
 - A button hit by both attackers picks whom it hits back by itself: the one its hit-back would knock out, if only one; otherwise the one with the least life left; otherwise the one that put the most damage on it; otherwise the first picked. The arrow on it still shows whom it will hit, and the dummy's buttons follow the same rule. Clicking your button only adds damage or clears it again. Removed: clicking a button hit by both to turn its arrow, and the dummy's buttons always hitting back the first attacker.
 
