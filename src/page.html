@@ -206,6 +206,10 @@
            transform: translateZ(calc((var(--k) - .5) * var(--zd))); }
   .zback { transform: rotateY(180deg) translateZ(calc(var(--zd) / 2)); border-radius: calc(7 * var(--u)); background: repeating-linear-gradient(45deg, var(--frame) 0 8px, color-mix(in srgb, var(--frame) 85%, #000) 8px 16px); }
   .ddfoot { margin: 1px 0 0 !important; padding: 0 12px !important; }
+  /* the line under your deck row (kura, Nov 3): "hold" on a touch screen, "hover" with a mouse */
+  .tip { font: italic 500 13px/1.2 var(--body); color: var(--mute); text-align: center; }
+  .tip .mouse { display: none; }
+  @media (hover: hover) and (pointer: fine) { .tip .touch { display: none; } .tip .mouse { display: inline; } }
   /* on a phone the panels run to the screen's edges so the three cards are as wide as they can be (kura, Nov 3: "as big as they can reasonably get");
      24px = the panel's 4px sides and two 8px gaps (each just wide enough for a tappable card's dashed outline) */
   @media (max-width: 500px) {
@@ -229,12 +233,12 @@
 <h1>UN/TAP</h1>
   <div class="side" id="themSide"><div class="statusline"><span id="themHp"></span><span class="tough" id="themTough"></span></div><div class="deck" id="themDeck"></div><div class="row" id="them"></div></div>
   <div class="bar"><button class="act" id="start" hidden>start</button> <button class="act" id="attack" hidden>ping</button> <button class="act" id="take" hidden>take</button> <button class="act" id="again" hidden>new match</button></div>
-  <div class="side" id="meSide"><div class="statusline"><span id="meHp"></span><span id="status"><span id="result"></span> <span id="err" class="err"></span></span><span class="tough" id="meTough"></span></div><div class="row" id="me"></div><div class="deck" id="meDeck"></div></div>
+  <div class="side" id="meSide"><div class="statusline"><span id="meHp"></span><span id="status"><span id="result"></span> <span id="err" class="err"></span></span><span class="tough" id="meTough"></span></div><div class="row" id="me"></div><div class="deck" id="meDeck"></div><div class="tip"><span class="touch">Hold a card to see it up close.</span><span class="mouse">Hover over a card to see it up close.</span></div></div>
   <div id="log"></div>
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.120" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.121" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {

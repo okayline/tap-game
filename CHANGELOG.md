@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.121 "Tip" · Tue Nov 3, 7:57 PM
+- A small line under your deck row says how to see a card up close: "Hold a card to see it up close." on a touch screen, "Hover over a card to see it up close." with a mouse. Removed: nothing.
+
 ## v0.120 "No Peek Mid-Fight" · Tue Nov 3, 7:55 PM
 - With a mouse, the big card doesn't open from pressing ping or accept until the fight has played out, and one already open closes when you press them. Holding a card on a phone is unchanged, and you can still hover cards while you place the guest's ping. Removed: the big card popping up during a fight.
 
