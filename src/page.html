@@ -260,7 +260,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.160" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.161" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -295,6 +295,8 @@ const $ = (id) => document.getElementById(id);
         .map((a) => a.finished.catch(() => {})));
       const next = queue.shift();
       const had = !!g?.attack;   // (the replay leaves its own fight board in g)
+      // the guest's ping just arrived: a short wait before its line comes out (kura, Nov 5: "wait a little longer")
+      if (g && !had && next.attack && next.attack.by !== "a" && !next.winner) await sleep(GUEST_WAIT);
       if (g) await replay(g, next);
       // their ping just arrived (an attack that was not there before): a ping line from each of their attackers to all your cards, once
       const open = next.attack ? next.sides[otherSeat(next.attack.by)].buttons.filter((b) => !b.out).map((b) => b.id) : [];   // every card that can take damage
@@ -389,7 +391,7 @@ const $ = (id) => document.getElementById(id);
   const fit = () => { const g = $("game"); g.style.transform = `scale(${Math.min(1, innerHeight / g.offsetHeight)})`; };
   addEventListener("resize", fit); fit();
   ws.onclose = () => { history.replaceState(null, "", PATH); $("err").textContent = "disconnected: reload"; };
-  const LINE_MS = 450;
+  const LINE_MS = 450, GUEST_WAIT = 500;
   let shown = null, logTimer = null;
   // shows one more log line each LINE_MS until the log is caught up, newest at the top
   function showLog() {
