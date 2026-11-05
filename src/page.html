@@ -249,7 +249,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.139" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.140" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -291,7 +291,7 @@ const $ = (id) => document.getElementById(id);
   //   2. the defenders that took damage glitch and show it; any it knocks out go out
   //   3. the attackers that took hit-back damage glitch and show it; any it knocks out go out
   //   then the real board: the turn passes. Damage (not life left) is compared, since Glow changes life without a hit.
-  const BEAT_MS = 1000;
+  const BEAT_MS = 1000, LAST_MS = 500;   // LAST_MS: the last beat's hold, before the real board (kura, Nov 5: "like 500ms"; was BEAT_MS)
   const GLITCHES = ["g1", "g2", "glyph", "moji", "noimg"];   // a hit's glitch, picked at random (the CSS above .btn.hit)
   const GLITCH_MS = { g1: 600, g2: 600, glyph: 600, moji: 600, noimg: 1000 };   // how long each plays (kura, Nov 3: the missing image "a little longer")
   const pickGlitch = () => GLITCHES[Math.floor(Math.random() * GLITCHES.length)];
@@ -347,8 +347,9 @@ const $ = (id) => document.getElementById(id);
     const board = structuredClone(prev);
     board.attack = { by, attackers: idxs };
     const copy = (s, fields) => { const m = ids(s); for (const b of board.sides[s].buttons) { const n = m.get(b.id); if (n) for (const f of fields) b[f] = n[f]; } };
-    // a beat with hits holds BEAT_MS after its longest glitch, since each damage number only rises once its glitch is over
-    const beat = async (cap, pops, pings, ms = BEAT_MS + Math.max(0, ...pops.map((p) => GLITCH_MS[p[4]] ?? 0)), glow) => { board.log = next.log.slice(0, cap); g = board; fx = { att: att.map((b) => b.id), pops, pings, glow }; playing = true; draw(); await sleep(ms); };
+    // a beat with hits holds BEAT_MS (the last one LAST_MS) after its longest glitch, since each damage number only rises once its glitch is over
+    const hold = (pops, base = BEAT_MS) => base + Math.max(0, ...pops.map((p) => GLITCH_MS[p[4]] ?? 0));
+    const beat = async (cap, pops, pings, ms = hold(pops), glow) => { board.log = next.log.slice(0, cap); g = board; fx = { att: att.map((b) => b.id), pops, pings, glow }; playing = true; draw(); await sleep(ms); };
     const FIGHT = ["damage", "out", "power", "boost", "bonus"];
     copy(by, ["tapped"]);
     if (!prev.attack) await beat(start + 1, att.map((b) => [by, b.id, String(b.power), "atk", false]), att.map((b) => [by, b.id, hits(def).map((h) => h[1]), true]),
@@ -359,8 +360,8 @@ const $ = (id) => document.getElementById(id);
     else await beat(start, [], att.map((b) => [by, b.id, hits(def).map((h) => h[1]), true]), PING_MS);   // waits for the ping's glow to come back
     const back = hits(by);
     copy(def, FIGHT);
-    await beat(k, hits(def));
-    if (back.length) { copy(by, FIGHT); await beat(end, back); }
+    await beat(k, hits(def), undefined, hold(hits(def), back.length ? BEAT_MS : LAST_MS));
+    if (back.length) { copy(by, FIGHT); await beat(end, back, undefined, hold(back, LAST_MS)); }
     playing = false;
   }
   // shrink the whole screen to fit a short window (never grow it); offsetHeight is the unshrunk height, since a transform doesn't change layout

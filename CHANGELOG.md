@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.140 "Quick Close" · Thu Nov 5, 1:47 AM
+- The fight replay's last beat holds 0.5 s after its glitch, so the turn passes (and the guest's ping comes) sooner. The damage number may still be rising when it does. Removed: the last beat's 1 s hold.
+
 ## v0.139 "Soft Untap" · Thu Nov 5, 1:50 AM
 - When a side's turn starts, its tapped cards turn back up over 0.4 s instead of snapping. Tapping a card, and un-picking one you picked, still snap at once. The next board (such as the guest's ping) waits for the turn to finish, so its line starts from the card where it lands. Removed: cards snapping back up at the start of their turn.
 
