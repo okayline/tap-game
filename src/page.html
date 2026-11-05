@@ -249,7 +249,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.143" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.144" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -262,6 +262,7 @@ const $ = (id) => document.getElementById(id);
   // fighting: from pressing ping or accept until the fight has played out; a mouse doesn't open the big card then (kura, Nov 3)
   let sent = false;
   const fighting = () => sent || pumping || playing;
+  const placing = () => !!(g?.attack && g.attack.by !== "a" && !g.winner);   // the guest's ping is waiting for you to place it (you are seat a)
   ws.onmessage = (e) => {
     const d = JSON.parse(e.data);
     if (d.error) { $("err").textContent = d.error; sent = false; return; }
@@ -461,8 +462,9 @@ const $ = (id) => document.getElementById(id);
       if (e.pointerType !== "mouse") return;
       if (open) { turn(e); return; }
       x0 = e.clientX; clearTimeout(hover);
-      if (fighting()) return;   // no big card from a mouse during a fight; the next move once it's over starts the wait again
-      hover = setTimeout(() => { if (el.isConnected && !fighting()) { open = true; showBig(getB()); bigBy = el; } }, HOVER_MS);
+      // no big card from a mouse during a fight, or while you place the guest's ping (kura, Nov 5); the next move after starts the wait again
+      if (fighting() || placing()) return;
+      hover = setTimeout(() => { if (el.isConnected && !fighting() && !placing()) { open = true; showBig(getB()); bigBy = el; } }, HOVER_MS);
     };
     el.addEventListener("pointerenter", wait); el.addEventListener("pointermove", wait);
     el.addEventListener("pointerleave", (e) => { if (e.pointerType !== "mouse") return; clearTimeout(hover); if (open) addEventListener("pointermove", away); });

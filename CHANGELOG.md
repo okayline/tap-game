@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.144 "Hands Off" · Thu Nov 5, 2:00 AM
+- While you place the guest's ping, resting the mouse on a card doesn't open its big card. Pressing and holding on a touch screen still does. Removed: the mouse opening big cards while you place damage.
+
 ## v0.143 "Still Online" · Thu Nov 5, 2:00 AM
 - An Always Online button's picture moves while you have it picked and while it pings, like a tapped one's, even though it doesn't tap. Removed: its picture staying still when picked.
 
