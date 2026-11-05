@@ -239,7 +239,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.134" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.135" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -741,14 +741,77 @@ const $ = (id) => document.getElementById(id);
     backup: ["Backup", "the first time it's knocked out, it's back with 1 life."] };
   // a button's picture only moves while it's tapped (kura, Nov 3): ready or knocked out, it's drawn once onto a canvas, kept per button so
   // it doesn't change frame on every redraw
-  // made-up flavour lines by type (kura, Nov 3); each card shows one, picked by its button and this match, so it stays put during a match
+  // flavour lines, by button type: real lines from old personal web pages (kura, Nov 4), each with where it was found
+  // (oocities.org is a GeoCities mirror; "pasted by kura" is a page kura copied in). neon, construction and counter
+  // share the blue game's Broadcast, Wiretap/Undelete and Refute/Rollback/Paywall lines. Each card shows one, picked by
+  // its button and this match, so it stays put during a match
   const QUOTES = {
-    neon: ["Best viewed in the dark.", "It’s always 2 AM somewhere.", "Flicker is a feature.", "Glows best at 640x480."],
-    guestbook: ["Thanks for stopping by!!", "cool site. will visit again", "First!! :)", "Sign here, stranger."],
-    construction: ["Coming soon since 1997.", "Pardon our dust.", "Hard hats required.", "Back soon. Probably."],
-    counter: ["You are visitor #000042.", "Every click counts.", "Counting since 1998.", "Every visit remembered."],
-    webring: ["Next site >> Random >>", "All roads lead back home.", "< Prev | Home | Next >", "Hand in hand, site to site."],
-    divider: ["Breaks the page, not the heart.", "A line in the sand.", "Keeping things tidy.", "<hr>"],
+    neon: [
+      "You have to really have a site that ROCKS to win this one.",   // oocities.org/soho/lofts/7499/awards/awards.html
+      "This award is hard to acquire.",   // oocities.org/soho/lofts/7499/awards/awards.html
+      "Awards This Site Has Won",   // oocities.org/Heartland/Prairie/8424/awards.html
+      "Your page is spectacular....",   // Nighthawk Sports Club awards page, 1998 (pasted by kura)
+      "You are one of the best.....",   // Nighthawk Sports Club awards page, 1998 (pasted by kura)
+      "It's my honour to win this award.",   // Nighthawk Sports Club awards page, 1998 (pasted by kura)
+      "I cannot express my happiness in words when I receive this award.",   // Nighthawk Sports Club awards page, 1998 (pasted by kura)
+      "Click HERE to vote for this page as a Starting Point Hot Site.",   // Nighthawk Sports Club awards page, 1998 (pasted by kura)
+      "Your site has been awarded the .Cool Reality Award.",   // Nighthawk Sports Club awards page, 1998 (pasted by kura)
+      "My teacher just about kissed the screen.",   // oocities.org/capecanaveral/lab/8803/geobook.html (De Havilland Comet guestbook, 1998-2000)
+      "Absolutly mind bogglingly awesome site!",   // oocities.org/capecanaveral/lab/8803/geobook.html (De Havilland Comet guestbook, 1998-2000)
+    ],
+    guestbook: [
+      "Please sign my guest book.",   // oocities.org/mbreden/cats.html
+      "Immortalize yourself",   // oocities.org/paris/leftbank/1192/
+      "See what others have to say",   // oocities.org/paris/leftbank/1192/
+      "Wicked site one of the best I've seen! Visit my site.....",   // oocities.org/capecanaveral/lab/8803/geobook.html (De Havilland Comet guestbook, 1998-2000)
+      "This site's gone in the bookmarks :-)",   // oocities.org/capecanaveral/lab/8803/geobook.html (De Havilland Comet guestbook, 1998-2000)
+      "New to internet, so you are first hit.",   // oocities.org/capecanaveral/lab/8803/geobook.html (De Havilland Comet guestbook, 1998-2000)
+      "Thanks you helped me out with my assignment!!!!",   // oocities.org/capecanaveral/lab/8803/geobook.html (De Havilland Comet guestbook, 1998-2000)
+      "What about a new background?",   // oocities.org/capecanaveral/lab/8803/geobook.html (De Havilland Comet guestbook, 1998-2000)
+      "fantastische Bilder komme bald wieder",   // oocities.org/capecanaveral/lab/8803/geobook.html (De Havilland Comet guestbook, 1998-2000)
+      "Good Site!!!",   // oocities.org/capecanaveral/lab/8803/geobook.html (De Havilland Comet guestbook, 1998-2000)
+    ],
+    construction: [
+      "Lurker Lounge Lizard",   // oocities.org/elconcrete/
+      "This site is still under construction",   // oocities.org/metrodagupancolleges/
+      "I only sampled a bit of it but will return to view the rest when able.",   // oocities.org/capecanaveral/lab/8803/geobook.html (De Havilland Comet guestbook, 1998-2000)
+      "no time to scan it all but what I requested was interesting",   // oocities.org/capecanaveral/lab/8803/geobook.html (De Havilland Comet guestbook, 1998-2000)
+      "Some of these would look great on my home page.",   // oocities.org/capecanaveral/lab/8803/geobook.html (De Havilland Comet guestbook, 1998-2000)
+      "I am carrying out a major upgrade on my homepage",   // oocities.org/vienna/6538/
+      "Don't worry, I'm pretty sure I've got everything on back-up in case something happens...",   // Tomb of Anubis home page, 2007 (pasted by kura)
+      "...come back next week when the other stuff's been recovered...",   // Tomb of Anubis home page, 2007 (pasted by kura)
+    ],
+    counter: [
+      "Stop! Think! Do you really want to do this?",   // oocities.org/lacialacia/newbie/index.html
+      "Please ask me before using these pictures",   // oocities.org/sunsetstrip/towers/5998/Chester.htm
+      "Please do NOT link these graphics to my server",   // oocities.org/llegraphics/index2.html
+      "Sorry, Your browser does not support this applet.",   // oocities.org/mbaatip/institute.html
+      "NO TRESPASSING",   // oocities.org/soho/cafe/7423/youarehere.html
+      "When pigs fly!",   // oocities.org/wonderfulkel/badpage.html
+      "Coming Soon (some of the diagram links don't work...be patient)",   // oocities.org/televisioncity/3539/servo.html
+      "...or just hit your \"back\" button on your web browser.",   // oocities.org/toonsofanubis/review_index.html
+      "Wednesday. More reviews. Be here!",   // Tomb of Anubis home page, 2007 (pasted by kura)
+      "No frames? Too bad! Continue at your own risk.",   // oocities.org/Area51/Vault/2566/
+      "Once you're here you're stuck.",   // oocities.org/wonderfulkel/badpage.html
+      "Any reproduction, duplication, or distribution in any form is expressly prohibited.",   // oocities.org/hiding_light/
+    ],
+    webring: [
+      "Do not copy the code for this webring. Press the join button to get the code.",   // oocities.org/esberet/Webrings.html
+      "Want to join The Cool Comics Web Ring?",   // oocities.org/esberet/Webrings.html
+      "Go to the next site!",   // oocities.org/esberet/Webrings.html
+      "Go to the previous site!",   // oocities.org/esberet/Webrings.html
+      "Join Today!",   // oocities.org/esberet/Webrings.html
+      "Want to join this ring?",   // oocities.org/siliconvalley/haven/2448/programs/webring/sv_support_webring.htm
+      "Is A Caring Member Of RAOK!",   // oocities.org/kittysnick/webrings.html
+    ],
+    divider: [
+      "Just some dividers to help you keep things split up...",   // oocities.org/heartland/estates/8353/Bar3.html
+      "(These look best on a yellow background).",   // oocities.org/heartland/estates/8353/Bar3.html
+      "Hope you enjoy!",   // oocities.org/heartland/estates/8353/Bar3.html
+      "Take anything you want, but beware...",   // oocities.org/kevins_killa_gifs/index.html
+      "Some things may be cursed!",   // oocities.org/kevins_killa_gifs/index.html
+      "Page last modified: 05/01/98 06:08 PM",   // oocities.org/~celebrate/graphics-bars.html
+    ],
   };
   const pickQuote = (b, n) => { let h = 0; for (const ch of `${location.pathname}|${b.id}`) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return h % n; };
   // three made-up subtypes per type, after the dash on the type line (kura, Nov 3: flavour only, nothing uses them); a button always

@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.135 "Real Lines" · Wed Nov 4, 8:13 PM
+- Every card's flavour line is now a real line from an old personal web page (mostly 1990s GeoCities pages, found on the oocities.org mirror, plus pages kura pasted in), with where each was found noted beside it in the code. 54 lines in all, 6 to 12 per button type. Neon, Construction and Counter share their lines with the blue game's cards. Removed: the 24 made-up lines (4 per type), such as "Best viewed in the dark." and "You are visitor #000042."
+
 ## v0.134 "Never Zero" · Wed Nov 4, 12:05 AM
 - Read-Only still takes 1 less from a ping, but never less than 1, so a ping that lands on it always does something. Removed: Read-Only taking nothing from a 1-damage ping, which could leave a match stuck forever.
 
