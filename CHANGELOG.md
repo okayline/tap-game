@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.159 "Short Address" · Thu Nov 5, 3:26 AM
+- Once a match connects, the address bar shows just the site ("/"), without the match's long number. If the connection drops, the long address comes back, so reloading still reconnects to the match; reloading while connected starts a new match. Removed: the long /m/… address staying in the bar.
+
 ## v0.158 "Quiet Fill" · Thu Nov 5, 3:20 AM
 - A button coming in from the deck onto an out spot no longer writes a log line; its slide onto the field shows it. Removed: the "… comes in" log lines.
 

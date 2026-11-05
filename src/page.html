@@ -259,11 +259,15 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.158" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.159" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
-  const ws = new WebSocket(`${location.protocol === "https:" ? "wss" : "ws"}://${location.host}${location.pathname}/ws`);
+  // the match's own address (/m/<id>), kept here: once connected, the address bar shows just "/" (kura, Nov 5: hide the long number);
+  // if the connection drops, the long address comes back, so reloading reconnects to this match
+  const PATH = location.pathname;
+  const ws = new WebSocket(`${location.protocol === "https:" ? "wss" : "ws"}://${location.host}${PATH}/ws`);
+  ws.onopen = () => { if (PATH.startsWith("/m/")) history.replaceState(null, "", "/"); };
   let g = null;
   const send = (o) => ws.send(JSON.stringify(o));
   // boards wait their turn: a fight in a new board is replayed (replay(), below) before the next board is shown
@@ -382,7 +386,7 @@ const $ = (id) => document.getElementById(id);
   // shrink the whole screen to fit a short window (never grow it); offsetHeight is the unshrunk height, since a transform doesn't change layout
   const fit = () => { const g = $("game"); g.style.transform = `scale(${Math.min(1, innerHeight / g.offsetHeight)})`; };
   addEventListener("resize", fit); fit();
-  ws.onclose = () => { $("err").textContent = "disconnected: reload"; };
+  ws.onclose = () => { if (PATH.startsWith("/m/")) history.replaceState(null, "", PATH); $("err").textContent = "disconnected: reload"; };
   const LINE_MS = 450;
   let shown = null, logTimer = null;
   // shows one more log line each LINE_MS until the log is caught up, newest at the top
@@ -874,7 +878,7 @@ const $ = (id) => document.getElementById(id);
       "Page last modified: 05/01/98 06:08 PM",   // oocities.org/~celebrate/graphics-bars.html
     ],
   };
-  const pickQuote = (b, n) => { let h = 0; for (const ch of `${location.pathname}|${b.id}`) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return h % n; };
+  const pickQuote = (b, n) => { let h = 0; for (const ch of `${PATH}|${b.id}`) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return h % n; };
   // three made-up subtypes per type, after the dash on the type line (kura, Nov 3: flavour only, nothing uses them); a button always
   // gets the same one, picked by its id, so its type line never changes, like a real card's
   const SUB = { neon: ["Marquee", "Flicker", "Blink"], guestbook: ["Sign", "Entry", "Post"], construction: ["Site", "Zone", "Draft"],
