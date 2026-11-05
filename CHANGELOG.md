@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.141 "One by One" · Thu Nov 5, 1:58 AM
+- Cards moving between the field and the deck rows go one at a time, 0.8 s each: first every card leaving the field, then every card coming onto it. A deck row closing up moves with the first card coming in. Each card waits in its old place until its turn. Removed: all the moving cards sliding at the same time.
+
 ## v0.140 "Quick Close" · Thu Nov 5, 1:47 AM
 - The fight replay's last beat holds 0.5 s after its glitch, so the turn passes (and the guest's ping comes) sooner. The damage number may still be rising when it does. Removed: the last beat's 1 s hold.
 
