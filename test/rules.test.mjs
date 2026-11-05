@@ -238,28 +238,28 @@ test("Glow and Webcounter count the other buttons of their own type", () => {
   assert.equal(g.sides.b.buttons[2].bonus, 0);   // the only Neon on its side
 });
 
-test("Prodigal Proxy: picked, it taps and deals 1 to the button picked, with no hit-back and nothing to place; it can win", () => {
+test("Prodigal Proxy: picked, it taps and deals 1 to the button with the least life left, with no hit-back and nothing to place; it can win", () => {
   const P = [{ name: "w", type: "webring" }, { name: "p", type: "neon", fx: "proxy" }, { name: "c", type: "counter" }];
   const g = newGame(P, B, "a");
   g.limit = 2;
-  assert.equal(attack(g, "a", [1]), "Pick a button for each Prodigal Proxy.");
-  assert.equal(attack(g, "a", [1], [], { 1: 1 }), null);   // zaps the divider
-  assert.equal(g.sides.b.buttons[1].damage, 1);
+  assert.equal(attack(g, "a", [1]), null);                  // it aims itself: the neon (1/2) has the least life
+  assert.deepEqual(g.sides.b.buttons.map((b) => b.damage), [0, 0, 1]);
   assert.equal(g.sides.a.buttons[1].tapped, true);
   assert.equal(g.sides.a.buttons[1].damage, 0);             // nothing hit back
   assert.equal(g.attack, null);                             // nothing to place: the turn passed
   assert.equal(g.turn, "b");
-  // with another attacker: the zap lands at once, and only the other attacker's power is placed
+  // a tie goes to the first; with another attacker, the zap lands at once and only the other attacker's power is placed
   const h = newGame(P, B, "a");
   h.limit = 2;
-  assert.equal(attack(h, "a", [1, 2], [], { 1: 0 }), null);
-  assert.equal(h.sides.b.buttons[0].damage, 1);
+  h.sides.b.buttons[0].damage = 1;                          // construction 1/3: 2 left, tied with the neon
+  assert.equal(attack(h, "a", [1, 2]), null);
+  assert.equal(h.sides.b.buttons[0].damage, 2);
   assert.deepEqual(h.attack.attackers, [2]);
   // a zap that knocks out a side's last button, with its deck empty, wins
   const w = newGame(P, B, "a");
   w.limit = 2;
   w.sides.b.buttons[0].out = w.sides.b.buttons[1].out = true;
   w.sides.b.buttons[2].damage = 1;                          // neon 1/2: 1 life left
-  assert.equal(attack(w, "a", [1], [], { 1: 2 }), null);
+  assert.equal(attack(w, "a", [1]), null);
   assert.equal(w.winner, "a");
 });

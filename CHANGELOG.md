@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.173 "Aims Itself" · Thu Nov 5, 11:15 AM
+- Prodigal Proxy aims itself: it deals 1 to the other side's button with the least life left (the first, if tied), and its line points there as soon as you pick it. kura: "not a fan of having to select who takes the damage". Removed: clicking a guest card to aim it, and "ping" staying grey until every Proxy had a target.
+
 ## v0.172 "GPUs" · Thu Nov 5, 10:45 AM
 - 88x31's new Series Gamma: ten graphics cards, a new type, Hardware — GPU (3/2), with their own set sign (a graphics card) and each card's own launch-day quote. Each has Overclock, or Hotspot (+1/-1 when it pings) on the four that run hot in real life, plus a main effect that's never Glow or Webcounter. They're rares, and show as themselves, not as mystery buttons. Removed: nothing.
 

@@ -16,11 +16,6 @@ const readyIdx = (side) => side.buttons.map((b, i) => (b.out || b.tapped || b.ph
 
 // Its attackers this turn (it exerts every one that has Exert: index.js).
 export const dummyAttack = (g) => readyIdx(g.sides.b).slice(0, Math.min(line(g.dummyTurn).attack, g.limit));
-// Where each of its Prodigal Proxies among idxs zaps: your field button with the least life left (the first, if tied)
-export function dummyZap(g, idxs) {
-  const yours = g.sides.a.buttons.map((b, i) => [b, i]).filter(([b]) => !b.out && !b.phased).sort(([x], [y]) => life(x) - life(y));
-  return yours.length ? Object.fromEntries(idxs.filter((i) => fxOf(g.sides.b.buttons[i]) === "proxy").map((i) => [i, yours[0][1]])) : {};
-}
 
 // What a side has left: 10 for each button still in, on the field or in the deck, plus its life left.
 const worth = (s) => [...s.buttons, ...(s.deck ?? [])].reduce((n, b) => n + (b.out ? 0 : 10 + life(b)), 0);

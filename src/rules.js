@@ -47,8 +47,9 @@ export const DECK = 9; // 3 on the field, 6 in the deck row (kura, Nov 3)
 //   readonly:   Read-Only (Magic's defender): it can't ping, and it takes 1 less from each ping (all of that ping's damage on it,
 //               minus 1), but never less than 1 (kura, Nov 3, after a stalemate: a lone Read-Only took 0 from every 1-power ping)
 //   backup:     Backup (Magic's undying): the first time it would go out, it comes back instead with 1 life left
-//   proxy:      Prodigal Proxy (Magic's Prodigal Sorcerer, kura, Nov 5): picked to ping, it taps and deals 1 to an enemy button its
-//               side picks (zap, in attack), at once; nothing hits it back, and the defender doesn't place it. It counts as one of
+//   proxy:      Prodigal Proxy (Magic's Prodigal Sorcerer, kura, Nov 5): picked to ping, it taps and deals 1 at once to the other
+//               side's button with the least life left (proxyTarget; it aims itself, kura, Nov 5: "not a fan of having to select who
+//               takes the damage"); nothing hits it back, and the defender doesn't place it. It counts as one of
 //               the turn's pings, and can't zap the turn it comes in. Read-Only still takes 1; Backup still saves a button.
 // (kura, Nov 3: attacking is called "ping" on screen; the code still says attack.)
 export const FX = ["online", "broadband", "webcounter", "glow", "lagspike", "daemon"];
@@ -80,6 +81,8 @@ export const MAX_ATTACKERS = 2; // at most this many attack in a turn, so one bu
 export const NAMES = { a: "Player", b: "Guest #1337" };
 export const other = (seat) => (seat === "a" ? "b" : "a");
 export const life = (b) => (b.out ? 0 : b.toughness + (b.bonus ?? 0) - b.damage);
+// the button a Prodigal Proxy zaps: the field button in foe with the least life left (the first, if tied), not out or phased; -1 if none
+export const proxyTarget = (foe) => foe.reduce((t, b, i) => (b.out || b.phased || (t >= 0 && life(foe[t]) <= life(b)) ? t : i), -1);
 // how much of an attack the defender must place: all of it, or as much as its buttons can still take
 // a button whose life is gone goes out, unless it has Backup it hasn't used: then it's back with 1 life. Returns true if it went out.
 // join: the log's last line is this button taking damage, so it's said on that line ("… takes 1. it's out!"; kura, Nov 5)
@@ -190,8 +193,8 @@ function fill(g, seat) {
 const ready = (side, i) => side.buttons[i] && !side.buttons[i].out && !side.buttons[i].tapped && !side.buttons[i].phased;
 
 // seat attacks with the buttons at idxs (may be empty, which just passes the turn), exerting those of them in exert that have Exert.
-// zap: { attackerIndex: enemy field index } for each Prodigal Proxy among them. Returns an error string or null.
-export function attack(g, seat, idxs, exert = [], zap = {}) {
+// Its Prodigal Proxies aim themselves (proxyTarget). Returns an error string or null.
+export function attack(g, seat, idxs, exert = []) {
   if (g.winner) return "The game is over.";
   if (g.turn !== seat || g.attack) return "Not your turn.";
   const list = [...new Set(idxs)];
@@ -199,16 +202,16 @@ export function attack(g, seat, idxs, exert = [], zap = {}) {
   if (list.length > g.limit) return `At most ${g.limit} can ping this turn.`;
   if (list.some((i) => g.sides[seat].buttons[i].sick && fxOf(g.sides[seat].buttons[i]) !== "broadband")) return "A button that came in this turn can't ping.";
   if (list.some((i) => fxOf(g.sides[seat].buttons[i]) === "readonly")) return "A Read-Only button can't ping.";
-  const foe = g.sides[other(seat)].buttons, z = zap && typeof zap === "object" ? zap : {};
-  const proxies = list.filter((i) => fxOf(g.sides[seat].buttons[i]) === "proxy"), aim = (i) => Number(z[i]);
-  if (proxies.some((i) => !Number.isInteger(aim(i)) || !foe[aim(i)] || foe[aim(i)].out || foe[aim(i)].phased)) return "Pick a button for each Prodigal Proxy.";
+  const foe = g.sides[other(seat)].buttons;
+  const proxies = list.filter((i) => fxOf(g.sides[seat].buttons[i]) === "proxy");
   g.locked = true;
   g.ping = { by: seat, idxs: list };   // everything this ping used, Prodigal Proxies too (the page's replay shows them)
   if (!list.length) { g.log.push(`${NAMES[seat]} doesn't ping`); passTurn(g); return null; }
   for (const i of list) if (fxOf(g.sides[seat].buttons[i]) !== "online") g.sides[seat].buttons[i].tapped = true;
   const att = g.sides[seat].buttons, how = {};
-  // Prodigal Proxy: 1 to its button, at once (Read-Only takes 1 less, never less than 1: still 1)
-  for (const i of proxies) { const b = foe[aim(i)]; b.damage += 1; g.log.push(`${att[i].name} zaps ${b.name} for 1`); knock(g, b, true); }
+  // Prodigal Proxy: 1 to the button with the least life left, at once, one Proxy after another (Read-Only takes 1 less, never less than 1:
+  // still 1); with nothing to zap it does nothing
+  for (const i of proxies) { const t = proxyTarget(foe); if (t < 0) continue; const b = foe[t]; b.damage += 1; g.log.push(`${att[i].name} zaps ${b.name} for 1`); knock(g, b, true); }
   const rest = list.filter((i) => !proxies.includes(i));
   settle(g);
   if (!rest.length) { if (!ended(g, seat)) passTurn(g); return null; }

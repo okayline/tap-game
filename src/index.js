@@ -6,7 +6,7 @@ import { DurableObject } from "cloudflare:workers";
 import { newGame, attack, place, swap, dealDecks } from "./rules.js";
 
 const PAUSE_MS = 1000; // the dummy waits this long before it attacks
-import { dummyAttack, dummyPlace, dummyZap } from "./dummy.js";
+import { dummyAttack, dummyPlace } from "./dummy.js";
 import PAGE from "./page.html";
 
 export default {
@@ -97,7 +97,7 @@ export class Game extends DurableObject {
     let a;
     try { a = JSON.parse(msg); } catch { return; }
     const err =
-      a.do === "attack" && Array.isArray(a.idxs) ? attack(g, seat, a.idxs, a.exert, a.zap) :
+      a.do === "attack" && Array.isArray(a.idxs) ? attack(g, seat, a.idxs, a.exert) :
       a.do === "take" && a.split && typeof a.split === "object" ? place(g, seat, a.split) :
       a.do === "swap" ? swap(g, seat, a.i) :
       a.do === "start" ? (g.locked || g.turn !== "b" ? "Nothing to start." : ((g.locked = true), null)) : "Unknown action.";
@@ -123,7 +123,7 @@ export class Game extends DurableObject {
     if (Date.now() < g.dummyAt) return;
     g.dummyAt = null;
     const idxs = dummyAttack(g);
-    attack(g, "b", idxs, idxs, dummyZap(g, idxs));   // the dummy exerts every attacker it can
+    attack(g, "b", idxs, idxs);   // the dummy exerts every attacker it can
     g.dummyTurn++;
   }
 
