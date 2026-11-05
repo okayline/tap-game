@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.158 "Quiet Fill" · Thu Nov 5, 3:20 AM
+- A button coming in from the deck onto an out spot no longer writes a log line; its slide onto the field shows it. Removed: the "… comes in" log lines.
+
 ## v0.157 "No Wait" · Thu Nov 5, 3:18 AM
 - A new log line starts sliding in as soon as it arrives; lines after it still come 0.45 s apart. Removed: the 0.35 s beat before a new line (v0.154).
 

@@ -168,7 +168,7 @@ function fill(g, seat) {
     if (!b.out || !s.deck.length) return;
     const n = s.deck.shift();
     n.phased = false; n.sick = true;
-    s.gone.push(b); s.buttons[i] = n; g.log.push(`${n.name} comes in`);
+    s.gone.push(b); s.buttons[i] = n;   // no log line (kura, Nov 5: the card sliding in shows it)
   });
   settle(g);
 }
