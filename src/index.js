@@ -101,7 +101,7 @@ export class Match extends DurableObject {
   }
 
   // The dummy is seat b: it places your attack on its buttons at once; on its turn it waits PAUSE_MS (so you can read the result of
-  // your attack), then attacks by SCRIPT and waits for you to place it.
+  // your attack), then attacks by SCRIPT and waits for you to place it. Where it places your attack comes from dummyPlace, not SCRIPT.
   dummy(g) {
     if (g.winner) return;
     if (g.attack && g.attack.by === "a") place(g, "b", dummyPlace(g));

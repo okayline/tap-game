@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.162 "Guest Thinks" · Thu Nov 5, 3:40 AM
+- The guest decides where your pings land by looking at the board. Removed: its fixed pattern of where to take them.
+
 ## v0.161 "Guest Waits" · Thu Nov 5, 3:31 AM
 - When the guest's ping arrives, the page waits 0.5 s more before its line comes out. Removed: its line coming out as soon as the board was ready.
 
