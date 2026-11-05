@@ -176,9 +176,9 @@
   button.act:disabled { cursor: default; filter: grayscale(1); opacity: .4; }
   button.act.lit:disabled { filter: none; opacity: 1; }   /* the coin flip: lit pink while it flips and when you won, though it can't be pressed (kura, Nov 3) */
   /* the log: the 3 newest lines, newest at the top in bold, fading out towards the bottom (kura, Nov 5: "only 3 lines and faded
-     out/gradient like rob's game", bigger text; was 5 lines in 15px, each older line fainter); new lines appear one at a time (LINE_MS
+     out/gradient like rob's game", bigger text, then "a bit smaller": 16px; was 5 lines in 15px, each older line fainter); new lines appear one at a time (LINE_MS
      apart). The fade is on the lines (#logLines), not the box, so the box stays whole. */
-  #log { white-space: pre-wrap; font: italic 500 17px/1.5 var(--body); height: calc(3 * 1.5em + 20px); overflow: hidden; background: var(--cream); border: 1px solid var(--line);
+  #log { white-space: pre-wrap; font: italic 500 16px/1.5 var(--body); height: calc(3 * 1.5em + 20px); overflow: hidden; background: var(--cream); border: 1px solid var(--line);
          border-radius: 6px; padding: 10px 14px; color: var(--ink); box-sizing: border-box; }
   #logLines { height: 100%; overflow: hidden;
               -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,.25), #000 34%); mask-image: linear-gradient(to top, rgba(0,0,0,.25), #000 34%); }
@@ -255,7 +255,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.151" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.152" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {

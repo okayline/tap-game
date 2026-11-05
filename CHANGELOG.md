@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.152 "A Bit Smaller" · Thu Nov 5, 3:07 AM
+- The log's text is 16px. Removed: the 17px log text.
+
 ## v0.151 "Close Count" · Thu Nov 5, 3:06 AM
 - "Turn X, move X" sits just right of the UN/TAP title, in white. Removed: it sitting at the far right of the title line in dim ink.
 
