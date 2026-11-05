@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="match" content="">   <!-- the match id when the page comes from / (index.js); empty at /m/<id> -->
 <title>UN/TAP</title>
 <!-- the two fonts are served from this Worker (public/fonts, latin only, from npm's @fontsource; SIL Open Font License), not Google Fonts,
      so a phone doesn't open two more connections before the page shows (kura, Nov 3) -->
@@ -259,15 +260,16 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.159" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.160" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
-  // the match's own address (/m/<id>), kept here: once connected, the address bar shows just "/" (kura, Nov 5: hide the long number);
-  // if the connection drops, the long address comes back, so reloading reconnects to this match
-  const PATH = location.pathname;
+  // the match's own address (/m/<id>): from the address, or from the meta tag when the page came straight from / (index.js). The address
+  // bar shows just "/" (kura, Nov 5: hide the long number); if the connection drops, the long address comes back, so reloading
+  // reconnects to this match
+  const PATH = location.pathname.startsWith("/m/") ? location.pathname : `/m/${document.querySelector('meta[name="match"]').content}`;
   const ws = new WebSocket(`${location.protocol === "https:" ? "wss" : "ws"}://${location.host}${PATH}/ws`);
-  ws.onopen = () => { if (PATH.startsWith("/m/")) history.replaceState(null, "", "/"); };
+  ws.onopen = () => { if (location.pathname !== "/") history.replaceState(null, "", "/"); };
   let g = null;
   const send = (o) => ws.send(JSON.stringify(o));
   // boards wait their turn: a fight in a new board is replayed (replay(), below) before the next board is shown
@@ -386,7 +388,7 @@ const $ = (id) => document.getElementById(id);
   // shrink the whole screen to fit a short window (never grow it); offsetHeight is the unshrunk height, since a transform doesn't change layout
   const fit = () => { const g = $("game"); g.style.transform = `scale(${Math.min(1, innerHeight / g.offsetHeight)})`; };
   addEventListener("resize", fit); fit();
-  ws.onclose = () => { if (PATH.startsWith("/m/")) history.replaceState(null, "", PATH); $("err").textContent = "disconnected: reload"; };
+  ws.onclose = () => { history.replaceState(null, "", PATH); $("err").textContent = "disconnected: reload"; };
   const LINE_MS = 450;
   let shown = null, logTimer = null;
   // shows one more log line each LINE_MS until the log is caught up, newest at the top

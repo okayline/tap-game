@@ -1,5 +1,5 @@
 // The Worker: the page, a new match link, and one Durable Object (Match) per match that holds the true board.
-//   GET /                 a new match against the scripted dummy (src/dummy.js): redirects to it
+//   GET /                 a new match against the scripted dummy (src/dummy.js): serves its page (no redirect)
 //   GET /m/<id>           the match page; GET /m/<id>/ws the match's WebSocket. You are seat a in every tab; the dummy is b.
 //   GET /img/<n>          88x31 button n's GIF, from this site (img(), below)
 import { DurableObject } from "cloudflare:workers";
@@ -17,7 +17,10 @@ export default {
     if (url.pathname === "/") {
       const id = env.MATCH.newUniqueId();
       await env.MATCH.get(id).setup(await buttons(env));
-      return Response.redirect(`${url.origin}/m/${id}`, 302);
+      // its page comes straight back, with the match's id in a meta tag, so the address bar never shows /m/<id> (kura, Nov 5: the
+      // redirect flashed the long address); no-store, since this page belongs to one match
+      return new Response(PAGE.replace('<meta name="match" content="">', `<meta name="match" content="${id}">`),
+        { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     }
     const m = url.pathname.match(/^\/m\/([0-9a-f]{64})(\/ws)?$/);
     if (m && m[2]) return env.MATCH.get(env.MATCH.idFromString(m[1])).fetch(req);

@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.160 "No Flash" · Thu Nov 5, 3:32 AM
+- A new match's page comes straight back from the site's main address, so the address bar stays on "/" the whole time. Removed: the redirect to /m/… that flashed the long address for a moment.
+
 ## v0.159 "Short Address" · Thu Nov 5, 3:26 AM
 - Once a match connects, the address bar shows just the site ("/"), without the match's long number. If the connection drops, the long address comes back, so reloading still reconnects to the match; reloading while connected starts a new match. Removed: the long /m/… address staying in the bar.
 
