@@ -178,8 +178,8 @@
   /* the log: the 3 newest lines, newest at the top in bold, fading out towards the bottom (kura, Nov 5: "only 3 lines and faded
      out/gradient like rob's game", bigger text, then "a bit smaller": 16px; was 5 lines in 15px, each older line fainter); new lines appear one at a time (LINE_MS
      apart). The fade is on the lines (#logLines), not the box, so the box stays whole. */
-  #log { white-space: pre-wrap; font: italic 500 16px/1.5 var(--body); height: calc(3 * 1.5em + 20px); overflow: hidden; background: var(--cream); border: 1px solid var(--line);
-         border-radius: 6px; padding: 10px 14px; color: var(--ink); box-sizing: border-box; }
+  #log { white-space: pre-wrap; font: italic 500 16px/1.5 var(--body); height: calc(3 * 1.5em + 15px); overflow: hidden; background: var(--cream); border: 1px solid var(--line);
+         border-radius: 6px; padding: 5px 14px 10px; color: var(--ink); box-sizing: border-box; }   /* less room above the top line (kura, Nov 5; was 10px) */
   #logLines { height: 100%; overflow: hidden;
               -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,.25), #000 34%); mask-image: linear-gradient(to top, rgba(0,0,0,.25), #000 34%); }
   #logLines div:first-child { font-weight: 700; }
@@ -188,6 +188,9 @@
   /* 6 across, as wide as the field row (3 cards and 2 gaps of 12px) with 5 gaps of 8px; each in a little blue frame */
   :root { --dw: calc((var(--w) * 3 - 16px) / 6 - 6px); }
   .deck { display: flex; gap: 8px; margin-top: 10px; padding-bottom: 8px; min-height: calc(var(--dw) * 31 / 88 + 6px); }
+  /* your side: a little more room above your 3 cards and between them and your deck (kura, Nov 5; was 8px and 10px) */
+  #me { margin-top: 14px; }
+  #meDeck { margin-top: 18px; }
   .deck .card { position: relative; background: var(--frame); border-radius: 4px; padding: 3px; }
   .deck img, .deck canvas { display: block; width: var(--dw); height: calc(var(--dw) * 31 / 88); image-rendering: pixelated; }
   /* knocked-out ones stay greyed */
@@ -255,7 +258,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.153" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.154" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -379,7 +382,7 @@ const $ = (id) => document.getElementById(id);
   const fit = () => { const g = $("game"); g.style.transform = `scale(${Math.min(1, innerHeight / g.offsetHeight)})`; };
   addEventListener("resize", fit); fit();
   ws.onclose = () => { $("err").textContent = "disconnected: reload"; };
-  const LINE_MS = 450;
+  const LINE_MS = 450, LOG_BEAT = 350;
   let shown = null, logTimer = null;
   // shows one more log line each LINE_MS until the log is caught up, newest at the top
   function showLog() {
@@ -599,7 +602,10 @@ const $ = (id) => document.getElementById(id);
     const moving = g.winner ? null : g.attack ? (g.attack.by === me ? them : me) : g.turn;
     $("meSide").classList.toggle("dim", moving === them); $("themSide").classList.toggle("dim", moving === me);
     if (playing) { clearTimeout(logTimer); logTimer = null; shown = g.log.length; renderLog(); }   // a replay beat: its lines at once
-    else { if (shown === null) shown = g.log.length; if (!logTimer) showLog(); }   // first board after loading: the whole log at once
+    // first board after loading: the whole log at once; after that a new line waits LOG_BEAT before it shows (kura, Nov 5: "a short beat")
+    else if (shown === null) { shown = g.log.length; showLog(); }
+    else if (!logTimer && shown < g.log.length) logTimer = setTimeout(showLog, LOG_BEAT);
+    else if (!logTimer && shown > g.log.length) { shown = g.log.length; renderLog(); }   // a shorter log (a new match in this tab)
     const cardOf = (s, id) => [...$(s === me ? "me" : "them").querySelectorAll(".btn")].find((x) => x.dataset.id === String(id));
     // fx.pings: [side, attacker id, target ids, glow now?]; without the glow, the line waits (pending) for fx.glow
     for (const [s, id, to, glow] of fx.pings ?? []) {
