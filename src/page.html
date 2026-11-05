@@ -249,7 +249,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.144" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.145" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -473,27 +473,19 @@ const $ = (id) => document.getElementById(id);
   // cards moving between the field and a deck row (kura, Nov 3: "a small, simple animation"): the top card coming in, a knocked-out
   // or swapped-out button going to the deck, and the deck closing up. Before a draw, each card's place is noted by its button id; after
   // it, a card that moved slides from its old place to its new one, growing or shrinking to its new size (a "FLIP" animation).
-  // They go one at a time (kura, Nov 5: "one by one ... not both at the same time"): first each card leaving the field for a deck
-  // row, then each card coming onto the field from one; a deck row closing up moves with the first card coming in (it closes up
-  // because that card left it), or with the last card going out when none comes in.
   const MOVE_MS = 800;   // kura, Nov 3: "slow down the animation" (was 350, then 500)
-  const moving = () => [...document.querySelectorAll("#me .btn, #them .btn")].map((x) => [x.dataset.id, x.parentElement, false])
-    .concat([...document.querySelectorAll("#meDeck .card, #themDeck .card")].map((x) => [x.dataset.id, x, true]));   // [id, el, in a deck row?]
-  const places = () => new Map(moving().map(([id, el, deck]) => [id, { r: el.getBoundingClientRect(), deck }]));
+  const moving = () => [...document.querySelectorAll("#me .btn, #them .btn")].map((x) => [x.dataset.id, x.parentElement])
+    .concat([...document.querySelectorAll("#meDeck .card, #themDeck .card")].map((x) => [x.dataset.id, x]));
+  const places = () => new Map(moving().map(([id, el]) => [id, el.getBoundingClientRect()]));
   function slide(before) {
     if (!before.size) return;
     const k = $("game").getBoundingClientRect().width / $("game").offsetWidth || 1;   // fit()'s scale: a move is in unscaled pixels
-    const outs = [], ins = [], rest = [];
-    for (const [id, el, deck] of moving()) {
-      const w = before.get(id), b = el.getBoundingClientRect();
-      if (!w || !b.width || (Math.abs(w.r.left - b.left) < 1 && Math.abs(w.r.top - b.top) < 1)) continue;
-      (w.deck === deck ? rest : deck ? outs : ins).push([el, w.r, b]);
+    for (const [id, el] of moving()) {
+      const a = before.get(id), b = el.getBoundingClientRect();
+      if (!a || !b.width || (Math.abs(a.left - b.left) < 1 && Math.abs(a.top - b.top) < 1)) continue;
+      el.animate([{ transformOrigin: "top left", transform: `translate(${(a.left - b.left) / k}px, ${(a.top - b.top) / k}px) scale(${a.width / b.width}, ${a.height / b.height})` },
+        { transformOrigin: "top left", transform: "none" }], { id: "slide", duration: MOVE_MS, easing: "ease-out" });
     }
-    const go = ([el, a, b], n) => el.animate([{ transformOrigin: "top left", transform: `translate(${(a.left - b.left) / k}px, ${(a.top - b.top) / k}px) scale(${a.width / b.width}, ${a.height / b.height})` },
-      { transformOrigin: "top left", transform: "none" }], { id: "slide", duration: MOVE_MS, delay: n * MOVE_MS, easing: "ease-out", fill: "backwards" });   // backwards: waits in its old place
-    outs.forEach((m, n) => go(m, n));
-    ins.forEach((m, n) => go(m, outs.length + n));
-    rest.forEach((m) => go(m, ins.length ? outs.length : Math.max(0, outs.length - 1)));
   }
 
   function draw() {

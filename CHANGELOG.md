@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.145 "All Together" · Thu Nov 5, 2:02 AM
+- Cards moving between the field and the deck rows slide at the same time again, 0.8 s. Removed: v0.141's one-at-a-time slides (kura: "take those off").
+
 ## v0.144 "Hands Off" · Thu Nov 5, 2:00 AM
 - While you place the guest's ping, resting the mouse on a card doesn't open its big card. Pressing and holding on a touch screen still does. Removed: the mouse opening big cards while you place damage.
 
