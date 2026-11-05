@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.138 "No Glow" · Wed Nov 4, 9:35 PM
+- The panels and the log keep their soft dark shadow over the space. kura: "no glow please". Removed: the faint pink glow around their edges.
+
 ## v0.137 "Whole Sky" · Wed Nov 4, 9:28 PM
 - The background is kura's whole space picture again (`public/space.jpg`, 2560 × 1440, 378 KB), with its bright orange stars and blue clouds. Removed: the upper-left crop (1800 × 1013).
 

@@ -41,8 +41,8 @@
   /* on a window too short for the whole screen, the screen is shrunk to fit (fit(), below), as if zoomed out, so the cards keep their size */
   #game { transform-origin: top center; }
   h1 { font: 800 24px/1 var(--title); letter-spacing: 2px; color: #d97aa6; margin: 0; }
-  /* the panels and the log float over the space (kura, Nov 4): a soft dark shadow under them and a faint pink glow at the edge */
-  .side, #log { box-shadow: 0 12px 32px rgba(0,0,0,.6), 0 0 14px rgba(233,138,179,.25); }
+  /* the panels and the log float over the space (kura, Nov 4): a soft dark shadow under them, no glow (kura: "no glow please") */
+  .side, #log { box-shadow: 0 12px 32px rgba(0,0,0,.6); }
   .side { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 10px 18px; transition: filter .3s; }
   /* the side that isn't moving now is dimmed (kura, Nov 3) */
   .side.dim { filter: brightness(.8) saturate(.7); }
@@ -246,7 +246,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.137" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.138" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
