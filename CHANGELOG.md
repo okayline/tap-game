@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.168 "Frozen" · Thu Nov 5, 3:59 AM
+- A knocked-out card keeps its error screen: the screen freezes and goes grey, crossed out, until the card leaves the field. Removed: the screen going away and the card's own front coming back grey.
+
 ## v0.167 "Not Found" · Thu Nov 5, 3:56 AM
 - A card knocked out in a fight shows an old error screen for a moment after its hit: 404 Not Found, a blue screen, or "The page cannot be displayed", picked at random. Then it goes grey and crossed out as before. Removed: the card going grey and crossed out right as it was hit.
 

@@ -133,8 +133,9 @@
             border: 1px dotted #8a8a8a; border-radius: calc(3 * var(--u)); background: #fff; font: calc(9 * var(--u))/1.2 "Times New Roman", serif; color: #000; overflow: hidden; }
   .broken svg { flex: none; width: calc(13 * var(--u)); height: calc(16 * var(--u)); }
   /* a knockout (kura, Nov 5: "404", "blue screen", "page cannot be displayed"; the pink X stays as it is): after its hit's glitch, the
-     card's front is an old error screen for KO_MS (KOS, below), then the card goes grey and crossed out as before. While it plays
-     (data-ko on the spot) the card isn't grey or crossed yet. */
+     card's front is an old error screen (KOS, below); after KO_MS it freezes there and goes grey and crossed out (kura, Nov 5: "stay on
+     the Not Found page ... and have that page freeze and turn grey"). While it plays (data-ko on the spot) the card isn't grey or
+     crossed yet. */
   .btn.out[data-ko] .gc { filter: none; }
   .btn.out[data-ko]::before, .btn.out[data-ko]::after { display: none; }
   .ko { flex: 1; overflow: hidden; border-radius: calc(3 * var(--u)); padding: calc(6 * var(--u)); display: flex; flex-direction: column; gap: calc(4 * var(--u));
@@ -147,6 +148,7 @@
   .ko-bsod { background: #0000aa; color: #fff; font-family: "Lucida Console", "Courier New", monospace; font-size: calc(6 * var(--u)); justify-content: center; }
   .ko-bsod b { align-self: center; background: #aaa; color: #0000aa; padding: 0 calc(3 * var(--u)); font-weight: 400; }
   .ko-bsod span:last-child::after { content: "_"; animation: blink .5s steps(1, end) infinite; }
+  .btn.out:not([data-ko]) .ko-bsod span:last-child::after { animation: none; }   /* frozen */
   @keyframes blink { 50% { opacity: 0; } }
   .ko-ie { background: #fff; color: #000; font-family: Tahoma, Verdana, sans-serif; font-size: calc(6 * var(--u)); }
   .ko-ie b { display: flex; align-items: center; gap: calc(3 * var(--u)); font-size: calc(8 * var(--u)); color: #000; }
@@ -288,7 +290,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.167" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.168" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -382,14 +384,15 @@ const $ = (id) => document.getElementById(id);
   };
   const KO_MS = 1400;
   const pickKO = () => { const k = Object.keys(KOS); return k[Math.floor(Math.random() * k.length)]; };
-  // wait ms (its hit's glitch), then the card's front is the error screen for KO_MS; the card stays un-greyed until then (data-ko)
+  // wait ms (its hit's glitch), then the card's front is the error screen, for good; the card stays un-greyed for KO_MS (data-ko), then
+  // greys out over it. (A page loaded later, or a big card, shows the card's own front: the screen isn't kept in the board.)
   function knockout(btn, ko, wait) {
     btn.dataset.ko = ko;
     setTimeout(() => {
       const gc = btn.querySelector(".gc"), inn = gc.querySelector(".gc-in"), box = mk("span", `ko ko-${ko}`);
       box.innerHTML = KOS[ko];
       inn.style.display = "none"; gc.append(box);
-      setTimeout(() => { box.remove(); inn.style.display = ""; delete btn.dataset.ko; }, KO_MS);
+      setTimeout(() => { delete btn.dataset.ko; }, KO_MS);
     }, wait);
   }
   const GLITCH_DO = { glyph: glyphs, moji: mojibake, noimg: noImage };   // the glitches with code of their own   // kura, Nov 3: "a little slower" (was 700)
