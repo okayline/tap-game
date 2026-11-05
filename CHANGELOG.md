@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.171 "Tidy" · Thu Nov 5, 9:45 AM
+- A match that goes a day with no move is deleted, and every match stored before this version was deleted (kura: "can we please clean up all the empty unused runs"). Every page load starts a match, so these were mostly ones nobody played. A link to a deleted match says "No such match". Removed: matches kept forever.
+
 ## v0.170 "UN/TAP Server" · Thu Nov 5, 4:00 AM
 - The 404 page's footer says "UN/TAP Server at tap.88x31.app Port 80". Removed: "Apache/1.3.27 Server at 88x31.app Port 80".
 

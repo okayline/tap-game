@@ -23,7 +23,11 @@ export default {
         { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     }
     const m = url.pathname.match(/^\/m\/([0-9a-f]{64})(\/ws)?$/);
-    if (m && m[2]) return env.MATCH.get(env.MATCH.idFromString(m[1])).fetch(req);
+    if (m && m[2]) {
+      // a link to a match from before the Nov 5 wipe has an id the new class doesn't know: "No such match", like an expired one
+      let id; try { id = env.MATCH.idFromString(m[1]); } catch { return new Response("No such match", { status: 404 }); }
+      return env.MATCH.get(id).fetch(req);
+    }
     if (m) return new Response(PAGE, { headers: { "content-type": "text/html; charset=utf-8" } });
     return new Response("Not found", { status: 404 });
   },
@@ -61,11 +65,18 @@ async function img(n, req, ctx) {
   return res;
 }
 
-export class Match extends DurableObject {
+// A match is deleted after a day with no move (kura, Nov 5: "clean up all the empty unused runs"): every page load starts a match,
+// and nothing else ever removed one. Its one alarm is either the dummy's pause or this expiry; save() sets whichever comes next.
+const EXPIRE_MS = 24 * 60 * 60 * 1000;
+
+// Game, not Match: the class was renamed on Nov 5 so its old namespace, with every match stored before the expiry, could be
+// deleted (wrangler.jsonc migrations v2 and v3)
+export class Game extends DurableObject {
   async setup(pool) {
     const g = newGame(...dealDecks(pool));
     g.dummyTurn = 0; // if the dummy won the flip, it waits for you to press start (so it doesn't ping before you're there)
     await this.ctx.storage.put("g", g);
+    await this.ctx.storage.setAlarm(Date.now() + EXPIRE_MS);
   }
 
   async fetch(req) {
@@ -81,6 +92,7 @@ export class Match extends DurableObject {
   async webSocketMessage(ws, msg) {
     const seat = "a";
     const g = await this.ctx.storage.get("g");
+    if (!g) return ws.close(1000, "No such match");
     let a;
     try { a = JSON.parse(msg); } catch { return; }
     const err =
@@ -92,11 +104,11 @@ export class Match extends DurableObject {
     await this.save(g);
   }
 
-  // Save, run the dummy if it's its move, set its pause alarm, and send the board to everyone.
+  // Save, run the dummy if it's its move, set its pause alarm (or else the expiry), and send the board to everyone.
   async save(g) {
     this.dummy(g);
     await this.ctx.storage.put("g", g);
-    if (g.dummyAt) await this.ctx.storage.setAlarm(g.dummyAt);
+    await this.ctx.storage.setAlarm(g.dummyAt || Date.now() + EXPIRE_MS);
     for (const ws of this.ctx.getWebSockets()) ws.send(JSON.stringify({ g }));
   }
 
@@ -114,10 +126,12 @@ export class Match extends DurableObject {
     g.dummyTurn++;
   }
 
-  // The alarm: the dummy's pause is over.
+  // The alarm: the dummy's pause is over, or a day has passed with no move and the match is deleted (deleteAll also removes the
+  // alarm at this compatibility date). An open page is told it's gone.
   async alarm() {
     const g = await this.ctx.storage.get("g");
-    if (!g?.dummyAt || Date.now() < g.dummyAt) return;
-    await this.save(g);
+    if (g?.dummyAt) { if (Date.now() >= g.dummyAt) await this.save(g); return; }
+    await this.ctx.storage.deleteAll();
+    for (const ws of this.ctx.getWebSockets()) ws.close(1000, "Match expired");
   }
 }
