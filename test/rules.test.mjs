@@ -149,6 +149,33 @@ test("printed effects: a button keeps its own, so a slot's two buttons share the
   }
 });
 
+test("GPUs: a printed Overclock or Hotspot is the extra, with a rolled main effect that's never Glow or Webcounter", async () => {
+  const { dealDecks, fxOf } = await import("../src/rules.js");
+  const pool = [{ name: "oc", type: "hardware", rarity: "rare", effect: "exert" }, { name: "hs", type: "hardware", rarity: "rare", effect: "hotspot" },
+    ...[...Array(10)].map((_, i) => ({ name: `c${i}`, type: "neon" }))];
+  for (let k = 0; k < 40; k++) {
+    for (const d of dealDecks(pool).flat().filter((d) => d.type === "hardware")) {
+      assert.equal(d.extra, d.name === "oc" ? "exert" : "hotspot");
+      assert.ok(["online", "broadband", "lagspike", "daemon"].includes(fxOf(d)), fxOf(d));
+    }
+  }
+});
+
+test("Hotspot: +1/-1 when it pings: it pings for 4, and a hit-back of 1 knocks the 3/2 out", async () => {
+  const { settle } = await import("../src/rules.js");
+  const gpu = { name: "RTX 5090", type: "hardware", rarity: "rare", fx: "online", extra: "hotspot" };
+  const wall = (n) => ({ name: n, type: "construction", fx: "lagspike" });
+  const g = newGame([gpu, wall("a2"), wall("a3")], [wall("b1"), wall("b2"), wall("b3")], "a");
+  g.locked = true; settle(g);
+  assert.equal(attack(g, "a", [0]), null);
+  assert.equal(g.sides.a.buttons[0].power, 4);
+  // the defender puts 3 on one 1/3 wall and 1 on another: the first is out, the second hits back for 1, which Hotspot takes as 2
+  assert.equal(place(g, "b", { 0: { 0: 3, 1: 1 } }), null);
+  assert.equal(g.sides.b.buttons[0].out, true);
+  assert.equal(g.sides.a.buttons[0].out, true);
+  assert.equal(g.sides.a.buttons[0].power, 3);
+});
+
 test("main effects: rolled once per slot for both sides, and they follow the button, not its type", async () => {
   const { dealDecks, FX, fxOf } = await import("../src/rules.js");
   const pool = ["neon", "webring", "counter", "divider"].flatMap((type) => [...Array(6)].map((_, i) => ({ name: `${type}-${i}`, type })));

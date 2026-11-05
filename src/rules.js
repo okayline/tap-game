@@ -27,6 +27,8 @@ export const STATS = {
   counter: [2, 3],
   webring: [3, 2],
   divider: [3, 3],
+  // Series Gamma's 10 GPUs (kura, Nov 5: "3/2 is good with overclock"), between webring (13) and divider (5) by count
+  hardware: [3, 2],
 };
 
 export const DECK = 9; // 3 on the field, 6 in the deck row (kura, Nov 3)
@@ -58,10 +60,18 @@ export const fxOf = (b) => b.fx ?? TYPE_FX[b.type];
 // effect is printed, and an uncommon's can be Unicast, as its only effect (kura, Nov 3: "not always 2 stacked").
 //   exalted: when it pings alone, +1/+1 for that ping (its +1 toughness: it takes 1 less hit-back, since damage stays)
 //   exert:   when it pings, its side may exert it: its power counts double, and it doesn't untap at its side's next turn
+//   hotspot: when it pings, +1/-1 for that ping: its -1 toughness takes 1 more from a hit-back, and nothing when there's none
+//            (printed on four GPUs only, kura, Nov 5: "it can do 4 damage but will most likely get knocked out too")
 //   phasing: at each of its side's turns it phases out or back in; phased out it can't ping, take damage, hit back or count for Glow
 //            or Webcounter (Magic's phasing: it starts in, and goes out at its side's next turn)
 // On screen (kura, Nov 3): exalted is Unicast, exert is Overclock, phasing is Dial-Up; the code keeps Magic's names.
 export const EXTRA = { rare: ["exert", "exalted"], prototype: ["phasing", "exert", "exalted"] };
+// A GPU (Series Gamma, kura, Nov 5) has its extra printed instead of rolled: Overclock (exert), or Hotspot on the four that are fragile in
+// real life. It keeps the slot's rolled main effect, but never Glow or Webcounter: they count other buttons of its own type, and a match
+// rarely has a second GPU on a side, so they'd do nothing (each maps to one of the other four, the same for both sides).
+const GPU_EXTRA = ["exert", "hotspot"];
+const KIN = ["webcounter", "glow"];
+const noKin = (fx) => (KIN.includes(fx) ? FX.filter((x) => !KIN.includes(x))[FX.indexOf(fx) % 4] : fx);
 export const MAX_ATTACKERS = 2; // at most this many attack in a turn, so one button always stays home (kura, Nov 3)
 // A coin flip decides who goes first, and that side attacks with only 1 on the match's first turn (kura, Nov 3).
 // g.limit is how many may attack this turn.
@@ -114,7 +124,8 @@ export function dealDecks(pool, n = DECK, rand = Math.random) {
     let x = rand() * ts.reduce((m, t) => m + left[r][t].length, 0), t = ts[0];
     for (const y of ts) { if (x < left[r][y].length) { t = y; break; } x -= left[r][y].length; }
     const ex = EXTRA[r], extra = ex ? ex[Math.floor(rand() * ex.length)] : undefined, fx = FX[Math.floor(rand() * FX.length)];
-    const printed = (x) => (!x.effect ? { ...x, fx, extra } : x.effect === "exalted" ? { ...x, fx: "none", extra: "exalted" } : { ...x, fx: x.effect, extra: undefined });
+    const printed = (x) => (!x.effect ? { ...x, fx, extra } : x.effect === "exalted" ? { ...x, fx: "none", extra: "exalted" }
+      : GPU_EXTRA.includes(x.effect) ? { ...x, fx: noKin(fx), extra: x.effect } : { ...x, fx: x.effect, extra: undefined });
     a.push(printed(take(left[r][t]))); b.push(printed(take(left[r][t])));
   }
   const shuffle = (l) => { for (let i = l.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [l[i], l[j]] = [l[j], l[i]]; } return l; };
@@ -204,6 +215,7 @@ export function attack(g, seat, idxs, exert = [], zap = {}) {
   g.attack = { by: seat, attackers: rest };
   if (rest.length === 1 && att[rest[0]].extra === "exalted") { att[rest[0]].temp = 1; att[rest[0]].shield = 1; how[rest[0]] = " (unicast)"; }
   for (const i of rest) if (att[i].extra === "exert" && (Array.isArray(exert) ? exert : []).includes(i)) { att[i].temp = att[i].power; att[i].exerted = true; how[i] = " (overclocked)"; }
+  for (const i of rest) if (att[i].extra === "hotspot") { att[i].temp = 1; att[i].shield = -1; how[i] = " (hotspot)"; }
   settle(g);
   g.log.push(`${NAMES[seat]} pings for ${rest.reduce((n, i) => n + att[i].power, 0)} with ${rest.map((i) => att[i].name + (how[i] ?? "")).join(", ")}`);
   return null;
@@ -275,14 +287,15 @@ export function place(g, seat, split) {
   }
   for (const i of g.attack.attackers) {
     const a = att.buttons[i];
-    let d = Math.min(Math.max(0, (back[i] ?? 0) - (a.shield ?? 0)), life(a));   // shield: Exalted's +1 toughness
+    const bk = back[i] ?? 0;
+    let d = Math.min(Math.max(0, bk ? bk - (a.shield ?? 0) : 0), life(a));   // shield: Exalted's +1 toughness, Hotspot's -1 (only when hit back)
     if (!d) continue;
     if (viral[i]) d = life(a);
     a.damage += d;
     g.log.push(`${a.name} takes ${d}`);
     knock(g, a, true);
   }
-  for (const i of g.attack.attackers) { delete att.buttons[i].temp; delete att.buttons[i].shield; }   // Exalted and Exert last one ping
+  for (const i of g.attack.attackers) { delete att.buttons[i].temp; delete att.buttons[i].shield; }   // Exalted, Exert and Hotspot last one ping
   g.attack = null;
   settle(g);
   if (ended(g, by)) return null;

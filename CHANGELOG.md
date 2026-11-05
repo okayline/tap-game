@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.172 "GPUs" · Thu Nov 5, 10:45 AM
+- 88x31's new Series Gamma: ten graphics cards, a new type, Hardware — GPU (3/2), with their own set sign (a graphics card) and each card's own launch-day quote. Each has Overclock, or Hotspot (+1/-1 when it pings) on the four that run hot in real life, plus a main effect that's never Glow or Webcounter. They're rares, and show as themselves, not as mystery buttons. Removed: nothing.
+
 ## v0.171 "Tidy" · Thu Nov 5, 9:45 AM
 - A match that goes a day with no move is deleted, and every match stored before this version was deleted (kura: "can we please clean up all the empty unused runs"). Every page load starts a match, so these were mostly ones nobody played. A link to a deleted match says "No such match". Removed: matches kept forever.
 
