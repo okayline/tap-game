@@ -132,6 +132,26 @@
   .broken { flex: 1; display: flex; align-items: flex-start; gap: calc(4 * var(--u)); padding: calc(5 * var(--u));
             border: 1px dotted #8a8a8a; border-radius: calc(3 * var(--u)); background: #fff; font: calc(9 * var(--u))/1.2 "Times New Roman", serif; color: #000; overflow: hidden; }
   .broken svg { flex: none; width: calc(13 * var(--u)); height: calc(16 * var(--u)); }
+  /* a knockout (kura, Nov 5: "404", "blue screen", "page cannot be displayed"; the pink X stays as it is): after its hit's glitch, the
+     card's front is an old error screen for KO_MS (KOS, below), then the card goes grey and crossed out as before. While it plays
+     (data-ko on the spot) the card isn't grey or crossed yet. */
+  .btn.out[data-ko] .gc { filter: none; }
+  .btn.out[data-ko]::before, .btn.out[data-ko]::after { display: none; }
+  .ko { flex: 1; overflow: hidden; border-radius: calc(3 * var(--u)); padding: calc(6 * var(--u)); display: flex; flex-direction: column; gap: calc(4 * var(--u));
+        font-size: calc(7 * var(--u)); line-height: 1.25; text-align: left; font-style: normal; }
+  .ko b { display: block; }
+  .ko-404 { background: #fff; color: #000; font-family: "Times New Roman", Times, serif; }
+  .ko-404 b { font-size: calc(15 * var(--u)); line-height: 1; }
+  .ko-404 hr { width: 100%; margin: 0; border: 0; border-top: 1px solid #999; }
+  .ko-404 i { font-size: calc(6 * var(--u)); }
+  .ko-bsod { background: #0000aa; color: #fff; font-family: "Lucida Console", "Courier New", monospace; font-size: calc(6 * var(--u)); justify-content: center; }
+  .ko-bsod b { align-self: center; background: #aaa; color: #0000aa; padding: 0 calc(3 * var(--u)); font-weight: 400; }
+  .ko-bsod span:last-child::after { content: "_"; animation: blink .5s steps(1, end) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .ko-ie { background: #fff; color: #000; font-family: Tahoma, Verdana, sans-serif; font-size: calc(6 * var(--u)); }
+  .ko-ie b { display: flex; align-items: center; gap: calc(3 * var(--u)); font-size: calc(8 * var(--u)); color: #000; }
+  .ko-ie b svg { flex: none; width: calc(11 * var(--u)); height: calc(11 * var(--u)); }
+  .ko-ie hr { width: 100%; margin: 0; border: 0; border-top: 1px solid #c0c0c0; }
   @keyframes signal {
     0% { opacity: 1; filter: none; } 10% { opacity: .2; filter: brightness(2); } 20% { opacity: 1; filter: invert(1) hue-rotate(180deg); }
     30% { opacity: .45; filter: none; } 45% { opacity: 1; filter: contrast(1.8) saturate(0); } 60% { opacity: .15; filter: none; }
@@ -268,7 +288,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.166" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.167" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -353,6 +373,25 @@ const $ = (id) => document.getElementById(id);
     inn.style.display = "none"; gc.append(box);   // (not the hidden attribute: .gc-in's display: flex would win over it)
     setTimeout(() => { box.remove(); inn.style.display = ""; }, GLITCH_MS.noimg);
   }
+  // a knockout's error screen, picked at random for each card knocked out (kura, Nov 5)
+  const KOS = {
+    "404": '<b>Not Found</b><span>The requested button was not found on this server.</span><hr><i>Apache/1.3.27 Server at 88x31.app Port 80</i>',
+    bsod: '<b>Windows</b><span>A fatal exception 0E has occurred. The current button will be terminated.</span><span>Press any key to continue </span>',
+    ie: '<b><svg viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="5.5" fill="#d33"/><path d="M3.8 3.8l4.4 4.4M8.2 3.8l-4.4 4.4" stroke="#fff" stroke-width="1.6"/></svg>'
+      + 'The page cannot be displayed</b><span>The page you are looking for is currently unavailable.</span><hr><span>Cannot find server or DNS Error<br>Internet Explorer</span>',
+  };
+  const KO_MS = 1400;
+  const pickKO = () => { const k = Object.keys(KOS); return k[Math.floor(Math.random() * k.length)]; };
+  // wait ms (its hit's glitch), then the card's front is the error screen for KO_MS; the card stays un-greyed until then (data-ko)
+  function knockout(btn, ko, wait) {
+    btn.dataset.ko = ko;
+    setTimeout(() => {
+      const gc = btn.querySelector(".gc"), inn = gc.querySelector(".gc-in"), box = mk("span", `ko ko-${ko}`);
+      box.innerHTML = KOS[ko];
+      inn.style.display = "none"; gc.append(box);
+      setTimeout(() => { box.remove(); inn.style.display = ""; delete btn.dataset.ko; }, KO_MS);
+    }, wait);
+  }
   const GLITCH_DO = { glyph: glyphs, moji: mojibake, noimg: noImage };   // the glitches with code of their own   // kura, Nov 3: "a little slower" (was 700)
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const otherSeat = (s) => (s === "a" ? "b" : "a");
@@ -360,9 +399,9 @@ const $ = (id) => document.getElementById(id);
     // each button by id in the new board, field, deck or gone: since v0.113 a knocked-out button leaves the field in the same update
     // (its spot fills from the top as the next turn starts), and without it the replay missed its hit and lost the ping's line
     const ids = (s) => new Map([...next.sides[s].buttons, ...(next.sides[s].deck ?? []), ...(next.sides[s].gone ?? [])].map((b) => [b.id, b]));
-    // each card that took damage: [side, id, "-N", class, its glitch] (the glitch is picked here, so the beat knows how long to hold)
+    // each card that took damage: [side, id, "-N", class, its glitch, its knockout or ""] (picked here, so the beat knows how long to hold)
     const hit = {};
-    for (const s of ["a", "b"]) { const m = ids(s); hit[s] = prev.sides[s].buttons.flatMap((b) => { const n = m.get(b.id); return n && n.damage > b.damage ? [[s, b.id, `-${n.damage - b.damage}`, "", pickGlitch()]] : []; }); }
+    for (const s of ["a", "b"]) { const m = ids(s); hit[s] = prev.sides[s].buttons.flatMap((b) => { const n = m.get(b.id); return n && n.damage > b.damage ? [[s, b.id, `-${n.damage - b.damage}`, "", pickGlitch(), n.out && !b.out ? pickKO() : ""]] : []; }); }
     const hits = (s) => hit[s];
     if (!hits("a").length && !hits("b").length) return;
     const by = prev.attack ? prev.attack.by : prev.turn, def = otherSeat(by);
@@ -379,7 +418,7 @@ const $ = (id) => document.getElementById(id);
     board.attack = { by, attackers: idxs };
     const copy = (s, fields) => { const m = ids(s); for (const b of board.sides[s].buttons) { const n = m.get(b.id); if (n) for (const f of fields) b[f] = n[f]; } };
     // a beat with hits holds BEAT_MS (the last one LAST_MS) after its longest glitch, since each damage number only rises once its glitch is over
-    const hold = (pops, base = BEAT_MS) => base + Math.max(0, ...pops.map((p) => GLITCH_MS[p[4]] ?? 0));
+    const hold = (pops, base = BEAT_MS) => base + Math.max(0, ...pops.map((p) => (GLITCH_MS[p[4]] ?? 0) + (p[5] ? KO_MS : 0)));   // a knockout plays after its glitch
     const beat = async (cap, pops, pings, ms = hold(pops), glow) => { board.log = next.log.slice(0, cap); g = board; fx = { att: att.map((b) => b.id), pops, pings, glow }; playing = true; draw(); await sleep(ms); };
     const FIGHT = ["damage", "out", "power", "boost", "bonus"];
     copy(by, ["tapped"]);
@@ -648,7 +687,7 @@ const $ = (id) => document.getElementById(id);
       }
     }
     // the replay beat's rising numbers and glitches
-    for (const [s, id, text, cls, glitch] of fx.pops ?? []) {
+    for (const [s, id, text, cls, glitch, ko] of fx.pops ?? []) {
       const btn = [...$(s === me ? "me" : "them").querySelectorAll(".btn")].find((x) => x.dataset.id === String(id));
       if (!btn) continue;
       // a damage number rises once its card's glitch is over (kura, Nov 3: "pop up after the animation has finished playing")
@@ -659,6 +698,7 @@ const $ = (id) => document.getElementById(id);
         btn.classList.remove("hit", ...GLITCHES); void btn.offsetWidth; btn.classList.add("hit", glitch);
         GLITCH_DO[glitch]?.(btn);
       }
+      if (ko) knockout(btn, ko, GLITCH_MS[glitch] ?? 0);
     }
     fit();
     slide(before);

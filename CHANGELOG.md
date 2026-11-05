@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.167 "Not Found" · Thu Nov 5, 3:56 AM
+- A card knocked out in a fight shows an old error screen for a moment after its hit: 404 Not Found, a blue screen, or "The page cannot be displayed", picked at random. Then it goes grey and crossed out as before. Removed: the card going grey and crossed out right as it was hit.
+
 ## v0.166 "Cute Numbers" · Thu Nov 5, 3:52 AM
 - The numbers that rise off cards in a fight are bright pastel pink (damage) and sky blue (power), with a darker outline and a soft white glow, and start bigger. Removed: the darker pink and blue numbers with a cream outline, starting small.
 
