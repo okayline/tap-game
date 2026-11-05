@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.166 "Cute Numbers" · Thu Nov 5, 3:52 AM
+- The numbers that rise off cards in a fight are bright pastel pink (damage) and sky blue (power), with a darker outline and a soft white glow, and start bigger. Removed: the darker pink and blue numbers with a cream outline, starting small.
+
 ## v0.165 "Every Row" · Thu Nov 5, 3:47 AM
 - Each of the log's three rows has its own C:\>, the second row of a long line too, and it never moves or fades. When a page loads or a new match starts, its lines come in one at a time. Removed: one prompt per line (a long line's second row had none); the lines showing all at once on load.
 

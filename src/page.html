@@ -104,10 +104,13 @@
   .dmg { position: absolute; left: 50%; top: calc(42 * var(--u)); transform: translateX(-50%); font: 800 calc(14 * var(--u))/1 var(--title); color: var(--hit);
          background: var(--cream); border: 1.5px solid var(--hit); border-radius: 6px; padding: 2px 6px; pointer-events: none; z-index: 2; }
   /* the fight replay (v0.69): a number rising off a card (--hit: damage it took; --zap: an attacker's power), in a cream outline */
-  .pop { position: absolute; left: 50%; top: calc(40 * var(--u)); font: 800 calc(18 * var(--u))/1 var(--title); color: var(--hit); pointer-events: none; z-index: 3;
-         text-shadow: 0 0 2px var(--cream), 0 0 2px var(--cream), 0 0 5px var(--cream); animation: rise 1.6s ease-out both; }   /* both: hidden while it waits */
-  .pop.atk { color: var(--zap); }
-  @keyframes rise { 0% { opacity: 0; transform: translate(-50%, 8px) scale(.7); } 15% { opacity: 1; transform: translate(-50%, 0) scale(1.15); }
+  /* bright pastel with a darker outline of its own colour and a white glow (kura, Nov 5: "a little dark / not cute", "a bit bigger
+     for the numbers to start"; was 18 units in --hit / --zap with a cream outline, starting at 0.7 size) */
+  .pop { position: absolute; left: 50%; top: calc(38 * var(--u)); font: 800 calc(24 * var(--u))/1 var(--title); color: #ffa6d2; pointer-events: none; z-index: 3;
+         --o: #d4558c; text-shadow: -1px -1px 0 var(--o), 1px -1px 0 var(--o), -1px 1px 0 var(--o), 1px 1px 0 var(--o), 0 0 6px #fff, 0 0 10px #fff;
+         animation: rise 1.6s ease-out both; }   /* both: hidden while it waits */
+  .pop.atk { color: #a8d8ff; --o: #5578c4; }
+  @keyframes rise { 0% { opacity: 0; transform: translate(-50%, 8px) scale(1); } 15% { opacity: 1; transform: translate(-50%, 0) scale(1.3); }
                     70% { opacity: 1; transform: translate(-50%, -18px) scale(1); } 100% { opacity: 0; transform: translate(-50%, -28px) scale(1); } }
   /* a hit glitches (kura, Nov 3: "instead of shakes ... some glitchy animations", "a couple different effects and have it randomly
      choose one"), snapping from frame to frame; each hit picks one (GLITCHES, below). The card itself (.gc) carries the colour
@@ -265,7 +268,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.165" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.166" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
