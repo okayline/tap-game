@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.156 "Every Line" · Thu Nov 5, 3:18 AM
+- During a fight replay, the log's lines come in one at a time and slide in, like the others (after the 0.35 s beat, 0.45 s apart). Most lines come during a replay, which is why they still appeared at once. Removed: a replay beat showing all its lines at once.
+
 ## v0.155 "Even Decks" · Thu Nov 5, 3:16 AM
 - Both deck rows spread their cards evenly across the panel's width, like the card rows. Removed: the deck cards bunching up on the left with a gap on the right.
 
