@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.164 "Steady Prompt" · Thu Nov 5, 3:46 AM
+- The log's three rows always start with C:\>, even before there's a line to show, and the prompts stay still: only the text after them slides in and fades. Removed: the prompt sliding and fading with each line.
+
 ## v0.163 "Same Line" · Thu Nov 5, 3:44 AM
 - A button knocked out (or saved by Backup) by a hit says so on the hit's own line: "… takes 1. it's out!" Removed: the separate "… is out" and "… restores from backup" lines after a hit.
 
