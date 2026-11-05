@@ -290,7 +290,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.173" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.174" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -382,7 +382,7 @@ const $ = (id) => document.getElementById(id);
     ie: '<b><svg viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="5.5" fill="#d33"/><path d="M3.8 3.8l4.4 4.4M8.2 3.8l-4.4 4.4" stroke="#fff" stroke-width="1.6"/></svg>'
       + 'The page cannot be displayed</b><span>The page you are looking for is currently unavailable.</span><hr><span>Cannot find server or DNS Error<br>Internet Explorer</span>',
   };
-  const KO_MS = 1400;
+  const KO_MS = 1900;   // kura, Nov 5: animate a little longer before turning grey, "maybe half second" (was 1400)
   const pickKO = () => { const k = Object.keys(KOS); return k[Math.floor(Math.random() * k.length)]; };
   // wait ms (its hit's glitch), then the card's front is the error screen, for good; the card stays un-greyed for KO_MS (data-ko), then
   // greys out over it. (A page loaded later, or a big card, shows the card's own front: the screen isn't kept in the board.)

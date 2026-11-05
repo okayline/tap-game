@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.174 "Longer Crash" · Thu Nov 5, 11:13 AM
+- A knocked-out card's error screen plays half a second longer (1.9 s) before it freezes and turns grey, and the fight waits for it. kura: "animate a little longer before turning grey? maybe half second". Removed: the 1.4 s error screen.
+
 ## v0.173 "Aims Itself" · Thu Nov 5, 11:15 AM
 - Prodigal Proxy aims itself: it deals 1 to the other side's button with the least life left (the first, if tied), and its line points there as soon as you pick it. kura: "not a fan of having to select who takes the damage". Removed: clicking a guest card to aim it, and "ping" staying grey until every Proxy had a target.
 
