@@ -15,8 +15,8 @@ export default {
     const im = url.pathname.match(/^\/img\/(\d+)$/);
     if (im) return img(im[1], req, ctx);
     if (url.pathname === "/") {
-      const id = env.MATCH.newUniqueId();
-      await env.MATCH.get(id).setup(await buttons(env));
+      const id = env.GAME.newUniqueId();
+      await env.GAME.get(id).setup(await buttons(env));
       // its page comes straight back, with the match's id in a meta tag, so the address bar never shows /m/<id> (kura, Nov 5: the
       // redirect flashed the long address); no-store, since this page belongs to one match
       return new Response(PAGE.replace('<meta name="match" content="">', `<meta name="match" content="${id}">`),
@@ -25,8 +25,8 @@ export default {
     const m = url.pathname.match(/^\/m\/([0-9a-f]{64})(\/ws)?$/);
     if (m && m[2]) {
       // a link to a match from before the Nov 5 wipe has an id the new class doesn't know: "No such match", like an expired one
-      let id; try { id = env.MATCH.idFromString(m[1]); } catch { return new Response("No such match", { status: 404 }); }
-      return env.MATCH.get(id).fetch(req);
+      let id; try { id = env.GAME.idFromString(m[1]); } catch { return new Response("No such match", { status: 404 }); }
+      return env.GAME.get(id).fetch(req);
     }
     if (m) return new Response(PAGE, { headers: { "content-type": "text/html; charset=utf-8" } });
     return new Response("Not found", { status: 404 });
