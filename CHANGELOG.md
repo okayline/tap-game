@@ -4,6 +4,10 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.146 "Prodigal Proxy" · Thu Nov 5, 2:25 AM
+- New printed effect, Prodigal Proxy (Magic's Prodigal Sorcerer): pick it to ping and click a guest card to aim it; it taps and deals 1 to that card at once, nothing hits it back, and there's nothing to place. It counts as one of the turn's pings and can't zap the turn it comes in. "ping" stays grey until every Proxy has a target, and its line goes only to its target. The guest aims its Proxies at your button with the least life. A zap that knocks out a side's last button wins. Removed: nothing.
+- Fixed with it: a guest ping that arrives with damage already done (its Proxies' zaps) still draws its lines for you to place. Removed: the check that hid them after a replay.
+
 ## v0.145 "All Together" · Thu Nov 5, 2:02 AM
 - Cards moving between the field and the deck rows slide at the same time again, 0.8 s. Removed: v0.141's one-at-a-time slides (kura: "take those off").
 

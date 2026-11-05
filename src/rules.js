@@ -45,6 +45,9 @@ export const DECK = 9; // 3 on the field, 6 in the deck row (kura, Nov 3)
 //   readonly:   Read-Only (Magic's defender): it can't ping, and it takes 1 less from each ping (all of that ping's damage on it,
 //               minus 1), but never less than 1 (kura, Nov 3, after a stalemate: a lone Read-Only took 0 from every 1-power ping)
 //   backup:     Backup (Magic's undying): the first time it would go out, it comes back instead with 1 life left
+//   proxy:      Prodigal Proxy (Magic's Prodigal Sorcerer, kura, Nov 5): picked to ping, it taps and deals 1 to an enemy button its
+//               side picks (zap, in attack), at once; nothing hits it back, and the defender doesn't place it. It counts as one of
+//               the turn's pings, and can't zap the turn it comes in. Read-Only still takes 1; Backup still saves a button.
 // (kura, Nov 3: attacking is called "ping" on screen; the code still says attack.)
 export const FX = ["online", "broadband", "webcounter", "glow", "lagspike", "daemon"];
 // each type's effect before v0.112, for a match dealt before then (its buttons have no fx)
@@ -174,8 +177,8 @@ function fill(g, seat) {
 const ready = (side, i) => side.buttons[i] && !side.buttons[i].out && !side.buttons[i].tapped && !side.buttons[i].phased;
 
 // seat attacks with the buttons at idxs (may be empty, which just passes the turn), exerting those of them in exert that have Exert.
-// Returns an error string or null.
-export function attack(g, seat, idxs, exert = []) {
+// zap: { attackerIndex: enemy field index } for each Prodigal Proxy among them. Returns an error string or null.
+export function attack(g, seat, idxs, exert = [], zap = {}) {
   if (g.winner) return "The game is over.";
   if (g.turn !== seat || g.attack) return "Not your turn.";
   const list = [...new Set(idxs)];
@@ -183,16 +186,34 @@ export function attack(g, seat, idxs, exert = []) {
   if (list.length > g.limit) return `At most ${g.limit} can ping this turn.`;
   if (list.some((i) => g.sides[seat].buttons[i].sick && fxOf(g.sides[seat].buttons[i]) !== "broadband")) return "A button that came in this turn can't ping.";
   if (list.some((i) => fxOf(g.sides[seat].buttons[i]) === "readonly")) return "A Read-Only button can't ping.";
+  const foe = g.sides[other(seat)].buttons, z = zap && typeof zap === "object" ? zap : {};
+  const proxies = list.filter((i) => fxOf(g.sides[seat].buttons[i]) === "proxy"), aim = (i) => Number(z[i]);
+  if (proxies.some((i) => !Number.isInteger(aim(i)) || !foe[aim(i)] || foe[aim(i)].out || foe[aim(i)].phased)) return "Pick a button for each Prodigal Proxy.";
   g.locked = true;
+  g.ping = { by: seat, idxs: list };   // everything this ping used, Prodigal Proxies too (the page's replay shows them)
   if (!list.length) { g.log.push(`${NAMES[seat]} doesn't ping`); passTurn(g); return null; }
   for (const i of list) if (fxOf(g.sides[seat].buttons[i]) !== "online") g.sides[seat].buttons[i].tapped = true;
-  g.attack = { by: seat, attackers: list };
   const att = g.sides[seat].buttons, how = {};
-  if (list.length === 1 && att[list[0]].extra === "exalted") { att[list[0]].temp = 1; att[list[0]].shield = 1; how[list[0]] = " (unicast)"; }
-  for (const i of list) if (att[i].extra === "exert" && (Array.isArray(exert) ? exert : []).includes(i)) { att[i].temp = att[i].power; att[i].exerted = true; how[i] = " (overclocked)"; }
+  // Prodigal Proxy: 1 to its button, at once (Read-Only takes 1 less, never less than 1: still 1)
+  for (const i of proxies) { const b = foe[aim(i)]; b.damage += 1; g.log.push(`${att[i].name} zaps ${b.name} for 1`); knock(g, b); }
+  const rest = list.filter((i) => !proxies.includes(i));
   settle(g);
-  g.log.push(`${NAMES[seat]} pings for ${list.reduce((n, i) => n + att[i].power, 0)} with ${list.map((i) => att[i].name + (how[i] ?? "")).join(", ")}`);
+  if (!rest.length) { if (!ended(g, seat)) passTurn(g); return null; }
+  g.attack = { by: seat, attackers: rest };
+  if (rest.length === 1 && att[rest[0]].extra === "exalted") { att[rest[0]].temp = 1; att[rest[0]].shield = 1; how[rest[0]] = " (unicast)"; }
+  for (const i of rest) if (att[i].extra === "exert" && (Array.isArray(exert) ? exert : []).includes(i)) { att[i].temp = att[i].power; att[i].exerted = true; how[i] = " (overclocked)"; }
+  settle(g);
+  g.log.push(`${NAMES[seat]} pings for ${rest.reduce((n, i) => n + att[i].power, 0)} with ${rest.map((i) => att[i].name + (how[i] ?? "")).join(", ")}`);
   return null;
+}
+
+// The match is over when a side's field is all out and its deck is empty (both at once: a draw). Sets the winner; true if it's over.
+function ended(g, by) {
+  const empty = (s) => g.sides[s].buttons.every((b) => b.out) && !(g.sides[s].deck ?? []).length, def = other(by);
+  if (!empty(def) && !empty(by)) return false;
+  g.winner = empty(def) && empty(by) ? "draw" : empty(def) ? by : def;
+  g.log.push(g.winner === "draw" ? "draw" : `${NAMES[g.winner]} wins`);
+  return true;
 }
 
 // Which attacker a button hits back when more than one hit it (kura, Nov 3: chosen automatically, no click): the one its hit-back
@@ -262,12 +283,7 @@ export function place(g, seat, split) {
   for (const i of g.attack.attackers) { delete att.buttons[i].temp; delete att.buttons[i].shield; }   // Exalted and Exert last one ping
   g.attack = null;
   settle(g);
-  const empty = (s) => g.sides[s].buttons.every((b) => b.out) && !(g.sides[s].deck ?? []).length;
-  if (empty(seat) || empty(by)) {
-    g.winner = empty(seat) && empty(by) ? "draw" : empty(seat) ? by : seat;
-    g.log.push(g.winner === "draw" ? "draw" : `${NAMES[g.winner]} wins`);
-    return null;
-  }
+  if (ended(g, by)) return null;
   passTurn(g);
   return null;
 }

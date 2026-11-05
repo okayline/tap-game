@@ -249,7 +249,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.145" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.146" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -278,10 +278,11 @@ const $ = (id) => document.getElementById(id);
       await Promise.all(document.getAnimations().filter((a) => a.id === "slide" || (a instanceof CSSTransition && a.transitionProperty === "transform"))
         .map((a) => a.finished.catch(() => {})));
       const next = queue.shift();
+      const had = !!g?.attack;   // (the replay leaves its own fight board in g)
       if (g) await replay(g, next);
       // their ping just arrived (an attack that was not there before): a ping line from each of their attackers to all your cards, once
       const open = next.attack ? next.sides[otherSeat(next.attack.by)].buttons.filter((b) => !b.out).map((b) => b.id) : [];   // every card that can take damage
-      const pinged = next.attack && !g?.attack && !next.winner ? next.attack.attackers.map((i) => [next.attack.by, next.sides[next.attack.by].buttons[i].id, open, false]) : null;   // the line only: its glow waits for your take
+      const pinged = next.attack && !had && !next.winner ? next.attack.attackers.map((i) => [next.attack.by, next.sides[next.attack.by].buttons[i].id, open, false]) : null;   // the line only: its glow waits for your take
       g = next; fx = pinged ? { pings: pinged } : {}; $("err").textContent = ""; draw(); fx = {};
     }
     pumping = false; sent = false;
@@ -339,7 +340,10 @@ const $ = (id) => document.getElementById(id);
     const hits = (s) => hit[s];
     if (!hits("a").length && !hits("b").length) return;
     const by = prev.attack ? prev.attack.by : prev.turn, def = otherSeat(by);
-    const idxs = prev.attack ? prev.attack.attackers : lastPing;
+    // the buttons that pinged: those of the attack you placed; else the board's last ping (rules.js g.ping), less any whose damage is
+    // still waiting to be placed (a guest ping with Prodigal Proxies: their zaps land first); else your own last pick
+    const idxs = prev.attack ? prev.attack.attackers : next.ping?.by === by
+      ? next.ping.idxs.filter((i) => !(next.attack?.by === by && next.attack.attackers.includes(i))) : lastPing;
     const att = idxs.map((i) => prev.sides[by].buttons[i]).filter(Boolean);
     // where the log's lines split: the first attacker "takes" line starts beat 3; the last line (the turn, or the result) waits for the real board
     const start = prev.log.length, end = next.log.length - 1, names = next.sides[by].buttons.map((b) => `${b.name} takes `);
@@ -384,8 +388,9 @@ const $ = (id) => document.getElementById(id);
       const d = document.createElement("div"); d.textContent = `C:\\> ${t}`; d.style.opacity = 1 - k * 0.125; return d;   // a DOS prompt before each line (kura, Nov 3)
     }));
   }
-  let picked = new Set(), exerting = new Set(), split = {}, cur = null, seen = "";   // exerting: picked buttons you exert (rules.js EXTRA)   // split[attacker][button]: damage; cur: the attacker being placed
-  $("attack").onclick = () => { sent = true; if (bigBy) hideBig(); lastPing = [...picked]; send({ do: "attack", idxs: lastPing, exert: [...exerting] }); };   // kept for the replay
+  // zaps: picked Prodigal Proxy index -> the guest field index it zaps (rules.js attack)
+  let picked = new Set(), exerting = new Set(), zaps = new Map(), split = {}, cur = null, seen = "";   // exerting: picked buttons you exert (rules.js EXTRA)   // split[attacker][button]: damage; cur: the attacker being placed
+  $("attack").onclick = () => { sent = true; if (bigBy) hideBig(); lastPing = [...picked]; send({ do: "attack", idxs: lastPing, exert: [...exerting], zap: Object.fromEntries(zaps) }); };   // kept for the replay
   $("take").onclick = () => { sent = true; if (bigBy) hideBig(); send({ do: "take", split }); };
   // the coin flip in the bar (kura, Nov 3): a fresh match shows "flip to start"; pressing it flips ▲ (the guest, above the bar) and ▼
   // (you, below it) in turn, slowing down like a spinning coin, and it lands on whoever goes first (decided when the match was made;
@@ -492,7 +497,7 @@ const $ = (id) => document.getElementById(id);
     const before = places();
     const me = "a", them = "b", mine = g.sides[me].buttons, theirs = g.sides[them].buttons;
     const key = `${g.turn}|${g.attack ? g.attack.by : ""}|${g.log.length}|${mine.map((b) => b.id).join()}`;
-    if (key !== seen) { seen = key; picked = new Set(); exerting = new Set(); split = {}; cur = null; } // a new step: clear picks
+    if (key !== seen) { seen = key; picked = new Set(); exerting = new Set(); zaps = new Map(); split = {}; cur = null; } // a new step: clear picks
     const taking = !playing && g.attack && g.attack.by === them && !g.winner;   // while a replay plays, nothing can be clicked
     const life = (b) => (b.out ? 0 : b.toughness + (b.bonus ?? 0) - b.damage);   // rules.js life (bonus: Glow)
     // nothing can be picked or swapped on a fresh match until the coin flip has landed (kura, Nov 5: cards could be clicked before "flip to start")
@@ -516,7 +521,7 @@ const $ = (id) => document.getElementById(id);
     row($("me"), mine, att, (b, i) => {
       if (myTurn && ready(b) && fxOf(b) !== "readonly" && (!b.sick || fxOf(b) === "broadband") && (picked.has(i) || picked.size < g.limit)) return { can: true, tapped: picked.has(i) && fxOf(b) !== "online", sel: picked.has(i) && fxOf(b) === "online", note: exerting.has(i) ? "×2" : "",
         // a click picks it; with Exert, a second click exerts it (×2); the next click puts it back
-        click: () => { if (!picked.has(i)) picked.add(i); else if (b.extra === "exert" && !exerting.has(i)) exerting.add(i); else { picked.delete(i); exerting.delete(i); } draw(); } };
+        click: () => { if (!picked.has(i)) picked.add(i); else if (b.extra === "exert" && !exerting.has(i)) exerting.add(i); else { picked.delete(i); exerting.delete(i); zaps.delete(i); } draw(); } };
       if (taking && !b.out && !b.phased) {
         const d = tot(i);
         return { can: true, sel: d > 0, note: d ? `-${d}` : "",
@@ -528,12 +533,18 @@ const $ = (id) => document.getElementById(id);
       }
       return {};
     });
+    // your Prodigal Proxies (kura, Nov 5): click a guest card to aim the first one picked without a target (or, if all have one, the
+    // last one picked); the cards aimed at stay lit
+    const proxies = myTurn ? [...picked].filter((i) => fxOf(mine[i]) === "proxy") : [];
+    const aimed = new Set(proxies.map((i) => zaps.get(i)).filter((t) => t !== undefined));
     row($("them"), theirs, att, (b, i) => (taking && attackers.includes(i) && leftOf(i) > 0
-      ? { can: true, sel: cur === i, click: () => { cur = i; draw(); } } : {}));
+      ? { can: true, sel: cur === i, click: () => { cur = i; draw(); } }
+      : proxies.length && !b.out && !b.phased
+      ? { can: true, sel: aimed.has(i), click: () => { zaps.set(proxies.find((p) => !zaps.has(p)) ?? proxies[proxies.length - 1], i); draw(); } } : {}));
     // THIS TURN: attack = power of your buttons tapped or picked to attack; defense = life left on your ready buttons (the ones that hit back)
     const up = (b, i) => !b.out && (b.tapped || picked.has(i));
-    const solo = picked.size === 1;   // rules.js attack: Exalted when it pings alone, Exert doubles
-    const atk = mine.reduce((n, b, i) => n + (!up(b, i) ? 0 : b.power * (exerting.has(i) ? 2 : 1) + (solo && picked.has(i) && b.extra === "exalted" ? 1 : 0)), 0);
+    const solo = [...picked].filter((i) => fxOf(mine[i]) !== "proxy").length === 1;   // rules.js attack: Exalted when it pings alone (Proxies aside), Exert doubles
+    const atk = mine.reduce((n, b, i) => n + (!up(b, i) ? 0 : fxOf(b) === "proxy" ? 1 : b.power * (exerting.has(i) ? 2 : 1) + (solo && picked.has(i) && b.extra === "exalted" ? 1 : 0)), 0);
     const def = mine.reduce((n, b, i) => n + (!b.out && !b.tapped && !(picked.has(i) && fxOf(b) !== "online") ? life(b) : 0), 0);   // an Always Online one picked to attack still defends
     $("meHp").textContent = `player · this turn: ${atk}/${def}`;
     $("themHp").textContent = "guest #1337";   // rules.js NAMES
@@ -556,7 +567,7 @@ const $ = (id) => document.getElementById(id);
     $("result").textContent = g.winner ? `${g.winner === "draw" ? "draw" : g.winner === me ? "you win" : "you lose"}` : "";
     // the attack button is always there unless take or new match takes its place; greyed out while it isn't your move
     $("attack").hidden = taking || !!g.winner || startNow;
-    $("attack").disabled = !myTurn || flipping || flip === "theirs" || (flip === "mine" && !picked.size);
+    $("attack").disabled = !myTurn || flipping || flip === "theirs" || (flip === "mine" && !picked.size) || proxies.some((i) => !zaps.has(i));   // every Proxy needs a target
     $("attack").classList.toggle("lit", flipping || flip === "mine");   // pink while it flips, and while "▼ you go first" waits for your pick
     $("attack").textContent = flipping ? flipText : flip === "mine" ? "▼ you go first" : flip === "theirs" ? "▲ guest goes first" : "ping";
     $("take").hidden = !taking;
@@ -583,10 +594,14 @@ const $ = (id) => document.getElementById(id);
     else if (!g.attack) { for (const p of pending) p.fade(); pending = []; }   // the ping is over some other way (the match ended)
     // your aim lines: one per attacker you've picked, from when you tap it until you untap it or ping (not during a replay)
     if (!playing) {
-      const want = new Set(myTurn ? [...picked].map((i) => mine[i]?.id).filter((x) => x != null) : []);
-      for (const [id, p] of aims) if (!want.has(id)) { p.fade(); aims.delete(id); }
+      // a Prodigal Proxy with a target: its line goes to that card only (aimKey: what the line was drawn to, so a new target redraws it)
+      const want = new Map(myTurn ? [...picked].filter((i) => mine[i]).map((i) => [mine[i].id, zaps.has(i) ? String(theirs[zaps.get(i)]?.id) : "all"]) : []);
+      for (const [id, p] of aims) if (want.get(id) !== aimKey.get(id)) { p.fade(); aims.delete(id); aimKey.delete(id); }
       const open = [...$("them").querySelectorAll(".btn")].filter((x) => !x.classList.contains("out"));
-      for (const id of want) if (!aims.has(id)) { const btn = cardOf(me, id); if (btn && open.length) aims.set(id, makePing(btn, open)); }
+      for (const [id, k] of want) if (!aims.has(id)) {
+        const btn = cardOf(me, id), to = k === "all" ? open : open.filter((x) => x.dataset.id === k);
+        if (btn && to.length) { aims.set(id, makePing(btn, to)); aimKey.set(id, k); }
+      }
     }
     // the replay beat's rising numbers and glitches
     for (const [s, id, text, cls, glitch] of fx.pops ?? []) {
@@ -618,7 +633,7 @@ const $ = (id) => document.getElementById(id);
   // your aim lines while you pick attackers (kura, Nov 3: "when you "tap", that's when the line goes out and connects to the enemy's
   // card. then when you ping, that's when the light pulse goes out"): attacker id -> its line, forked into every guest card that
   // can take damage
-  const aims = new Map();
+  const aims = new Map(), aimKey = new Map();
   // each side's lines share one overlay: an <svg class="pingfx"> with a group for grey unused branches under one for the rest
   const layers = {};
   function pingLayer(theirs) {
@@ -755,7 +770,8 @@ const $ = (id) => document.getElementById(id);
     webcounter: ["Webcounter", "+1/+0 for each other {T} on your field."], glow: ["Glow", "+0/+1 for each other {T} on your field."],   // {T}: its own type
     lagspike: ["Lag Spike", "a button its ping knocks out doesn't hit back."], daemon: ["Daemon", "even tapped, it hits back for 1."],
     virus: ["Virus", "any damage it deals knocks a button out."], readonly: ["Read-Only", "can't ping; takes 1 less from a ping (never 0)."],
-    backup: ["Backup", "the first time it's knocked out, it's back with 1 life."] };
+    backup: ["Backup", "the first time it's knocked out, it's back with 1 life."],
+    proxy: ["Prodigal Proxy", "deals 1 to a button you pick; no hit-back."] };
   // a button's picture only moves while it's tapped (kura, Nov 3): ready or knocked out, it's drawn once onto a canvas, kept per button so
   // it doesn't change frame on every redraw
   // flavour lines, by button type: real lines from old personal web pages (kura, Nov 4), each with where it was found
