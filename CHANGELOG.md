@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.165 "Every Row" · Thu Nov 5, 3:47 AM
+- Each of the log's three rows has its own C:\>, the second row of a long line too, and it never moves or fades. When a page loads or a new match starts, its lines come in one at a time. Removed: one prompt per line (a long line's second row had none); the lines showing all at once on load.
+
 ## v0.164 "Steady Prompt" · Thu Nov 5, 3:46 AM
 - The log's three rows always start with C:\>, even before there's a line to show, and the prompts stay still: only the text after them slides in and fades. Removed: the prompt sliding and fading with each line.
 
