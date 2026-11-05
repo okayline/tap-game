@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.150 "Three Lines" · Thu Nov 5, 3:10 AM
+- The log shows the 3 newest lines in bigger text (17px), the newest on top in bold, fading out towards the bottom like Rob's game. Removed: the 5-line log in 15px with each older line fainter, and the phone's own 3-line height (all screens are 3 lines now).
+
 ## v0.149 "Soft Scroll" · Thu Nov 5, 3:05 AM
 - When a new line comes into the log, the lines below slide down over 0.3 s to make room and the new line fades in. Removed: the log's lines jumping down at once.
 

@@ -175,9 +175,14 @@
                font: 800 17px/1 var(--title); letter-spacing: 3px; text-transform: uppercase; }
   button.act:disabled { cursor: default; filter: grayscale(1); opacity: .4; }
   button.act.lit:disabled { filter: none; opacity: 1; }   /* the coin flip: lit pink while it flips and when you won, though it can't be pressed (kura, Nov 3) */
-  /* the log: the 5 newest lines, newest at the top; new lines appear one at a time (LINE_MS apart) */
-  #log { white-space: pre-wrap; font: italic 500 15px/1.5 var(--body); min-height: calc(5 * 1.5em + 20px); overflow: hidden; background: var(--cream); border: 1px solid var(--line);
-         border-radius: 6px; padding: 10px 14px; color: var(--ink); }
+  /* the log: the 3 newest lines, newest at the top in bold, fading out towards the bottom (kura, Nov 5: "only 3 lines and faded
+     out/gradient like rob's game", bigger text; was 5 lines in 15px, each older line fainter); new lines appear one at a time (LINE_MS
+     apart). The fade is on the lines (#logLines), not the box, so the box stays whole. */
+  #log { white-space: pre-wrap; font: italic 500 17px/1.5 var(--body); height: calc(3 * 1.5em + 20px); overflow: hidden; background: var(--cream); border: 1px solid var(--line);
+         border-radius: 6px; padding: 10px 14px; color: var(--ink); box-sizing: border-box; }
+  #logLines { height: 100%; overflow: hidden;
+              -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,.25), #000 34%); mask-image: linear-gradient(to top, rgba(0,0,0,.25), #000 34%); }
+  #logLines div:first-child { font-weight: 700; }
   .err { color: #b3305f; }
   /* the deck: the buttons still to come in, small, next one on the left; drag one of yours onto a field button to swap them */
   /* 6 across, as wide as the field row (3 cards and 2 gaps of 12px) with 5 gaps of 8px; each in a little blue frame */
@@ -235,9 +240,8 @@
     .deck { padding-left: 4px; padding-right: 4px; }
     h1, .bar, #log, #ddfoot { margin-left: 6px; margin-right: 6px; }
     /* bigger card text, so the cards are taller (kura, Nov 3: "i dont mind the longer cards", all the same height); --h fits the longest
-       effect and flavour; the log shows 3 lines instead of 5 to make room */
+       effect and flavour */
     :root { --t: 1.2; --h: 168; }
-    #log { min-height: calc(3 * 1.5em + 20px); max-height: calc(3 * 1.5em + 20px); }
   }
 </style>
 </head>
@@ -247,11 +251,11 @@
   <div class="side" id="themSide"><div class="statusline"><span id="themHp"></span><span class="tough" id="themTough"></span></div><div class="deck" id="themDeck"></div><div class="row" id="them"></div></div>
   <div class="bar"><button class="act" id="start" hidden>start</button> <button class="act" id="attack" hidden>ping</button> <button class="act" id="take" hidden>take</button> <button class="act" id="again" hidden>new match</button></div>
   <div class="side" id="meSide"><div class="statusline"><span id="meHp"></span><span id="status"><span id="result"></span> <span id="err" class="err"></span></span><span class="tough" id="meTough"></span></div><div class="row" id="me"></div><div class="deck" id="meDeck"></div><div class="tip"><span class="touch">Hold a card to see it up close.</span><span class="mouse">Hover over a card to see it up close.</span></div></div>
-  <div id="log"></div>
+  <div id="log"><div id="logLines"></div></div>
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.149" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.150" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -388,14 +392,14 @@ const $ = (id) => document.getElementById(id);
   // slide: one new line came in; the lines below slide down to make room for it and it fades in (kura, Nov 5: "smooth scroll down")
   const LOG_SLIDE_MS = 300;
   function renderLog(slide = false) {
-    // newest on top at full strength, each older line fainter, down to 50% for the fifth
+    // the 3 newest, newest on top (bold, and the fade towards the bottom, in the CSS)
     // a turn's line reads "Turn N. Player's turn." (kura, Nov 5), N counted like the title's turn (the log itself keeps "Player's turn")
     let n = 0;
     const lines = g.log.slice(0, shown).map((t) => (t.endsWith("'s turn") ? `Turn ${++n}. ${t}.` : t));
-    $("log").replaceChildren(...lines.slice(-5).reverse().map((t, k) => {
-      const d = document.createElement("div"); d.textContent = `C:\\> ${t}`; d.style.opacity = 1 - k * 0.125; return d;   // a DOS prompt before each line (kura, Nov 3)
+    $("logLines").replaceChildren(...lines.slice(-3).reverse().map((t) => {
+      const d = document.createElement("div"); d.textContent = `C:\\> ${t}`; return d;   // a DOS prompt before each line (kura, Nov 3)
     }));
-    const [first, ...rest] = $("log").children;
+    const [first, ...rest] = $("logLines").children;
     if (!slide || !first) return;
     const h = first.offsetHeight;
     first.animate([{ opacity: 0 }, { opacity: 1 }], { duration: LOG_SLIDE_MS, easing: "ease-out" });
