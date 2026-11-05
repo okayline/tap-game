@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.169 "UN/TAP Screen" · Thu Nov 5, 4:00 AM
+- The blue screen's title bar says UN/TAP. Removed: "Windows" on it.
+
 ## v0.168 "Frozen" · Thu Nov 5, 3:59 AM
 - A knocked-out card keeps its error screen: the screen freezes and goes grey, crossed out, until the card leaves the field. Removed: the screen going away and the card's own front coming back grey.
 
