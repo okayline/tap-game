@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.151 "Close Count" · Thu Nov 5, 3:06 AM
+- "Turn X, move X" sits just right of the UN/TAP title, in white. Removed: it sitting at the far right of the title line in dim ink.
+
 ## v0.150 "Three Lines" · Thu Nov 5, 3:10 AM
 - The log shows the 3 newest lines in bigger text (17px), the newest on top in bold, fading out towards the bottom like Rob's game. Removed: the 5-line log in 15px with each older line fainter, and the phone's own 3-line height (all screens are 3 lines now).
 
