@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.155 "Even Decks" · Thu Nov 5, 3:16 AM
+- Both deck rows spread their cards evenly across the panel's width, like the card rows. Removed: the deck cards bunching up on the left with a gap on the right.
+
 ## v0.154 "Breathing Room" · Thu Nov 5, 3:14 AM
 - The log waits 0.35 s before it shows a new line. Your side has a little more room: 14px above your 3 cards (was 8px) and 18px between them and your deck (was 10px). The log has 5px above its top line (was 10px). Removed: new log lines showing the moment they arrive.
 
