@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.148 "Turn Lines" · Thu Nov 5, 3:05 AM
+- A turn's line in the log reads "C:\> Turn 3. Player's turn." with the same number as the title's turn. Removed: the bare "Player's turn" line.
+
 ## v0.147 "Turn Count" · Thu Nov 5, 3:02 AM
 - The title line shows "Turn X, move X" at the right. Every turn counts, both sides' (Magic style: whoever won the coin flip has Turn 1, the other side Turn 2). Move 1 is the ping, move 2 the other side placing it. Removed: nothing.
 
