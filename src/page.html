@@ -259,7 +259,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.156" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.157" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -383,7 +383,7 @@ const $ = (id) => document.getElementById(id);
   const fit = () => { const g = $("game"); g.style.transform = `scale(${Math.min(1, innerHeight / g.offsetHeight)})`; };
   addEventListener("resize", fit); fit();
   ws.onclose = () => { $("err").textContent = "disconnected: reload"; };
-  const LINE_MS = 450, LOG_BEAT = 350;
+  const LINE_MS = 450;
   let shown = null, logTimer = null;
   // shows one more log line each LINE_MS until the log is caught up, newest at the top
   function showLog() {
@@ -602,10 +602,10 @@ const $ = (id) => document.getElementById(id);
     // whose move it is: the side whose turn it is, or the defender while it places an attack; nobody is dimmed once the match is over
     const moving = g.winner ? null : g.attack ? (g.attack.by === me ? them : me) : g.turn;
     $("meSide").classList.toggle("dim", moving === them); $("themSide").classList.toggle("dim", moving === me);
-    // first board after loading: the whole log at once; after that a new line waits LOG_BEAT before it shows (kura, Nov 5: "a short beat"),
-    // then they come one at a time, sliding in, during a fight replay too (kura, Nov 5: most lines still appeared at once)
+    // first board after loading: the whole log at once; after that new lines come one at a time, sliding in, during a fight replay too
+    // (kura, Nov 5: most lines still appeared at once)
     if (shown === null) { shown = g.log.length; showLog(); }
-    else if (!logTimer && shown < g.log.length) logTimer = setTimeout(showLog, LOG_BEAT);
+    else if (!logTimer && shown < g.log.length) showLog();
     else if (!logTimer && shown > g.log.length) { shown = g.log.length; renderLog(); }   // a shorter log (a new match in this tab)
     const cardOf = (s, id) => [...$(s === me ? "me" : "them").querySelectorAll(".btn")].find((x) => x.dataset.id === String(id));
     // fx.pings: [side, attacker id, target ids, glow now?]; without the glow, the line waits (pending) for fx.glow

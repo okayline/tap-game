@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.157 "No Wait" · Thu Nov 5, 3:18 AM
+- A new log line starts sliding in as soon as it arrives; lines after it still come 0.45 s apart. Removed: the 0.35 s beat before a new line (v0.154).
+
 ## v0.156 "Every Line" · Thu Nov 5, 3:18 AM
 - During a fight replay, the log's lines come in one at a time and slide in, like the others (after the 0.35 s beat, 0.45 s apart). Most lines come during a replay, which is why they still appeared at once. Removed: a replay beat showing all its lines at once.
 
