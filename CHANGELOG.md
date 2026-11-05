@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.136 "Deep Space" · Wed Nov 4, 9:26 PM
+- The page's background is the upper-left corner of kura's space picture (`public/space.jpg`, 1800 × 1013, 171 KB), fixed behind everything, and the panels and the log float over it with a soft dark shadow and a faint pink glow. On a phone the panels float too, 6px in from the screen's edges, so the cards are a few pixels narrower. Removed: the flat midnight-blue background (it stays only as the colour shown until the picture loads), and the phone panels running edge to edge with square corners.
+
 ## v0.135 "Real Lines" · Wed Nov 4, 8:13 PM
 - Every card's flavour line is now a real line from an old personal web page (mostly 1990s GeoCities pages, found on the oocities.org mirror, plus pages kura pasted in), with where each was found noted beside it in the code. 54 lines in all, 6 to 12 per button type. Neon, Construction and Counter share their lines with the blue game's cards. Removed: the 24 made-up lines (4 per type), such as "Best viewed in the dark." and "You are visitor #000042."
 

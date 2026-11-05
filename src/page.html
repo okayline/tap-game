@@ -24,8 +24,12 @@
     --title: Cinzel, Georgia, serif; --body: "EB Garamond", Georgia, serif;
   }
   * { box-sizing: border-box; }
-  html, body { margin: 0; background: var(--bg); color: var(--ink); height: 100%; overflow: hidden; }   /* the page itself never scrolls */
+  html, body { margin: 0; color: var(--ink); height: 100%; overflow: hidden; }   /* the page itself never scrolls */
+  html { background: var(--bg); }
   body { min-height: 100vh; font: 15px/1.35 var(--body); }
+  /* the space behind everything (kura, Nov 4: a space picture, fixed, with the panels floating over it; the picture is kura's, no credit
+     shown), on its own fixed layer because iPhones ignore background-attachment: fixed */
+  body::before { content: ""; position: fixed; inset: 0; z-index: -1; background: var(--bg) url(/space.jpg) center / cover; }
   /* a card is --w wide (108px at the mockup's size, up to 176px, smaller on a narrow screen so three fit across) and --h/108 as tall;
      --u is the mockup's 1px at that width, so every size in a card scales with it */
   :root { --w: min(176px, calc((100vw - 92px) / 3)); --u: calc(var(--w) / 108); }
@@ -37,6 +41,8 @@
   /* on a window too short for the whole screen, the screen is shrunk to fit (fit(), below), as if zoomed out, so the cards keep their size */
   #game { transform-origin: top center; }
   h1 { font: 800 24px/1 var(--title); letter-spacing: 2px; color: #d97aa6; margin: 0; }
+  /* the panels and the log float over the space (kura, Nov 4): a soft dark shadow under them and a faint pink glow at the edge */
+  .side, #log { box-shadow: 0 12px 32px rgba(0,0,0,.6), 0 0 14px rgba(233,138,179,.25); }
   .side { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 10px 18px; transition: filter .3s; }
   /* the side that isn't moving now is dimmed (kura, Nov 3) */
   .side.dim { filter: brightness(.8) saturate(.7); }
@@ -211,12 +217,13 @@
   .tip { font: italic 500 13px/1.2 var(--body); color: var(--mute); text-align: center; }
   .tip .mouse { display: none; }
   @media (hover: hover) and (pointer: fine) { .tip .touch { display: none; } .tip .mouse { display: inline; } }
-  /* on a phone the panels run to the screen's edges so the three cards are as wide as they can be (kura, Nov 3: "as big as they can reasonably get");
-     24px = the panel's 4px sides and two 8px gaps (each just wide enough for a tappable card's dashed outline) */
+  /* on a phone the cards are as wide as they can be (kura, Nov 3: "as big as they can reasonably get"), and the panels float too, 6px in from
+     the screen's edges (kura, Nov 4: "small gap is fine"); 38px = two 6px gaps, the panel's 1px borders and 4px sides, and two 8px gaps
+     between cards (each just wide enough for a tappable card's dashed outline) */
   @media (max-width: 500px) {
-    :root { --w: calc((100vw - 24px) / 3); --dw: calc((var(--w) * 3 - 32px) / 6 - 6px); }
+    :root { --w: calc((100vw - 38px) / 3); --dw: calc((var(--w) * 3 - 32px) / 6 - 6px); }
     #game { padding: 8px 0; }
-    .side { padding: 8px 4px 14px; border-left: 0; border-right: 0; border-radius: 0; }
+    .side { padding: 8px 4px 14px; margin: 0 6px; }
     .statusline { padding: 0 2px; }
     .row { gap: 8px; }
     /* the deck row is 8px narrower than the card row and sits 4px in, so its dashed outlines stay off the screen's edges */
@@ -239,7 +246,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.135" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.136" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
