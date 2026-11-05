@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.149 "Soft Scroll" · Thu Nov 5, 3:05 AM
+- When a new line comes into the log, the lines below slide down over 0.3 s to make room and the new line fades in. Removed: the log's lines jumping down at once.
+
 ## v0.148 "Turn Lines" · Thu Nov 5, 3:05 AM
 - A turn's line in the log reads "C:\> Turn 3. Player's turn." with the same number as the title's turn. Removed: the bare "Player's turn" line.
 

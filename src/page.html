@@ -251,7 +251,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.148" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.149" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -380,11 +380,14 @@ const $ = (id) => document.getElementById(id);
   // shows one more log line each LINE_MS until the log is caught up, newest at the top
   function showLog() {
     logTimer = null;
-    if (shown < g.log.length) shown++; else shown = g.log.length;
-    renderLog();
+    const added = shown < g.log.length;
+    if (added) shown++; else shown = g.log.length;
+    renderLog(added);
     if (shown < g.log.length) logTimer = setTimeout(showLog, LINE_MS);
   }
-  function renderLog() {
+  // slide: one new line came in; the lines below slide down to make room for it and it fades in (kura, Nov 5: "smooth scroll down")
+  const LOG_SLIDE_MS = 300;
+  function renderLog(slide = false) {
     // newest on top at full strength, each older line fainter, down to 50% for the fifth
     // a turn's line reads "Turn N. Player's turn." (kura, Nov 5), N counted like the title's turn (the log itself keeps "Player's turn")
     let n = 0;
@@ -392,6 +395,11 @@ const $ = (id) => document.getElementById(id);
     $("log").replaceChildren(...lines.slice(-5).reverse().map((t, k) => {
       const d = document.createElement("div"); d.textContent = `C:\\> ${t}`; d.style.opacity = 1 - k * 0.125; return d;   // a DOS prompt before each line (kura, Nov 3)
     }));
+    const [first, ...rest] = $("log").children;
+    if (!slide || !first) return;
+    const h = first.offsetHeight;
+    first.animate([{ opacity: 0 }, { opacity: 1 }], { duration: LOG_SLIDE_MS, easing: "ease-out" });
+    for (const d of rest) d.animate([{ transform: `translateY(${-h}px)` }, { transform: "none" }], { duration: LOG_SLIDE_MS, easing: "ease-out" });
   }
   // zaps: picked Prodigal Proxy index -> the guest field index it zaps (rules.js attack)
   let picked = new Set(), exerting = new Set(), zaps = new Map(), split = {}, cur = null, seen = "";   // exerting: picked buttons you exert (rules.js EXTRA)   // split[attacker][button]: damage; cur: the attacker being placed
