@@ -72,10 +72,12 @@ export const other = (seat) => (seat === "a" ? "b" : "a");
 export const life = (b) => (b.out ? 0 : b.toughness + (b.bonus ?? 0) - b.damage);
 // how much of an attack the defender must place: all of it, or as much as its buttons can still take
 // a button whose life is gone goes out, unless it has Backup it hasn't used: then it's back with 1 life. Returns true if it went out.
-function knock(g, b) {
+// join: the log's last line is this button taking damage, so it's said on that line ("… takes 1. it's out!"; kura, Nov 5)
+function knock(g, b, join = false) {
   if (b.out || life(b) > 0) return false;
-  if (fxOf(b) === "backup" && !b.restored) { b.restored = true; b.damage = b.toughness + (b.bonus ?? 0) - 1; g.log.push(`${b.name} restores from backup`); return false; }
-  b.out = true; g.log.push(`${b.name} is out`);
+  const say = (short, whole) => { if (join) g.log[g.log.length - 1] += `. ${short}!`; else g.log.push(whole); };
+  if (fxOf(b) === "backup" && !b.restored) { b.restored = true; b.damage = b.toughness + (b.bonus ?? 0) - 1; say("it restores from backup", `${b.name} restores from backup`); return false; }
+  b.out = true; say("it's out", `${b.name} is out`);
   return true;
 }
 export const toPlace = (g) => Math.min(
@@ -195,7 +197,7 @@ export function attack(g, seat, idxs, exert = [], zap = {}) {
   for (const i of list) if (fxOf(g.sides[seat].buttons[i]) !== "online") g.sides[seat].buttons[i].tapped = true;
   const att = g.sides[seat].buttons, how = {};
   // Prodigal Proxy: 1 to its button, at once (Read-Only takes 1 less, never less than 1: still 1)
-  for (const i of proxies) { const b = foe[aim(i)]; b.damage += 1; g.log.push(`${att[i].name} zaps ${b.name} for 1`); knock(g, b); }
+  for (const i of proxies) { const b = foe[aim(i)]; b.damage += 1; g.log.push(`${att[i].name} zaps ${b.name} for 1`); knock(g, b, true); }
   const rest = list.filter((i) => !proxies.includes(i));
   settle(g);
   if (!rest.length) { if (!ended(g, seat)) passTurn(g); return null; }
@@ -269,7 +271,7 @@ export function place(g, seat, split) {
     if (t !== undefined) { back[t] = (back[t] ?? 0) + backBy(b); if (fxOf(b) === "virus") viral[t] = true; }
     b.damage += d;
     g.log.push(`${b.name} takes ${d}${t !== undefined ? `, hits back ${att.buttons[t].name} for ${backBy(b)}` : ""}`);
-    knock(g, b);
+    knock(g, b, true);
   }
   for (const i of g.attack.attackers) {
     const a = att.buttons[i];
@@ -278,7 +280,7 @@ export function place(g, seat, split) {
     if (viral[i]) d = life(a);
     a.damage += d;
     g.log.push(`${a.name} takes ${d}`);
-    knock(g, a);
+    knock(g, a, true);
   }
   for (const i of g.attack.attackers) { delete att.buttons[i].temp; delete att.buttons[i].shield; }   // Exalted and Exert last one ping
   g.attack = null;

@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.163 "Same Line" · Thu Nov 5, 3:44 AM
+- A button knocked out (or saved by Backup) by a hit says so on the hit's own line: "… takes 1. it's out!" Removed: the separate "… is out" and "… restores from backup" lines after a hit.
+
 ## v0.162 "Guest Thinks" · Thu Nov 5, 3:40 AM
 - The guest decides where your pings land by looking at the board. Removed: its fixed pattern of where to take them.
 
