@@ -84,6 +84,9 @@
   .pt .hurt, .dpt .hurt { color: var(--hit); }
   /* tapped (attacking): the card turns sideways to the right, shrunk so its long side is the card's width and it stays inside its spot */
   .btn.tapped .gc { transform: rotate(90deg) scale(.72); }
+  /* untapping when its side's turn starts turns back up over 0.4 s (kura, Nov 5: "so they don't snap back up"); tapping, and
+     un-picking a card you picked, still snap at once (row(), below) */
+  .btn.untap .gc { transition: transform .4s ease-out; }
   .btn.can { cursor: pointer; outline: 2px dashed var(--pink); outline-offset: 2px; }
   .btn.sel { outline: 2px solid var(--pink); box-shadow: 0 0 12px rgba(233,138,179,.7); }
   .btn.att { outline: 2px solid var(--blue); box-shadow: 0 0 12px rgba(109,143,208,.7); }
@@ -246,7 +249,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.138" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.139" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -269,8 +272,10 @@ const $ = (id) => document.getElementById(id);
     pumping = true;
     while (queue.length) {
       // a card still sliding in from the deck would give a ping's line the wrong start (kura, Nov 3: lines starting at the deck row):
-      // the next board waits until every slide has landed
-      await Promise.all(document.getAnimations().filter((a) => a.id === "slide").map((a) => a.finished.catch(() => {})));
+      // the next board waits until every slide has landed, and every card untapping has turned back up (the guest's ping line starts
+      // from its card)
+      await Promise.all(document.getAnimations().filter((a) => a.id === "slide" || (a instanceof CSSTransition && a.transitionProperty === "transform"))
+        .map((a) => a.finished.catch(() => {})));
       const next = queue.shift();
       if (g) await replay(g, next);
       // their ping just arrived (an attack that was not there before): a ping line from each of their attackers to all your cards, once
@@ -878,7 +883,9 @@ const $ = (id) => document.getElementById(id);
     gc.append(inn); return { gc, art, img, pt };
   }
   // a side's field row. Each spot keeps its card while the same button is in it, and only its classes and numbers change (so the
-  // replay can glitch and mark it); a new button in a spot gets a new card. Tapping snaps sideways at once (kura, Nov 3: no turning).
+  // replay can glitch and mark it); a new button in a spot gets a new card. Tapping snaps sideways at once (kura, Nov 3: no turning);
+  // a card the board untaps (its side's turn starting) turns back up (.btn.untap, kura, Nov 5). s.bt: the board had it tapped last draw;
+  // s.untap stays on until it taps again, since dropping the class mid-turn would cut the turn short.
   function row(el, buttons, att, how) {
     el.slots ??= [];
     buttons.forEach((b, i) => {
@@ -893,7 +900,9 @@ const $ = (id) => document.getElementById(id);
       }
       s.b = b;
       const { btn, parts } = s, tapped = b.tapped || h.tapped;
-      btn.className = "btn" + (b.out ? " out" : "") + (b.phased ? " phased" : "") + (tapped ? " tapped" : "") + (h.can ? " can" : "") + (h.sel ? " sel" : "") + (att.has(b.id) ? " att" : "");
+      if (tapped) s.untap = false; else if (s.bt) s.untap = true;
+      s.bt = !!b.tapped;
+      btn.className = "btn" + (b.out ? " out" : "") + (b.phased ? " phased" : "") + (tapped ? " tapped" : "") + (s.untap ? " untap" : "") + (h.can ? " can" : "") + (h.sel ? " sel" : "") + (att.has(b.id) ? " att" : "");
       const moving = !b.out && !!tapped;   // the picture only moves while tapped
       if (s.moving !== moving) { parts.art.replaceChildren(moving ? parts.img : still(b, "")); s.moving = moving; }
       parts.pt.replaceChildren(...ptText(b)); parts.pt.hidden = !!b.out;

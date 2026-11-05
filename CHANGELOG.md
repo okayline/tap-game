@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.139 "Soft Untap" · Thu Nov 5, 1:50 AM
+- When a side's turn starts, its tapped cards turn back up over 0.4 s instead of snapping. Tapping a card, and un-picking one you picked, still snap at once. The next board (such as the guest's ping) waits for the turn to finish, so its line starts from the card where it lands. Removed: cards snapping back up at the start of their turn.
+
 ## v0.138 "No Glow" · Wed Nov 4, 9:35 PM
 - The panels and the log keep their soft dark shadow over the space. kura: "no glow please". Removed: the faint pink glow around their edges.
 
