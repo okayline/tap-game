@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.137 "Whole Sky" · Wed Nov 4, 9:28 PM
+- The background is kura's whole space picture again (`public/space.jpg`, 2560 × 1440, 378 KB), with its bright orange stars and blue clouds. Removed: the upper-left crop (1800 × 1013).
+
 ## v0.136 "Deep Space" · Wed Nov 4, 9:26 PM
 - The page's background is the upper-left corner of kura's space picture (`public/space.jpg`, 1800 × 1013, 171 KB), fixed behind everything, and the panels and the log float over it with a soft dark shadow and a faint pink glow. On a phone the panels float too, 6px in from the screen's edges, so the cards are a few pixels narrower. Removed: the flat midnight-blue background (it stays only as the colour shown until the picture loads), and the phone panels running edge to edge with square corners.
 
