@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.142 "Flip First" · Thu Nov 5, 1:57 AM
+- On a fresh match you can't pick a card or swap your top card until the coin flip has landed. Removed: picking a card (and sending its line out) before pressing "flip to start".
+
 ## v0.141 "One by One" · Thu Nov 5, 1:58 AM
 - Cards moving between the field and the deck rows go one at a time, 0.8 s each: first every card leaving the field, then every card coming onto it. A deck row closing up moves with the first card coming in. Each card waits in its old place until its turn. Removed: all the moving cards sliding at the same time.
 

@@ -249,7 +249,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.141" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.142" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -501,7 +501,9 @@ const $ = (id) => document.getElementById(id);
     if (key !== seen) { seen = key; picked = new Set(); exerting = new Set(); split = {}; cur = null; } // a new step: clear picks
     const taking = !playing && g.attack && g.attack.by === them && !g.winner;   // while a replay plays, nothing can be clicked
     const life = (b) => (b.out ? 0 : b.toughness + (b.bonus ?? 0) - b.damage);   // rules.js life (bonus: Glow)
-    const myTurn = !playing && g.turn === me && !g.attack && !g.winner;
+    // nothing can be picked or swapped on a fresh match until the coin flip has landed (kura, Nov 5: cards could be clicked before "flip to start")
+    const unflipped = g.locked === false && !g.winner && (flip === null || flip === "flipping");
+    const myTurn = !playing && !unflipped && g.turn === me && !g.attack && !g.winner;
     const ready = (b) => !b.out && !b.tapped && !b.phased;
     // what you must place when they attack: their attack's total, or all your buttons' life left if that's less
     const need = taking ? Math.min(g.attack.attackers.reduce((n, i) => n + theirs[i].power, 0), mine.reduce((n, b) => n + (b.phased ? 0 : life(b)), 0)) : 0;
