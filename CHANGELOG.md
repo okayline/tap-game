@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.143 "Still Online" · Thu Nov 5, 2:00 AM
+- An Always Online button's picture moves while you have it picked and while it pings, like a tapped one's, even though it doesn't tap. Removed: its picture staying still when picked.
+
 ## v0.142 "Flip First" · Thu Nov 5, 1:57 AM
 - On a fresh match you can't pick a card or swap your top card until the coin flip has landed. Removed: picking a card (and sending its line out) before pressing "flip to start".
 

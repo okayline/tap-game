@@ -249,7 +249,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.142" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.143" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -914,7 +914,8 @@ const $ = (id) => document.getElementById(id);
       if (tapped) s.untap = false; else if (s.bt) s.untap = true;
       s.bt = !!b.tapped;
       btn.className = "btn" + (b.out ? " out" : "") + (b.phased ? " phased" : "") + (tapped ? " tapped" : "") + (s.untap ? " untap" : "") + (h.can ? " can" : "") + (h.sel ? " sel" : "") + (att.has(b.id) ? " att" : "");
-      const moving = !b.out && !!tapped;   // the picture only moves while tapped
+      // the picture only moves while tapped, or for an Always Online one (which doesn't tap) while it's picked or pinging (kura, Nov 5)
+      const moving = !b.out && (!!tapped || !!h.sel || att.has(b.id));
       if (s.moving !== moving) { parts.art.replaceChildren(moving ? parts.img : still(b, "")); s.moving = moving; }
       parts.pt.replaceChildren(...ptText(b)); parts.pt.hidden = !!b.out;
       btn.onclick = h.click ?? null;
