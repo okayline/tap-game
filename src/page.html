@@ -255,7 +255,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.152" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.153" data-copy="no"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 {
@@ -389,7 +389,7 @@ const $ = (id) => document.getElementById(id);
     renderLog(added);
     if (shown < g.log.length) logTimer = setTimeout(showLog, LINE_MS);
   }
-  // slide: one new line came in; the lines below slide down to make room for it and it fades in (kura, Nov 5: "smooth scroll down")
+  // slide: one new line came in; it slides down into place with the lines below, fading in (kura, Nov 5: "smooth scroll down")
   const LOG_SLIDE_MS = 300;
   function renderLog(slide = false) {
     // the 3 newest, newest on top (bold, and the fade towards the bottom, in the CSS)
@@ -402,7 +402,8 @@ const $ = (id) => document.getElementById(id);
     const [first, ...rest] = $("logLines").children;
     if (!slide || !first) return;
     const h = first.offsetHeight;
-    first.animate([{ opacity: 0 }, { opacity: 1 }], { duration: LOG_SLIDE_MS, easing: "ease-out" });
+    // the new line slides down into place from above the box's top edge too, fading in (kura, Nov 5: it appeared at once)
+    first.animate([{ opacity: 0, transform: `translateY(${-h}px)` }, { opacity: 1, transform: "none" }], { duration: LOG_SLIDE_MS, easing: "ease-out" });
     for (const d of rest) d.animate([{ transform: `translateY(${-h}px)` }, { transform: "none" }], { duration: LOG_SLIDE_MS, easing: "ease-out" });
   }
   // zaps: picked Prodigal Proxy index -> the guest field index it zaps (rules.js attack)

@@ -4,6 +4,9 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.153 "Top Slide" · Thu Nov 5, 3:09 AM
+- A new log line slides down into place from above the top edge, together with the lines below it, as it fades in. Removed: the new line appearing in place while only the lines below slid.
+
 ## v0.152 "A Bit Smaller" · Thu Nov 5, 3:07 AM
 - The log's text is 16px. Removed: the 17px log text.
 
