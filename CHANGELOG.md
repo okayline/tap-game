@@ -4,6 +4,10 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.176 "Stand Up" · Thu Nov 5, 10:00 PM
+- A 3D printed button (Under Construction, Synthwave, Island Life) stands up on its big card at its print's heights, and tilts up and down (kura: "yep could we do that please!"). Removed: nothing.
+- The footer says v0.176. Removed: "v0.175".
+
 ## v0.175 "Shared View" · Thu Nov 5, 9:45 PM
 - The big card now comes from one place every game shares (dungeon-items' zoom.js), so a change to how it turns changes it in every game at once (kura: "it would be nice to change it to "90 degrees" once, and have it change everywhere"). It works as before, except: resting the mouse opens it after 1 second (was 1.2), as in Rob's Game and 88x31, and the mouse turns it at the same speed whatever the card's size. Removed: UN/TAP's own copy of the big card.
 - The footer says v0.175. Removed: "v0.174".

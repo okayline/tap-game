@@ -281,7 +281,7 @@
   <!-- the footer every game shows (dungeon-items src/footer.js), with this game's version: raise data-version every version; data-copy="no" leaves out the 🄯 (the buttons include remixes of other people's art, uncredited here) -->
   <div id="ddfoot"></div>
 </div>
-<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.175" data-copy="no"></script>
+<script defer src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.176" data-copy="no"></script>
 <script src="https://dungeon-items.ddddungeon.workers.dev/zoom.js"></script>
 <script>
 const $ = (id) => document.getElementById(id);
@@ -497,7 +497,8 @@ const $ = (id) => document.getElementById(id);
       const b = zoomCards.get(el)(), p = card(b);
       p.art.append(p.img); p.pt.replaceChildren(...ptText(b)); p.pt.hidden = !!b.out;
       document.querySelectorAll(".ghost").forEach((x) => (x.style.visibility = "hidden"));
-      return { face: p.gc, w: 108, h: Number(getComputedStyle(document.documentElement).getPropertyValue("--h")) || 150, width: "min(78vw, 300px)" };
+      return { face: p.gc, w: 108, h: Number(getComputedStyle(document.documentElement).getPropertyValue("--h")) || 150, width: "min(78vw, 300px)",
+        relief: b.id && b.image ? { image: b.image, art: p.img, id: b.id } : null };   // a 3D printed button stands up (v0.176)
     },
   });
   document.addEventListener("contextmenu", (e) => { if (e.target.closest(".row, .deck")) e.preventDefault(); });   // a long press opens no menu
